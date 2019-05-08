@@ -1,0 +1,18 @@
+Máquina:
+SP01PC467 (IP 192.168.101.8)
+
+Nomenclaturas:
+SC - Source Control
+
+Time:
+http://sp01sv078:8080/tfs/defaultcollection/Mercadocar%20v1/Mercadocar%20v1%20Team
+
+
+Ferramentas:
+(VSS) V:\Ferramentas para o SIM
+
+Acesso (sp01 = loja; sv078: recurso - servidor, computador, etc):
+sp01sv078
+
+Mercadocar NugetServer:
+http://sp01sv081/NugetServerMercadoCar/nuget/

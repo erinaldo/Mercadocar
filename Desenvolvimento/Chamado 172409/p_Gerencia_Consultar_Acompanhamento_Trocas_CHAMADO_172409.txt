@@ -1,0 +1,1992 @@
+
+------------------------------------------------------------------------------
+-- <summary>
+--   Procedure que retorna as informações para o GRID Acompanhamento de Trocas
+-- </summary>
+-- <history>
+--  [kcosta]     - 07/05/2012 Created
+--  [mmukuno]    - 03/10/2016 Modifed
+--   Inclusão dos campos Ano e Modelo do veiculo na visão Peça por vendedor Detalhado
+--  [mmukuno]    - 14/10/2016 Modifed
+--   Considerar os romaneios de estorno. Bug identificado na Demanda 64359.
+--  [wpinheiro]  - 14/07/2017 Modifed
+--   alterado para tabelas novas para melhorar performance
+--  [marcardoso] - 04/06/2018 Modifed
+--   incluir o campo Justificativa do romaneio na visão do PECA DETALHE POR VENDEDOR
+--  [rnoliveira] - 06/08/2018 Modified
+--   Alterado o tamanho da coluna Veiculo_DS chamado 140623
+--  [mmukuno]    - 14/06/2018 Modified
+--   Desativação do Caixa Antigo. Remover a tabela Romaneio_Cancelado_CT e
+--   Romaneio_Cancelado_IT
+--  [wpinheiro]  - 20/03/2019 Modifed
+--   removido dateadd 90 dias na data final
+--  [efsousa]    - 29/03/2019 Modifed
+--   Corrigido UNION da query da tabela #LOJA_GERAL, conforme solicitação Fernando Moraes (Chamado 172409)
+--  [fmoraes]    - 29/03/2019 Modifed
+--   Removido select * from Fabricante where Fabricante_CD = 520
+-- </history>
+--------------------------------------------------------------------------------  
+
+
+CREATE PROCEDURE [dbo].[p_Gerencia_Consultar_Acompanhamento_Trocas_CHAMADO_172409]
+(
+    @Tipo_Exibicao                INT,
+    @Fabricante_ID                INT,
+    @Produto_ID                   INT,
+    @Peca_ID                      INT,
+    @Setor_ID                     INT,
+    @Usuario_Vendedor_ID          INT,
+    @DataInicio                   DATETIME,
+    @DataFim                      DATETIME,
+    @Lojas_ID                     udtEnumerado READONLY,
+    @Motivos_Troca_ID             udtEnumerado READONLY
+)
+
+--WITH RECOMPILE
+
+AS
+
+---------------------------------------------------------------------------
+--DECLARE
+--@Tipo_Exibicao                  INT,
+--@Fabricante_ID                  INT,
+--@Produto_ID                     INT,
+--@Peca_ID                        INT,
+--@Setor_ID                       INT,
+--@Usuario_Vendedor_ID            INT,
+--@DataInicio                     DATETIME,
+--@DataFim                        DATETIME
+
+--DECLARE @Lojas_ID               TABLE ([Enum_ID] INT NULL)
+--DECLARE @Motivos_Troca_ID       TABLE ([Enum_ID] INT NULL)
+
+--SET @Tipo_Exibicao              = 0
+--SET @Fabricante_ID              = NULL
+--SET @Produto_ID                 = NULL
+--SET @Peca_ID                    = NULL
+--SET @Usuario_Vendedor_ID        = NULL
+--SET @Setor_ID                   = NULL
+--SET @DataInicio                 = '2019-03-01'
+--SET @DataFim                    = '2019-03-25' --DATEADD( DD, 365, @DataInicio )
+
+--INSERT INTO @Lojas_ID VALUES (1)
+--INSERT INTO @Lojas_ID VALUES (2)
+--INSERT INTO @Lojas_ID VALUES (3)
+--INSERT INTO @Lojas_ID VALUES (12)
+--INSERT INTO @Lojas_ID VALUES (14)
+
+--INSERT INTO @Motivos_Troca_ID VALUES(573)
+--INSERT INTO @Motivos_Troca_ID VALUES(574)
+--INSERT INTO @Motivos_Troca_ID VALUES(575)
+--INSERT INTO @Motivos_Troca_ID VALUES(830)
+--INSERT INTO @Motivos_Troca_ID VALUES(843)
+--INSERT INTO @Motivos_Troca_ID VALUES(1896)
+--INSERT INTO @Motivos_Troca_ID VALUES(1897)
+--INSERT INTO @Motivos_Troca_ID VALUES(1898)
+--INSERT INTO @Motivos_Troca_ID VALUES(1899)
+--INSERT INTO @Motivos_Troca_ID VALUES(1900)
+--INSERT INTO @Motivos_Troca_ID VALUES(1901)
+--INSERT INTO @Motivos_Troca_ID VALUES(1902)
+--INSERT INTO @Motivos_Troca_ID VALUES(1903)
+
+-------------------------------------------------------------------------------
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+SET NOCOUNT ON
+
+DECLARE @DataFimPeriodo  DATE
+
+SET @DataFimPeriodo = @DataFim --DATEADD(D,90,@DataFim)
+
+-------------------------------------------------------------------------------
+DECLARE @Qtde_Total_Troca INT -- VARIÁVEL USADA PARA TOTALIZAR A QTDE DE TROCAS PARA USO NOS CALCULOS
+-------------------------------------------------------------------------------
+
+DECLARE
+@Enum_Objeto_Tipo_Peca                       INT,
+@Enum_Tipo_Grupo_Cliente_Tipo_Consumo        INT,
+@Enum_Objeto_Tipo_Servico                    INT,
+@Enum_Tipo_Romaneio_Venda_Tecnica            INT,
+@Enum_Tipo_Romaneio_Resta                    INT,
+@Enum_Tipo_Romaneio_Auto_Servico             INT,
+@Enum_Status_Romaneio_Venda_Liberado         INT,
+@Enum_Tipo_Romaneio_Especial                 INT,
+@Enum_Tipo_Romaneio_Troca                    INT,
+@Enum_Tipo_Romaneio_Estorno                  INT,
+@Enum_Status_Romaneio_Venda_Cancelado_ID     INT = 1399
+
+SET  @Enum_Objeto_Tipo_Peca                      = 507
+SET  @Enum_Objeto_Tipo_Servico                   = 508
+SET  @Enum_Status_Romaneio_Venda_Liberado        = 538
+SET  @Enum_Tipo_Romaneio_Venda_Tecnica           = 549
+SET  @Enum_Tipo_Romaneio_Troca                   = 550
+SET  @Enum_Tipo_Romaneio_Auto_Servico            = 551
+SET  @Enum_Tipo_Romaneio_Especial                = 572
+SET  @Enum_Tipo_Grupo_Cliente_Tipo_Consumo       = 609
+SET  @Enum_Tipo_Romaneio_Estorno                 = 648
+SET  @Enum_Tipo_Romaneio_Resta                   = 797
+
+--------------------------- CLIENTES CONSUMO ----------------------------------
+
+SELECT Cliente_ID
+INTO #Clientes_Consumo_Desconsiderar
+FROM Cliente_Consumo
+
+
+-------------------------------------------------------------------------------
+--                      VISÃO DO RELATÓRIO: LOJA GERAL
+-------------------------------------------------------------------------------
+
+IF @Tipo_Exibicao = 0
+BEGIN
+
+    CREATE TABLE #LOJA_GERAL (
+        Lojas_ID              INT,
+        Qtde_Vendas           INT,
+        Valor_Vendas          DECIMAL(10,2),
+        Qtde_Trocas           INT,
+        Valor_Trocas          DECIMAL(10,2)
+    )
+
+    INSERT
+    INTO #LOJA_GERAL (Lojas_ID, Qtde_Vendas, Valor_Vendas, Qtde_Trocas, Valor_Trocas)
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago))          AS Valor_Trocas
+    FROM
+        Romaneio_Venda_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_ID FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Status_ID <> 1952)--Inutilizado
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        RIT.Lojas_ID
+
+------------------------------- CALCULA VENDAS --------------------------------
+
+    UNION
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        SUM(ISNULL(Romaneio_Venda_IT_Qtde, 0))                                           AS Qtde_Vendas,
+        SUM(ISNULL(Romaneio_Venda_IT_Qtde, 0) * ISNULL(Romaneio_Venda_IT_Preco_Pago, 0)) AS Valor_Vendas,
+        0                                                                                AS Qtde_Trocas,
+        0                                                                                AS Valor_Trocas
+    FROM
+        Romaneio_Venda_CT Rct
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND(Rct.Enum_Tipo_ID = @Enum_Tipo_Romaneio_Venda_Tecnica
+        OR Rct.Enum_Tipo_ID = @Enum_Tipo_Romaneio_Auto_Servico
+        OR Rct.Enum_Tipo_ID = @Enum_Tipo_Romaneio_Especial)
+        AND (Rct.Enum_Status_ID = 1398)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID
+
+-------------------------------  CALCULA TOTAL  -------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM 
+    #LOJA_GERAL
+
+    SELECT
+        Lojas.Lojas_ID                                                                   AS Lojas_ID,
+        Lojas.Lojas_NM                                                                   AS Loja_Nome,
+        SUM(Qtde_Vendas)                                                                 AS Qtde_Vendas,
+        SUM(Valor_Vendas)                                                                AS Valor_Vendas,
+        SUM(Qtde_Trocas)                                                                 AS Qtde_Trocas,
+        SUM(Valor_Trocas)                                                                AS Valor_Trocas,
+        CASE WHEN SUM(Qtde_Vendas) > 0 THEN
+        (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+        ELSE
+        (SUM(Qtde_Trocas) *100.00)
+        END                                                                              AS Porcentagem_Troca_Vendas,
+        CASE WHEN @Qtde_Total_Troca > 0 THEN
+        (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+        ELSE
+        (SUM(Qtde_Trocas) *100.00)
+        END                                                                              AS Porcentagem_Troca_Total
+    FROM
+        #LOJA_GERAL AS LojaGeral
+        INNER JOIN Lojas AS Lojas ON
+        Lojas.Lojas_Id= LojaGeral.Lojas_ID
+    GROUP BY
+        Lojas.Lojas_ID,
+        Lojas.Lojas_NM
+    ORDER BY
+        Lojas.Lojas_NM
+    
+    DROP TABLE #LOJA_GERAL
+
+END
+
+
+-------------------------------------------------------------------------------
+--                    VISÃO DO RELATÓRIO: PRODUTO GERAL
+-------------------------------------------------------------------------------
+
+ELSE IF @Tipo_Exibicao = 1
+BEGIN
+
+    CREATE TABLE #PRODUTO_GERAL (
+        Produto_ID      INT,
+        Qtde_Vendas     INT,
+        Valor_Vendas    DECIMAL(10,2),
+        Qtde_Trocas     INT,
+        Valor_Trocas    DECIMAL(10,2)
+    )
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT
+    INTO #PRODUTO_GERAL (Produto_ID, Qtde_Vendas, Valor_Vendas, Qtde_Trocas, Valor_Trocas)
+
+    SELECT
+        PC.Produto_ID                                                                    AS Produto_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_It_Qtde)                                                        AS Qtde_Trocas,
+        SUM(Rit.Romaneio_It_Qtde * ABS(Rit.Romaneio_It_Preco_Pago))                      AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar                     AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_ID FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        PC.Produto_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT
+    INTO #PRODUTO_GERAL (Produto_ID, Qtde_Vendas, Valor_Vendas, Qtde_Trocas, Valor_Trocas)
+
+    SELECT
+        PC.Produto_ID                                                                    AS Produto_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde)                                              AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde * ABS(Rit.Romaneio_Pre_Venda_It_Preco_Pago))  AS Valor_Trocas
+    FROM
+        Romaneio_Pre_Venda_CT Rct
+        INNER JOIN Romaneio_Pre_Venda_IT Rit ON
+        Rct.Romaneio_Pre_Venda_CT_ID = Rit.Romaneio_Pre_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Pre_Venda_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Pre_Venda_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+    GROUP BY
+        PC.Produto_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT
+    INTO #PRODUTO_GERAL (Produto_ID, Qtde_Vendas, Valor_Vendas, Qtde_Trocas, Valor_Trocas)
+
+    SELECT
+        PC.Produto_ID                                                                    AS Produto_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago))          AS Valor_Trocas
+    FROM
+        Romaneio_Venda_Ct  Rct
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+        AND Rct.Enum_Status_ID IN (@Enum_Status_Romaneio_Venda_Cancelado_ID)
+    GROUP BY
+        PC.Produto_ID
+
+------------------------------- CALCULA VENDAS --------------------------------
+
+    INSERT
+    INTO #PRODUTO_GERAL (Produto_ID, Qtde_Vendas, Valor_Vendas, Qtde_Trocas, Valor_Trocas)
+
+    SELECT
+        PC.Produto_ID                                                                    AS Produto_ID,
+        SUM(ISNULL(Romaneio_It_Qtde, 0))                                                 AS Qtde_Vendas,
+        SUM(ISNULL(Romaneio_It_Qtde, 0) * ISNULL(Romaneio_It_Preco_Pago, 0))             AS Valor_Vendas,
+        0                                                                                AS Qtde_Trocas,
+        0                                                                                AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Venda_Tecnica
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Auto_Servico
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Especial)
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+    GROUP BY
+        PC.Produto_ID
+
+-------------------------------- CALCULA TOTAL --------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM
+    #PRODUTO_GERAL
+
+        SELECT
+        Produto.Produto_ID                                                               AS Produto_ID,
+        Produto.Produto_CD                                                               AS Produto_CD,
+        Produto.Produto_DS                                                               AS Produto_DS,
+        SUM(Qtde_Vendas)                                                                 AS Qtde_Vendas,
+        SUM(Valor_Vendas)                                                                AS Valor_Vendas,
+        SUM(Qtde_Trocas)                                                                 AS Qtde_Trocas,
+        SUM(Valor_Trocas)                                                                AS Valor_Trocas,
+            CASE WHEN SUM(Qtde_Vendas) > 0 THEN
+            (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+            ELSE
+            (SUM(Qtde_Trocas) *100.00)
+            END                                                                          AS Porcentagem_Troca_Vendas,
+            CASE WHEN @Qtde_Total_Troca > 0 THEN
+            (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+            ELSE
+            (SUM(Qtde_Trocas) *100.00)
+            END                                                                          AS Porcentagem_Troca_Total
+        FROM
+            #PRODUTO_GERAL                                                               AS ProdutoGeral
+            LEFT JOIN Produto                                                            AS Produto ON
+            Produto.Produto_ID = ProdutoGeral.Produto_ID
+        GROUP BY
+            Produto.Produto_ID,
+            Produto.Produto_CD,
+            Produto.Produto_DS
+        ORDER BY    
+            Produto.Produto_CD
+  
+    DROP TABLE #PRODUTO_GERAL
+ 
+END
+
+
+-------------------------------------------------------------------------------
+--                   VISÃO DO RELATÓRIO: VENDEDOR GERAL
+-------------------------------------------------------------------------------
+    
+ELSE IF @Tipo_Exibicao = 2
+BEGIN
+
+    CREATE TABLE #VENDEDOR_GERAL (
+        Usuario_Vendedor_ID      INT,
+        Lojas_ID                 INT,
+        Qtde_Vendas              INT,
+        Valor_Vendas             DECIMAL(10,2),
+        Qtde_Trocas              INT,
+        Valor_Trocas             DECIMAL(10,2)
+    )
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT
+    INTO #VENDEDOR_GERAL (Lojas_ID, Usuario_Vendedor_ID, Qtde_Vendas, Valor_Vendas, Qtde_Trocas, Valor_Trocas)
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_It_Qtde)                                                        AS Qtde_Trocas,
+        SUM(Rit.Romaneio_It_Qtde * ABS(Rit.Romaneio_It_Preco_Pago))                      AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_ID FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde)                                              AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde * ABS(Rit.Romaneio_Pre_Venda_It_Preco_Pago))  AS Valor_Trocas
+    FROM
+        Romaneio_Pre_Venda_CT Rct
+        INNER JOIN Romaneio_Pre_Venda_IT Rit ON
+        Rct.Romaneio_Pre_Venda_CT_ID = Rit.Romaneio_Pre_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Pre_Venda_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Pre_Venda_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago))          AS Valor_Trocas
+    FROM
+        Romaneio_Venda_CT  Rct
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.Romaneio_Pre_Venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.Romaneio_Pre_Venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = Rct.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio
+        AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+        AND Rct.Enum_Status_ID IN (@Enum_Status_Romaneio_Venda_Cancelado_ID)
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID
+
+------------------------------- CALCULA VENDAS --------------------------------
+
+    UNION
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        SUM(ISNULL(Romaneio_It_Qtde, 0))                                                 AS Qtde_Vendas,
+        SUM(ISNULL(Romaneio_It_Qtde, 0) * ISNULL(abs(Romaneio_It_Preco_Pago), 0))        AS Valor_Vendas,
+        0                                                                                AS Qtde_Trocas,
+        0                                                                                AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio
+        AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Venda_Tecnica
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Auto_Servico
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Especial)
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID
+
+-------------------------------- CALCULA TOTAL --------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM
+    #VENDEDOR_GERAL
+
+        SELECT
+            Lojas.Lojas_ID                                                               AS Lojas_ID,
+            Usuario.Nome_Completo                                                        AS Vendedor_Nome,
+            Lojas.Lojas_NM                                                               AS Loja_Nome,
+            SUM(Qtde_Vendas)                                                             AS Qtde_Vendas,
+            SUM(Valor_Vendas)                                                            AS Valor_Vendas,
+            SUM(Qtde_Trocas)                                                             AS Qtde_Trocas,
+            SUM(Valor_Trocas)                                                            AS Valor_Trocas,
+                CASE WHEN SUM(Qtde_Vendas) > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Vendas,
+                CASE WHEN @Qtde_Total_Troca > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Total
+            FROM
+                #VENDEDOR_GERAL                                                          AS VendedorGeral
+                LEFT JOIN vw_usuario Usuario ON
+                Usuario.Usuario_ID = VendedorGeral.Usuario_Vendedor_ID
+                LEFT JOIN PessoaFisica ON
+                PessoaFisica.PessoaFisica_ID = Usuario.Pessoa_ID
+                LEFT JOIN Lojas ON
+                Lojas.Lojas_ID = VendedorGeral.Lojas_ID
+            GROUP BY
+                PessoaFisica_CPF,
+                Lojas.Lojas_ID,
+                Usuario.Nome_Completo,
+                Lojas.Lojas_NM
+            ORDER BY
+                Usuario.Nome_Completo
+
+    DROP TABLE #VENDEDOR_GERAL
+
+END
+
+
+-------------------------------------------------------------------------------
+--                   VISÃO DO RELATÓRIO: PRODUTO POR LOJA
+-------------------------------------------------------------------------------
+
+ELSE IF @Tipo_Exibicao = 3
+BEGIN
+
+    CREATE TABLE #PRODUTO_LOJA (
+        Origem            INT,
+        Produto_ID        INT,
+        Lojas_ID          INT,
+        Qtde_Vendas       INT,
+        Valor_Vendas      DECIMAL(10,2),
+        Qtde_Trocas       INT,
+        Valor_Trocas      DECIMAL(10,2)
+    )
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT
+    INTO #PRODUTO_LOJA (
+        Origem,
+        Produto_ID,
+        Lojas_ID,
+        Qtde_Vendas,
+        Valor_Vendas,
+        Qtde_Trocas,
+        Valor_Trocas    
+    )
+
+    SELECT
+        1,
+        PC.Produto_ID,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_It_Qtde)                                                        AS Qtde_Trocas,
+        SUM(Rit.Romaneio_It_Qtde * ABS(Rit.Romaneio_It_Preco_Pago))                      AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_ID FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        RIT.Lojas_ID,
+        PC.Produto_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        2,
+        PC.Produto_ID,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde)                                              AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde * ABS(Rit.Romaneio_Pre_Venda_It_Preco_Pago))  AS Valor_Trocas
+    FROM
+        Romaneio_Pre_Venda_CT Rct
+        INNER JOIN Romaneio_Pre_Venda_IT Rit ON
+        Rct.Romaneio_Pre_Venda_CT_ID = Rit.Romaneio_Pre_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Pre_Venda_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Pre_Venda_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID,
+        PC.Produto_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        3,
+        PC.Produto_ID,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago))          AS Valor_Trocas
+    FROM
+        Romaneio_Venda_CT  Rct
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio
+        AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+        AND Rct.Enum_Status_ID IN (@Enum_Status_Romaneio_Venda_Cancelado_ID)
+    GROUP BY
+        RIT.Lojas_ID,
+        PC.Produto_ID
+
+------------------------------- CALCULA VENDAS --------------------------------
+
+    UNION
+
+    SELECT
+        4,
+        PC.Produto_ID,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        SUM(ISNULL(Romaneio_It_Qtde, 0))                                                 AS Qtde_Vendas,
+        SUM(ISNULL(Romaneio_It_Qtde, 0) * ISNULL(abs(Romaneio_It_Preco_Pago), 0))        AS Valor_Vendas,
+        0                                                                                AS Qtde_Trocas,
+        0                                                                                AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Venda_Tecnica
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Auto_Servico
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Especial)
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID,
+        PC.Produto_ID
+
+-------------------------------- CALCULA TOTAL --------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM
+    #PRODUTO_LOJA
+
+        SELECT
+            Produto_CD                                                                   AS Produto_CD,
+            Produto_DS                                                                   AS Produto_DS,
+            Lojas.Lojas_NM                                                               AS Loja_Nome,
+            SUM(Qtde_Vendas)                                                             AS Qtde_Vendas,
+            SUM(Valor_Vendas)                                                            AS Valor_Vendas,
+            SUM(Qtde_Trocas)                                                             AS Qtde_Trocas,
+            SUM(Valor_Trocas)                                                            AS Valor_Trocas,
+                CASE WHEN SUM(Qtde_Vendas) > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Vendas,
+                CASE WHEN @Qtde_Total_Troca > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Total
+        FROM
+            #PRODUTO_LOJA                                                                AS ProdutoLoja
+            LEFT JOIN Produto ON
+            Produto.Produto_ID = ProdutoLoja.Produto_ID
+            LEFT JOIN Lojas ON
+            Lojas.Lojas_Id = ProdutoLoja.Lojas_ID
+        GROUP BY
+            Produto.Produto_ID,
+            Lojas.Lojas_ID,
+            Lojas.Lojas_NM,
+            Produto_CD,
+            Produto_DS
+        ORDER BY
+            Produto.Produto_CD,
+            Lojas.Lojas_NM 
+    
+    DROP TABLE #PRODUTO_LOJA
+
+END
+
+
+-------------------------------------------------------------------------------
+--                VISÃO DO RELATÓRIO: PRODUTO POR VENDEDOR
+-------------------------------------------------------------------------------
+
+ELSE IF @Tipo_Exibicao = 4
+BEGIN
+
+    CREATE TABLE #PRODUTO_VENDEDOR (
+        Origem                          INT,
+        Usuario_Vendedor_ID             INT,
+        Produto_ID                      INT,
+        Lojas_ID                        INT,
+        Qtde_Vendas                     INT,
+        Valor_Vendas                    DECIMAL(10,2),
+        Qtde_Trocas                     INT,
+        Valor_Trocas                    DECIMAL(10,2)
+    )
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT INTO #PRODUTO_VENDEDOR (
+        Origem,
+        Lojas_ID,
+        Usuario_Vendedor_ID,
+        Produto_ID,
+        Qtde_Vendas,
+        Valor_Vendas,
+        Qtde_Trocas,
+        Valor_Trocas
+    )
+
+    SELECT
+        1,
+        RIT.Lojas_ID                                                                        AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                             AS Usuario_Vendedor_ID,
+        PC.Produto_ID                                                                       AS Produto_ID,
+        0                                                                                   AS Qtde_Vendas,
+        0                                                                                   AS Valor_Vendas,
+        SUM(Rit.Romaneio_It_Qtde)                                                           AS Qtde_Trocas,
+        SUM(Rit.Romaneio_It_Qtde * ABS(Rit.Romaneio_It_Preco_Pago))                         AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_Grupo Rgr ON
+        Rct.Romaneio_Grupo_ID  = Rgr.Romaneio_Grupo_ID
+        AND Rct.Lojas_ID  = Rgr.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE 
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID,
+        PC.Produto_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        2,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Produto_ID                                                                    AS Produto_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde)                                              AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde * ABS(Rit.Romaneio_Pre_Venda_It_Preco_Pago))  AS Valor_Trocas
+    FROM
+        Romaneio_Pre_Venda_CT Rct
+        INNER JOIN Romaneio_Pre_Venda_IT Rit ON
+        Rct.Romaneio_Pre_Venda_CT_ID = Rit.Romaneio_Pre_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Pre_Venda_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Pre_Venda_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID,
+        PC.Produto_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        3,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Produto_ID                                                                    AS Produto_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago))          AS Valor_Trocas
+    FROM
+        Romaneio_Venda_Ct  Rct
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+        AND Rct.Enum_Status_ID IN (@Enum_Status_Romaneio_Venda_Cancelado_ID)
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID,
+        PC.Produto_ID
+
+------------------------------- CALCULA VENDAS --------------------------------
+
+    UNION
+
+    SELECT
+        4,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Produto_ID                                                                    AS Produto_ID,
+        SUM(ISNULL(Romaneio_It_Qtde, 0))                                                 AS Qtde_Vendas,
+        SUM(ISNULL(Romaneio_It_Qtde, 0) * ISNULL(abs(Romaneio_It_Preco_Pago), 0))        AS Valor_Vendas,
+        0                                                                                AS Qtde_Trocas,
+        0                                                                                AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio
+        AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Venda_Tecnica
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Auto_Servico
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Especial)
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+    GROUP BY
+        RIT.Lojas_ID,
+        Rct.Usuario_Vendedor_ID,
+        PC.Produto_ID
+
+-------------------------------- CALCULA TOTAL --------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM
+    #PRODUTO_VENDEDOR
+
+        SELECT
+            Lojas.Lojas_ID                                                               AS Lojas_ID,
+            Produto.Produto_ID                                                           AS Produto_ID,
+            Produto.Produto_CD                                                           AS Produto_CD,
+            Produto.Produto_DS                                                           AS Produto_DS,
+            PessoaFisica.PessoaFisica_NM + ' ' + PessoaFisica.PessoaFisica_Sobrenome     AS Vendedor_Nome,
+            Lojas.Lojas_NM                                                               AS Loja_Nome,
+            SUM(Qtde_Vendas)                                                             AS Qtde_Vendas,
+            SUM(Valor_Vendas)                                                            AS Valor_Vendas,
+            SUM(Qtde_Trocas)                                                             AS Qtde_Trocas,
+            SUM(Valor_Trocas)                                                            AS Valor_Trocas,
+                CASE WHEN SUM(Qtde_Vendas) > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Vendas,
+                CASE WHEN @Qtde_Total_Troca > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Total
+        FROM
+            #PRODUTO_VENDEDOR ProdutoVendedor
+            INNER JOIN Usuario ON
+            Usuario.Usuario_ID = ProdutoVendedor.Usuario_Vendedor_ID
+            INNER JOIN PessoaFisica ON
+            PessoaFisica.PessoaFisica_ID = Usuario.Pessoa_ID
+            INNER JOIN Lojas ON
+            Lojas.Lojas_Id = ProdutoVendedor.Lojas_ID
+            LEFT JOIN Produto ON
+            Produto.Produto_ID = ProdutoVendedor.Produto_ID
+        GROUP BY
+            PessoaFisica_CPF,
+            Produto.Produto_ID,
+            Lojas.Lojas_ID,
+            PessoaFisica.PessoaFisica_NM,
+            PessoaFisica.PessoaFisica_Sobrenome,
+            Lojas.Lojas_NM,
+            Produto.Produto_CD,
+            Produto.Produto_DS
+            --HAVING
+            --SUM(Valor_Trocas) > 0
+        ORDER BY
+            Produto.Produto_CD,
+            Vendedor_Nome
+    
+    DROP TABLE #PRODUTO_VENDEDOR
+
+END
+
+-------------------------------------------------------------------------------
+--                VISÃO DO RELATÓRIO: PEÇA GERAL POR VENDEDOR
+-------------------------------------------------------------------------------
+
+
+ELSE IF @Tipo_Exibicao = 5
+BEGIN
+
+    CREATE TABLE #PECA_GERAL_VENDEDOR (
+        Origem                   INT,
+        Usuario_Vendedor_ID      INT,
+        Peca_ID                  INT,
+        Lojas_ID                 INT,
+        Qtde_Vendas              INT,
+        Valor_Vendas             DECIMAL(10,2),
+        Qtde_Trocas              INT,
+        Valor_Trocas             DECIMAL(10,2)
+    )
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT INTO #PECA_GERAL_VENDEDOR (
+        Origem,Lojas_ID,
+        Usuario_Vendedor_ID,
+        Peca_ID,
+        Qtde_Vendas,
+        Valor_Vendas,
+        Qtde_Trocas,
+        Valor_Trocas    
+    )
+
+    SELECT
+        1,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_It_Qtde)                                                        AS Qtde_Trocas,
+        SUM(Rit.Romaneio_It_Qtde * ABS(Rit.Romaneio_It_Preco_Pago))                      AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_ID FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        2,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde)                                              AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde * ABS(Rit.Romaneio_Pre_Venda_It_Preco_Pago))  AS Valor_Trocas
+    FROM
+        Romaneio_Pre_Venda_CT Rct
+        INNER JOIN Romaneio_Pre_Venda_IT Rit ON
+        Rct.Romaneio_Pre_Venda_CT_ID = Rit.Romaneio_Pre_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Pre_Venda_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Pre_Venda_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        3,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        0                                                                                AS Qtde_Vendas,
+        0                                                                                AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago))          AS Valor_Trocas
+    FROM
+        Romaneio_Venda_CT  Rct    
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+        AND Rct.Enum_Status_ID IN (@Enum_Status_Romaneio_Venda_Cancelado_ID)
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID
+
+------------------------------- CALCULA VENDAS --------------------------------
+
+    UNION
+
+    SELECT
+        4,
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        SUM(ISNULL(Romaneio_It_Qtde, 0))                                                 AS Qtde_Vendas,
+        SUM(ISNULL(Romaneio_It_Qtde, 0) * ISNULL(abs(Romaneio_It_Preco_Pago), 0))        AS Valor_Vendas,
+        0                                                                                AS Qtde_Trocas,
+        0                                                                                AS Valor_Trocas
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID AND Rct.Lojas_ID = Rit.Lojas_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Venda_Tecnica
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Auto_Servico
+        OR Rct.Enum_Romaneio_Tipo_ID = @Enum_Tipo_Romaneio_Especial)
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND (Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL)
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID
+
+-------------------------------- CALCULA TOTAL --------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM
+    #PECA_GERAL_VENDEDOR
+
+        SELECT
+            Lojas.Lojas_ID                                                               AS Lojas_ID,
+            VWPECA.Fabricante_CD                                                         AS Fabricante_CD,
+            VWPECA.Produto_CD                                                            AS Produto_CD,
+            VWPECA.Peca_CD                                                               AS Peca_CD,
+            PessoaFisica.PessoaFisica_NM + ' ' + PessoaFisica.PessoaFisica_Sobrenome     AS Vendedor_Nome,
+            Lojas.Lojas_NM                                                               AS Loja_Nome,
+            VWPECA.Peca_DSTecnica                                                        AS Peca_DSTecnica,
+            SUM(Qtde_Vendas)                                                             AS Qtde_Vendas,
+            SUM(Valor_Vendas)                                                            AS Valor_Vendas,
+            SUM(Qtde_Trocas)                                                             AS Qtde_Trocas,
+            SUM(Valor_Trocas)                                                            AS Valor_Trocas,
+                CASE WHEN SUM(Qtde_Vendas) > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Vendas,
+                CASE WHEN @Qtde_Total_Troca > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Total
+        FROM
+            #PECA_GERAL_VENDEDOR PecaGeralVendedor
+            INNER JOIN vw_Peca VWPECA ON
+            VWPECA.Peca_ID = PecaGeralVendedor.Peca_ID
+            INNER JOIN Lojas ON
+            Lojas.Lojas_Id = PecaGeralVendedor.Lojas_ID
+            INNER JOIN Usuario ON
+            Usuario.Usuario_ID = PecaGeralVendedor.Usuario_Vendedor_ID
+            INNER JOIN PessoaFisica ON
+            PessoaFisica.PessoaFisica_ID = Usuario.Pessoa_ID
+        GROUP BY
+            PessoaFisica_CPF,
+            VWPECA.Peca_ID,
+            Lojas.Lojas_ID,
+            PessoaFisica.PessoaFisica_NM,
+            PessoaFisica.PessoaFisica_Sobrenome,
+            Lojas.Lojas_NM,
+            VWPECA.Fabricante_CD,
+            VWPECA.Produto_CD,
+            VWPECA.Peca_CD,
+            VWPECA.Peca_DSTecnica
+        ORDER BY    
+            VWPECA.Fabricante_CD,
+            VWPECA.Produto_CD,
+            VWPECA.Peca_CD,
+            Vendedor_Nome
+
+    DROP TABLE #PECA_GERAL_VENDEDOR
+
+END
+
+
+-------------------------------------------------------------------------------
+--                VISÃO DO RELATÓRIO: PEÇA DETALHE POR VENDEDOR    
+-------------------------------------------------------------------------------
+
+ELSE IF @Tipo_Exibicao = 6
+BEGIN
+
+    CREATE TABLE #PECA_DETALHES_VENDEDOR (
+        Usuario_Vendedor_ID            INT,
+        Peca_ID                        INT,
+        Lojas_ID                       INT,
+        Romaneio_Venda                 INT,
+        Grupo_Romaneio_Venda           INT,
+        Data_Venda                     DATETIME,
+        Romaneio_Troca                 INT,
+        Grupo_Romaneio_Troca           INT,
+        Data_Troca                     DATETIME,
+        Motivo_Troca_ID                INT,
+        Status_Romaneio_Troca          VARCHAR(20),
+        Qtde_Vendas                    INT,
+        Valor_Vendas                   DECIMAL(10,2),
+        Qtde_Trocas                    INT,
+        Valor_Trocas                   DECIMAL(10,2),
+        Ano_Veiculo_Troca              CHAR(4),
+        Veiculo_DS                     VARCHAR(50)
+    )
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    INSERT INTO #PECA_DETALHES_VENDEDOR (
+        Lojas_ID,
+        Usuario_Vendedor_ID,
+        Peca_ID,
+        Romaneio_Venda,
+        Grupo_Romaneio_Venda,
+        Data_Venda,
+        Romaneio_Troca,
+        Grupo_Romaneio_Troca,
+        Data_Troca,
+        Motivo_Troca_ID,
+        Status_Romaneio_Troca,
+        Qtde_Vendas,
+        Valor_Vendas,
+        Qtde_Trocas,
+        Valor_Trocas,
+        Ano_Veiculo_Troca,
+        Veiculo_DS
+    )
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        RCT_Origem.Romaneio_Ct_ID                                                        AS Romaneio_Venda,
+        RCT_Origem.Romaneio_Grupo_ID                                                     AS Grupo_Romaneio_Venda,
+        Romaneio_Grupo_Origem.Romaneio_Grupo_Data_Liberacao                              AS Data_Venda,
+        Rct.Romaneio_Ct_ID                                                               AS Romaneio_Troca,
+        Rct.Romaneio_Grupo_ID                                                            AS Grupo_Romaneio_Troca,
+        Rct.Romaneio_Ct_Data_Geracao                                                     AS Data_Troca,
+        RJ.Enum_Justificativa_ID                                                         AS Motivo_Troca_ID,
+        'Créd. Usado'                                                                    AS Status_Romaneio_Troca,
+        RIT_VENDA.Qtde_Vendas                                                            AS Qtde_Vendas,
+        RIT_VENDA.Valor_Vendas                                                           AS Valor_Vendas,
+        SUM(Rit.Romaneio_It_Qtde)                                                        AS Qtde_Trocas,
+        SUM(Rit.Romaneio_It_Qtde * ABS(Rit.Romaneio_It_Preco_Pago))                      AS Valor_Trocas,
+        ISNULL(Romaneio_Venda_CT_Ano_Veiculo_Troca,'')                                   AS Ano_Veiculo_Troca,
+        ISNULL(Veiculo.Veiculo_DS, '') + ' (' + Montadora.Montadora_NmFantasia + ')'     AS Veiculo_DS    
+    FROM
+        Romaneio_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN romaneio_venda_CT ON
+        romaneio_venda_CT.romaneio_pre_venda_CT_ID = Rct.romaneio_pre_venda_CT_ID
+        AND romaneio_venda_CT.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Veiculo ON
+        Veiculo.Veiculo_ID = romaneio_venda_CT.Veiculo_Troca_ID
+        LEFT JOIN Montadora ON
+        Montadora.Montadora_ID = Veiculo.Montadora_ID
+        LEFT JOIN Romaneio_Venda_Origem RVO ON
+        RVO.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RVO.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Romaneio_Ct RCT_Origem ON
+        RCT_Origem.Romaneio_Ct_ID = RVO.Romaneio_Venda_Origem_Pre_Venda_CT_ID
+        AND RCT_Origem.Lojas_ID = RVO.Lojas_ID
+        LEFT JOIN Romaneio_Grupo Romaneio_Grupo_Origem ON
+        Romaneio_Grupo_Origem.Romaneio_Grupo_ID = RCT_Origem.Romaneio_Grupo_ID
+        AND Romaneio_Grupo_Origem.Lojas_ID = RVO.Lojas_ID
+        INNER JOIN Romaneio_IT Rit ON
+        Rct.Romaneio_CT_ID = Rit.Romaneio_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        LEFT JOIN (
+            SELECT
+                Romaneio_Ct_ID,
+                Objeto_ID                                                                AS Peca_ID,
+                Lojas_ID                                                                 AS Lojas_ID,
+                SUM(Romaneio_It_Qtde)                                                    AS Qtde_Vendas,
+                SUM(Romaneio_It_Qtde * ABS(Romaneio_It_Preco_Pago))                      AS Valor_Vendas
+            FROM
+                Romaneio_IT
+            GROUP BY
+                Objeto_ID,
+                Lojas_ID,
+                Romaneio_CT_ID
+        ) AS RIT_VENDA ON
+        RIT_VENDA.Romaneio_Ct_ID = RCT_Origem.Romaneio_CT_ID
+        AND RIT_VENDA.Lojas_ID = RCT_Origem.Lojas_ID
+        AND RIT_VENDA.Peca_ID = Rit.Objeto_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar                                        AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+    WHERE
+        (Rct.Romaneio_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Enum_Romaneio_Status_ID = @Enum_Status_Romaneio_Venda_Liberado)
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID,
+        RCT_Origem.Romaneio_Ct_ID,
+        RCT_Origem.Romaneio_Grupo_ID,
+        Romaneio_Grupo_Origem.Romaneio_Grupo_Data_Liberacao,
+        Rct.Romaneio_Ct_ID,
+        Rct.Romaneio_Grupo_ID,
+        Rct.Romaneio_Ct_Data_Geracao,
+        RJ.Enum_Justificativa_ID,
+        RIT_VENDA.Qtde_Vendas,
+        RIT_VENDA.Valor_Vendas,
+        Rct.Enum_Romaneio_Status_ID,
+        Romaneio_Venda_CT_Ano_Veiculo_Troca,
+        Veiculo.Veiculo_DS,
+        Montadora.Montadora_NmFantasia
+    
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        RCT_Origem.Romaneio_Ct_ID                                                        AS Romaneio_Venda,
+        RCT_Origem.Romaneio_Grupo_ID                                                     AS Grupo_Romaneio_Venda,
+        Romaneio_Grupo_Origem.Romaneio_Grupo_Data_Liberacao                              AS Data_Venda,
+        Rct.Romaneio_Pre_Venda_CT_ID                                                     AS Romaneio_Troca,
+        0                                                                                AS Grupo_Romaneio_Troca,
+        Rct.Romaneio_Pre_Venda_Ct_Data_Geracao                                           AS Data_Troca,
+        RJ.Enum_Justificativa_ID                                                         AS Motivo_Troca_ID,
+        'Créd. Pendente'                                                                 AS Status_Romaneio_Troca,
+        RIT_VENDA.Qtde_Vendas                                                            AS Qtde_Vendas,
+        RIT_VENDA.Valor_Vendas                                                           AS Valor_Vendas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde)                                              AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Pre_Venda_It_Qtde * ABS(Rit.Romaneio_Pre_Venda_It_Preco_Pago))  AS Valor_Trocas,
+        ISNULL(Romaneio_Venda_CT_Ano_Veiculo_Troca,'')                                   AS Ano_Veiculo_Troca,
+        ISNULL(Veiculo.Veiculo_DS, '') + ' (' + Montadora.Montadora_NmFantasia + ')'     AS Veiculo_DS    
+    FROM
+        Romaneio_Pre_Venda_CT Rct
+        INNER JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN romaneio_venda_CT ON
+        romaneio_venda_CT.romaneio_pre_venda_CT_ID = Rct.romaneio_pre_venda_CT_ID
+        AND romaneio_venda_CT.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Veiculo ON
+        Veiculo.Veiculo_ID = romaneio_venda_CT.Veiculo_Troca_ID
+        LEFT JOIN Montadora ON
+        Montadora.Montadora_ID = Veiculo.Montadora_ID
+        LEFT JOIN Romaneio_Venda_Origem RVO ON
+        RVO.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RVO.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Romaneio_Ct RCT_Origem ON
+        RCT_Origem.Romaneio_Ct_ID = RVO.Romaneio_Venda_Origem_Pre_Venda_CT_ID
+        AND RCT_Origem.Lojas_ID = RVO.Lojas_ID
+        LEFT JOIN Romaneio_Grupo Romaneio_Grupo_Origem ON
+        Romaneio_Grupo_Origem.Romaneio_Grupo_ID = RCT_Origem.Romaneio_Grupo_ID
+        AND Romaneio_Grupo_Origem.Lojas_ID = RVO.Lojas_ID
+        INNER JOIN Romaneio_Pre_Venda_IT Rit ON
+        Rct.Romaneio_Pre_Venda_CT_ID = Rit.Romaneio_Pre_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        LEFT JOIN (
+            SELECT
+                Romaneio_Ct_ID,
+                Objeto_ID                                                                AS Peca_ID,
+                Lojas_ID                                                                 AS Lojas_ID,
+                SUM(Romaneio_It_Qtde)                                                    AS Qtde_Vendas,
+                SUM(Romaneio_It_Qtde * ABS(Romaneio_It_Preco_Pago))                      AS Valor_Vendas
+            FROM
+                Romaneio_IT
+            GROUP BY
+                Objeto_ID,
+                Lojas_ID,
+                Romaneio_CT_ID
+        ) AS RIT_VENDA ON
+        RIT_VENDA.Romaneio_Ct_ID = RCT_Origem.Romaneio_CT_ID
+        AND RIT_VENDA.Lojas_ID = RCT_Origem.Lojas_ID
+        AND RIT_VENDA.Peca_ID = Rit.Objeto_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Pre_Venda_Ct_Data_Geracao >= @DataInicio AND Rct.Romaneio_Pre_Venda_Ct_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Romaneio_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID,
+        RCT_Origem.Romaneio_Ct_ID,
+        RCT_Origem.Romaneio_Grupo_ID,
+        Romaneio_Grupo_Origem.Romaneio_Grupo_Data_Liberacao,
+        Rct.Romaneio_Pre_Venda_Ct_ID,
+        Rct.Romaneio_Pre_Venda_Ct_Data_Geracao,
+        RJ.Enum_Justificativa_ID,
+        RIT_VENDA.Qtde_Vendas,
+        RIT_VENDA.Valor_Vendas,
+        Rct.Enum_Romaneio_Status_ID,
+        Romaneio_Venda_CT_Ano_Veiculo_Troca,
+        Veiculo.Veiculo_DS,
+        Montadora.Montadora_NmFantasia    
+
+------------------------------- CALCULA TROCAS --------------------------------
+
+    UNION
+
+    SELECT
+        RIT.Lojas_ID                                                                     AS Lojas_ID,
+        Rct.Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+        PC.Peca_ID                                                                       AS Peca_ID,
+        RCT_Origem.Romaneio_Ct_ID                                                        AS Romaneio_Venda,
+        RCT_Origem.Romaneio_Grupo_ID                                                     AS Grupo_Romaneio_Venda,
+        Romaneio_Grupo_Origem.Romaneio_Grupo_Data_Liberacao                              AS Data_Venda,
+        Rct.Romaneio_Pre_Venda_Ct_ID                                                     AS Romaneio_Troca,
+        0                                                                                AS Grupo_Romaneio_Troca,
+        Rct.Romaneio_Venda_CT_Data_Geracao                                               AS Data_Troca,
+        RJ.Enum_Justificativa_ID                                                         AS Motivo_Troca_ID,
+        'Créd. Cancelado'                                                                AS Status_Romaneio_Troca,
+        RIT_VENDA.Qtde_Vendas                                                            AS Qtde_Vendas,
+        RIT_VENDA.Valor_Vendas                                                           AS Valor_Vendas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde)                                                  AS Qtde_Trocas,
+        SUM(Rit.Romaneio_Venda_IT_Qtde * ABS(Rit.Romaneio_Venda_IT_Preco_Pago ))         AS Valor_Trocas,
+        ISNULL(Rct.Romaneio_Venda_CT_Ano_Veiculo_Troca,'')                               AS Ano_Veiculo_Troca,
+        ISNULL(Veiculo.Veiculo_DS, '') + ' (' + Montadora.Montadora_NmFantasia + ')'     AS Veiculo_DS
+    FROM
+        Romaneio_Venda_CT  Rct
+        INNER JOIN Romaneio_Venda_IT Rit ON
+        Rct.Romaneio_Venda_CT_ID = Rit.Romaneio_Venda_CT_ID
+        AND Rct.Lojas_ID = Rit.Lojas_ID
+        LEFT JOIN romaneio_venda_CT ON
+        romaneio_venda_CT.romaneio_pre_venda_CT_ID = Rct.romaneio_pre_venda_CT_ID
+        AND romaneio_venda_CT.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Veiculo ON
+        Veiculo.Veiculo_ID = romaneio_venda_CT.Veiculo_Troca_ID
+        LEFT JOIN Montadora ON
+        Montadora.Montadora_ID = Veiculo.Montadora_ID
+        LEFT JOIN Romaneio_Justificativa RJ ON
+        RJ.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RJ.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Romaneio_Venda_Origem RVO ON
+        RVO.Romaneio_Pre_Venda_Ct_ID = Rct.romaneio_pre_venda_CT_ID
+        AND RVO.Lojas_ID = Rct.Lojas_ID
+        LEFT JOIN Romaneio_Ct RCT_Origem ON
+        RCT_Origem.Romaneio_Ct_ID = RVO.Romaneio_Venda_Origem_Pre_Venda_CT_ID
+        AND RCT_Origem.Lojas_ID = RVO.Lojas_ID
+        LEFT JOIN Romaneio_Grupo Romaneio_Grupo_Origem ON
+        Romaneio_Grupo_Origem.Romaneio_Grupo_ID = RCT_Origem.Romaneio_Grupo_ID
+        AND Romaneio_Grupo_Origem.Lojas_ID = RVO.Lojas_ID
+        LEFT JOIN (
+            SELECT
+                Romaneio_Ct_ID,
+                Objeto_ID                                                                AS Peca_ID,
+                Lojas_ID                                                                 AS Lojas_ID,
+                SUM(Romaneio_It_Qtde)                                                    AS Qtde_Vendas,
+                SUM(Romaneio_It_Qtde * ABS(Romaneio_It_Preco_Pago))                      AS Valor_Vendas
+            FROM
+                Romaneio_IT
+            GROUP BY
+                Objeto_ID,
+                Lojas_ID,
+                Romaneio_CT_ID
+        ) AS RIT_VENDA ON
+        RIT_VENDA.Romaneio_Ct_ID = RCT_Origem.Romaneio_CT_ID
+        AND RIT_VENDA.Lojas_ID = RCT_Origem.Lojas_ID
+        AND RIT_VENDA.Peca_ID = Rit.Objeto_ID
+        INNER JOIN Peca PC ON
+        Rit.Objeto_ID = PC.Peca_ID
+        AND Rit.Enum_Objeto_Tipo_ID = @Enum_Objeto_Tipo_Peca
+        LEFT JOIN Peca_Desconsiderar Peca_Desconsiderar ON
+        PC.Peca_ID = Peca_Desconsiderar.Peca_ID
+        LEFT JOIN #Clientes_Consumo_Desconsiderar AS Cliente_Consumo_Desconsiderar ON
+        Cliente_Consumo_Desconsiderar.Cliente_ID = Rct.Cliente_ID
+        LEFT JOIN Romaneio_Ct ON
+        Romaneio_Ct.Romaneio_Pre_Venda_Ct_ID = Rct.Romaneio_Pre_Venda_CT_ID
+        AND Romaneio_Ct.Lojas_ID = RCT.Lojas_ID
+    WHERE
+        (Rct.Romaneio_Venda_CT_Data_Geracao >= @DataInicio AND Rct.Romaneio_Venda_CT_Data_Geracao < @DataFimPeriodo )
+        AND (Rct.Lojas_ID IN (SELECT Enum_Id FROM @Lojas_ID))
+        AND (RJ.Enum_Justificativa_ID IN (SELECT Enum_ID FROM @Motivos_Troca_ID))
+        AND (Rct.Enum_Tipo_ID IN (@Enum_Tipo_Romaneio_Troca, @Enum_Tipo_Romaneio_Estorno, @Enum_Tipo_Romaneio_Resta))
+        AND (Rct.Usuario_Vendedor_ID = @Usuario_Vendedor_ID OR @Usuario_Vendedor_ID IS NULL)
+        AND (PC.Enum_Setor_ID = @Setor_ID OR @Setor_ID IS NULL)
+        AND (PC.Fabricante_ID = @Fabricante_ID OR @Fabricante_ID IS NULL)
+        AND (PC.Produto_ID = @Produto_ID OR @Produto_ID IS NULL)
+        AND (PC.Peca_ID = @Peca_ID OR @Peca_ID IS NULL)
+        AND (PC.Peca_ID IS NOT NULL)
+        AND (Peca_Desconsiderar.Peca_ID IS NULL)
+        AND Cliente_Consumo_Desconsiderar.Cliente_ID IS NULL
+        AND (Romaneio_Ct.Romaneio_Ct_ID IS NULL)
+        AND Rct.Enum_Status_ID IN (@Enum_Status_Romaneio_Venda_Cancelado_ID)
+    GROUP BY
+        Rct.Usuario_Vendedor_ID,
+        PC.Peca_ID,
+        RIT.Lojas_ID,
+        RCT_Origem.Romaneio_Ct_ID,
+        RCT_Origem.Romaneio_Grupo_ID,
+        Romaneio_Grupo_Origem.Romaneio_Grupo_Data_Liberacao,
+        Rct.Romaneio_Pre_Venda_Ct_ID,
+        Rct.Romaneio_Venda_CT_Data_Geracao,
+        RJ.Enum_Justificativa_ID,
+        RIT_VENDA.Qtde_Vendas,
+        RIT_VENDA.Valor_Vendas,
+        Rct.Enum_Status_ID,
+        RCT.Romaneio_Venda_CT_Ano_Veiculo_Troca,
+        Veiculo.Veiculo_DS,
+        Montadora.Montadora_NmFantasia
+
+-------------------------------- CALCULA TOTAL --------------------------------
+
+    SELECT
+    @Qtde_Total_Troca = SUM(Qtde_Trocas)
+    FROM
+    #PECA_DETALHES_VENDEDOR
+
+        SELECT
+            Lojas.Lojas_ID                                                               AS Lojas_ID,
+            Usuario_Vendedor_ID                                                          AS Usuario_Vendedor_ID,
+            VWPECA.Peca_ID                                                               AS Peca_ID,
+            VWPECA.Fabricante_CD                                                         AS Fabricante_CD,
+            VWPECA.Produto_CD                                                            AS Produto_CD,
+            VWPECA.Peca_CD                                                               AS Peca_CD,
+            VWPECA.Peca_DSTecnica                                                        AS Peca_DSTecnica,
+            PessoaFisica.PessoaFisica_NM + ' ' + PessoaFisica.PessoaFisica_Sobrenome     AS Vendedor_Nome,
+            Lojas.Lojas_NM                                                               AS Loja_Nome,
+            EnumeradoSetorAndar.Enum_Extenso                                             AS Setor_Andar,
+            ISNULL(Romaneio_Venda,0)                                                     AS Romaneio_Venda,
+            ISNULL(Grupo_Romaneio_Venda,0)                                               AS Grupo_Romaneio_Venda,
+            Data_Venda                                                                   AS Data_Venda,
+            Romaneio_Troca                                                               AS Romaneio_Troca,
+            Grupo_Romaneio_Troca                                                         AS Grupo_Romaneio_Troca,
+            Data_Troca                                                                   AS Data_Troca,
+            EnumeradoMotivoTroca.Enum_Extenso                                            AS Motivo_Troca,
+            Romaneio_Justificativa.Romaneio_Justificativa_Texto                          AS Observacao,
+            Status_Romaneio_Troca                                                        AS Status_Romaneio_Troca,
+            SUM(ISNULL(Qtde_Vendas,0))                                                   AS Qtde_Vendas,
+            SUM(ISNULL(Valor_Vendas,0))                                                  AS Valor_Vendas,
+            SUM(Qtde_Trocas)                                                             AS Qtde_Trocas,
+            SUM(Valor_Trocas)                                                            AS Valor_Trocas,
+                CASE WHEN SUM(Qtde_Vendas) > 0 THEN 
+                (SUM(Qtde_Trocas) *100.00) / SUM(Qtde_Vendas)
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Vendas,
+                CASE WHEN @Qtde_Total_Troca > 0 THEN
+                (SUM(Qtde_Trocas) *100.00) / @Qtde_Total_Troca
+                ELSE
+                (SUM(Qtde_Trocas) *100.00)
+                END                                                                      AS Porcentagem_Troca_Total,
+            Ano_Veiculo_Troca                                                            AS Ano_Veiculo_Troca,
+            Veiculo_DS                                                                   AS Veiculo_DS
+        FROM
+            #PECA_DETALHES_VENDEDOR PecaDetalhesVendedor
+            INNER JOIN Usuario ON
+            Usuario.Usuario_ID = PecaDetalhesVendedor.Usuario_Vendedor_ID
+            INNER JOIN PessoaFisica ON
+            PessoaFisica.PessoaFisica_ID = Usuario.Pessoa_ID
+            INNER JOIN Lojas ON
+            Lojas.Lojas_Id = PecaDetalhesVendedor.Lojas_ID
+            INNER JOIN vw_Peca VWPECA ON
+            VWPECA.Peca_ID = PecaDetalhesVendedor.Peca_ID
+            INNER JOIN Enumerado EnumeradoMotivoTroca ON
+            EnumeradoMotivoTroca.Enum_ID = PecaDetalhesVendedor.Motivo_Troca_ID
+            INNER JOIN Enumerado EnumeradoSetorAndar ON
+            EnumeradoSetorAndar.Enum_ID = VWPECA.Enum_Setor_ID
+            LEFT OUTER JOIN Romaneio_Justificativa ON
+            PecaDetalhesVendedor.Romaneio_Troca = Romaneio_Justificativa.Romaneio_Pre_Venda_CT_ID
+            AND PecaDetalhesVendedor.Lojas_ID = Romaneio_Justificativa.Lojas_ID
+        GROUP BY
+            Usuario_Vendedor_ID,
+            VWPECA.Peca_ID,
+            Lojas.Lojas_ID,
+            Romaneio_Venda,
+            Grupo_Romaneio_Venda,
+            Data_Venda,
+            Romaneio_Troca,
+            Grupo_Romaneio_Troca,
+            Data_Troca,
+            Motivo_Troca_ID,
+            Romaneio_Justificativa.Romaneio_Justificativa_Texto,
+            Status_Romaneio_Troca,
+            PessoaFisica.PessoaFisica_NM,
+            PessoaFisica.PessoaFisica_Sobrenome,
+            Lojas.Lojas_NM,
+            VWPECA.Fabricante_CD,
+            VWPECA.Produto_CD,
+            VWPECA.Peca_CD,
+            VWPECA.Peca_DSTecnica,
+            EnumeradoMotivoTroca.Enum_Extenso,
+            EnumeradoSetorAndar.Enum_Extenso,
+            Ano_Veiculo_Troca,
+            Veiculo_DS
+        HAVING
+            SUM(Valor_Trocas) > 0
+        ORDER BY
+            VWPECA.Fabricante_CD,
+            VWPECA.Produto_CD,
+            VWPECA.Peca_CD,
+            Vendedor_Nome
+  
+    DROP TABLE #PECA_DETALHES_VENDEDOR
+
+END
+
+DROP TABLE #Clientes_Consumo_Desconsiderar
+
+SET NOCOUNT OFF

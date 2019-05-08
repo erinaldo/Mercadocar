@@ -1,0 +1,457 @@
+### PROCEDIMENTOS PARA CHAMADOS
+
+01. Supravisio - buscar na Fila Desenvolvimento no subprocesso PROBLEMA e assumir responsabilidade;
+02. TFS - Adicionar History na Sprint atual (Features > Chamado - SP n.o);
+03. TFS - Assumir a History (combox);
+04. Realizar procedimento no card do TFS em http://intranet:9666/thread/nº chamado-texto-do-chamado/
+05. Analisar o problema (TFS Chamados : 25 - Em Análise);
+06. Implementar solução (TFS Chamados : 35 - Em Desenvolvimento);
+07. Se código acessar D: > SC > Mercadocar v1 > SIM > Front-SIM;
+08. Se relatótio usar o Source Controle Explorer (sp01sv078/DefaultCollection/Default/ReportingServicesVS2017)
+08. Se PROC criar com sufixo no MCAR_CHAMADO
+09. Se código sincronizar a ultima versão (Solution Explorer > Get Latest Version);
+10. Se código Shelve no SIM (colapsar os "regions" e Commit).
+11. No Supravizio preencher o QUESTIONÁRIO;
+12. Revisar implementação (TFS Chamados : 40 - Aguardando Code Review);
+13. Criar PROC com sufixo no MCAR_Desenvolvimento;
+14. Se PROC verificar (Code Review) com o Emerson ou Elifas
+15. Se código No Team Explorer > Pending Changes > Actions > Find Shelvesets (minhas alterações)
+16. Se Código: revisão com Bruno, Mukuno ou Netto
+17. Clicar com o direito do mouse e escolher "Request Review"
+18. Preencher o nome (Enter the name of a reviewer)
+19. Enviar para análise (TFS Chamados : 43 - Em Code Review);
+20. Realiza novo Shelve do atual chamado se preciso refatorar;
+21. Cadastro de Planos de Migracao (acessar como adm em V:\Liberar_Versao_SIM);
+22. Preencher Título, Servidor (inclusive os de PROCs) e Confirmar;
+23. Editar a aba referente ("Formulário", "Proc", etc) buscar a tela, Incluir, Confirmar e Sair;
+24. No Supravizio avançar para HOMOLOGAÇÃO (Code Review - PROC não é necessário "homologação de código" e "homologação de banco");
+25. Compila e zip da pasta compilação;
+26. Colocar na rede (\\sp01sv078\BUILDS\Chamados e ST's) com pasta na nomeclatura "Chamado n.OS";
+27. Combinar com o QA que a PROC com sufixo deve subscrever a original em MCAR_Chamados;
+28. No Supravizio selecionar o Procedimento;
+29. No Supravizio copiar e colar o link no TFS da história (Link do TFS);
+30. No Supravizio avançar até AGUARDANDO TESTE (NÃO Retomar Responsabilidade);
+31. Salvar (pode ocorrer um direcionamento - só retornar a tela);
+32. Liberar QA (TFS Chamados : 45 - Liberação para QA);
+33. Aguardar Testes (50 - Aguardando Testes);
+34. Receber email solicitando Checkin do Fernando
+35. Checkin nas alterações
+36. Se PROC renomear nas bases MCAR_Desenvolvimento e MCAR_Procs
+37. Se Report Service restaurar alterações
+38. Se código no Visual Studio realizar o UNDO
+39. Atualizar o código
+40. Seleciona o Chamado e Unshelve
+41. Compila (Clear e Build)
+42. Seleciona o arquivo no Soluction Explorer e com o direito Checkin
+43. Conferir se os arquivos correspondem às alterações
+44. Digitar a msg do commit (n.o OS e Descrição do email)
+45. Realizar o Checkin e aceitar na msg
+46. Responder ao email do Fernando informando quando se tratar de PROC
+
+
+OBSERVAÇÃO:
+
+TFS > Work > Queries > Formularios X Casos de Testes
+
+Se abrir um Chamado: Supravisio > Chamado > Encaminhar > Fila Desenvolvimento
+
+
+TESTE
+
+codigo mercadocar: 3 seções, sendo 1 - Produto, 2- fabricante, 3 - peça (0079-0015-0015 ou 0079-0015-0001)
+
+Visa
+Cartão: 4532606191622367
+Vencimento: 0220
+Código:     880
+
+
+Mastercard:
+5414154367806316
+Vencimento: 0420
+Código: 674
+
+
+
+
+Servidor padrão: SP01SV078
+Usuário: Qualidade1 (* vários);
+Usuário Novo MDI: Qualidade5
+Senha: 123456
+
+Demais servidores: login e senha do usuário
+- MCAR_Desenvolvimento é usado para PRODUÇÃO;
+- O BD SP01SV078/MCAR_Desenvolvimento possui as procedures em PRODUÇÃO;
+- Toda alteração deve-se ser implementada em uma cópia com sufixo do Chamado no BD MCAR_SUPORTE;
+- Após validação do QA deve ser implementada na Produção;
+
+- Executar a PROC por:
+
+================================================================================
+
+TESTE DATEDIF
+
+--USE [MCAR_SUPORTE]
+--GO
+SET STATISTICS TIME ON
+SET STATISTICS IO ON
+
+DECLARE	@return_value int
+
+EXEC	@return_value = [dbo].[p_Compras_Consultar_Itens_Comprados_Fabricantes_Rps_CHAMADO_164004]
+--EXEC	@return_value = [dbo].[p_Compras_Consultar_Itens_Comprados_Fabricantes_Rps]
+		@DataInicial = '2019/01/01',
+		@DataFinal = '2019/01/30',
+		@Fabricante = '0474'
+
+SET STATISTICS IO OFF
+SET STATISTICS TIME OFF
+
+--SELECT	'Return Value' = @return_value
+--GO
+
+================================================================================
+CHAMADO 164004 - Itens comprados por fabricante só carrega 1 ano 
+- Problema detectado pelo incidente 163628
+================================================================================
+
+### TFS ###
+
+Formulários afetados:
+frmItens_Comprados_Por_Fabricante_Rps
+p_Compras_Consultar_Itens_Comprados_Fabricantes_Rps
+
+Objetivo:
+Estender o período de pesquisa das datas Inicial e Final, pois atualmente retorna apenas o período de 1 ano.
+
+Menu da Tela:
+Menu > Compras > Itens Comprados por Fabricante;
+
+Situação Atual:
+As informações dos Itens Comprados por Fabricante permanecem disponíveis por um período de 1 ano, 
+mas existe a necessidade que este período seja estendido.
+
+Cenário Proposto:
+
+================================================================================
+
+### SUPRAVISIO ###
+
+Qual é a origem do problema?
+As informações dos Itens Comprados por Fabricante permanecem disponíveis por um período de 1 ano, mas existe a necessidade que este período seja estendido.
+
+Qual foi a solução implementada?
+A consulta abrange resultados do Banco de Dados DW (repositório de dados antigos) para atender a necessidade da extensão do período.
+
+Qual a situação do sistema após a implantação?
+A consulta retornará os dados nos períodos necessários, exigindo um tempo maior para sua finalização quando se tratar de dados anteriores a 1 ano.
+
+================================================================================
+
+### OBSERVAÇÕES ###
+
+As informações de pedido_compra_it só ficam no MCAR_Net por 1 ano, depois vai pra dw, com isso a tela só retorna 
+1 ano de informações na PROC dbo.p_Compras_Consultar_Itens_Comprados_Fabricantes_Rps
+
+Sugestão do Mineiro (20/02): 
+- dbo.vw.Pedido_Compra_IT retorna MCAR_Net e MACAR_DW (verificar performance)
+- condição para verificar a Data Inicial e, caso exceda o período de 1 ano, realizar a consulta na MCAR_DW
+
+Servidor: SP01SV078 / MCAR_Suporte
+Banco: MCAR_DW e MCAR_Suporte
+sp_help: retorna o conteudo de uma tabela (?)
+
+Impedimentos:
+- Restore da Base de Produção e DW (19/02 - Gustavo/Elifas)
+- Acesso ao DB MCAR_DW (ok)
+
+Teste Fabricante (Tramontina Garibaldi): 0474
+
+Perfomance:
+Atual: 0:14;
+Solução: 0:30;
+
+================================================================================
+
+Tabelas:
+
+Select Distinct:
+- Recebimento_CT
+
+Inner Join:
+- Recebimento_CT (Recebimento_CT_ID)
+- Pre_Recebimento_IT (Pre_Recebimento_IT_ID)
+- Pedido_Compra_IT (Pedido_Compra_CT_ID)
+
+And:
+Pedido_Compra_IT (Peca_ID) = Pre_Recebimento_IT (Objeto_Origem_ID)
+
+Left Outer Join:
+- Peca_Codigo_Fornecedor (Peca_Codigo_Fornecedor_ID)
+- Fornecedor (Forn_ID)
+
+Inner Join:
+- vw_Peca (Peca_ID)
+
+Left Join:
+- Fornecedor (Forn_ID)
+- PessoaJuridica (PessoaJuridica_ID)
+- NFe_Entrada_XML (NFe_Entrada_XML_ID)
+
+Where
+
+Union All
+
+Tabelas:
+
+Select Distinct:
+- Recebimento_CT
+
+Inner Join:
+- Recebimento_CT (Recebimento_CT_ID)
+- Recebimento_IT_Pedido_IT (Recebimento_IT_ID)
+- Pedido_Compra_IT (Pedido_Compra_CT_ID)
+
+And:
+Pedido_Compra_IT (Peca_ID) = Recebimento_IT (Peca_ID)
+
+Left Outer Join:
+- Peca_Codigo_Fornecedor (Peca_Codigo_Fornecedor_ID)
+- Fornecedor (Forn_ID)
+
+Inner Join:
+- vw_Peca (Peca_ID)
+
+Left Join:
+- Fornecedor (Forn_ID)
+- PessoaJuridica (PessoaJuridica_ID)
+- NFe_Entrada_XML (NFe_Entrada_XML_ID)
+
+Where
+
+Order By:
+- vw_Peca (Fabricante_CD)
+- vw_Peca (Produto_CD)
+- vw_Peca (Peca_CD)
+
+================================================================================
+
+SELECT TOP 200       
+ Pedido_Compra_IT_ID,  
+ Pedido_Compra_CT_ID,  
+ Peca_ID,  
+ Peca_Embalagem_Compra_ID,  
+ Peca_Conv_ID,  
+ Pedido_Compra_IT_Sequencia,  
+ Pedido_Compra_IT_Quantidade,  
+ Pedido_Compra_IT_Qtde_Recebida,  
+ Pedido_Compra_IT_Custo_Compra,  
+ Pedido_Compra_IT_Custo_Unitario,  
+ Pedido_Compra_IT_Custo_Efetivo,  
+ Pedido_Compra_IT_Desconto,  
+ Pedido_Compra_IT_Imposto,  
+ Pedido_Compra_IT_ICMS,  
+ Pedido_Compra_IT_Substituicao,  
+ Pedido_Compra_IT_Considerar_IPI,  
+ Usuario_Ultima_Alteracao_ID,  
+ Usuario_Transacao,  
+ Pedido_Compra_IT_Remover_Impostos,  
+ Peca_Codigo_Fornecedor_ID,  
+ Pedido_Compra_IT_Enviar_Totalmente_Lojas  
+FROM  
+ MCAR_DW.dbo.Pedido_Compra_IT
+
+-- MCAR_Desenvolvimento.dbo.vw_Pedido_Compra_IT
+--WHERE 
+-- Pedido_Compra_IT_ID LIKE '1396%'
+
+================================================================================
+
+'SELECT DISTINCT 
+    pj.PessoaJuridica_NmFantasia AS Nome_Fabricante, 
+	Recebimento_CT.Recebimento_CT_Numero_Nota_Fiscal AS Nota_Fiscal, 
+    FORMAT(Recebimento_CT.Recebimento_CT_Data_Emissao, ''dd/MM/yyyy'') AS Data_Emissao, 
+	vw_Peca.Fabricante_CD AS Fabricante_CD, 
+	vw_Peca.Produto_CD AS Produto_CD, 
+	vw_Peca.Peca_CD AS Peca_CD, 
+    CASE WHEN ISNULL(vw_Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID,0) = 0 THEN Peca_CDFabricante ELSE Peca_Codigo_Fornecedor_Codigo END AS Item_Fabricante, 
+    CASE WHEN ISNULL(vw_Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID,0) = 0 THEN '''' ELSE Alternativo.Forn_CD END AS Alternativo, 
+    vw_Peca.Produto_DsResum + '' '' + vw_Peca.Peca_DSTecnica AS Descricao_Peca, 
+	Recebimento_IT.Recebimento_IT_Qtde_Total AS Qtde,
+	CONVERT(Decimal(18, 2), Recebimento_IT.Recebimento_IT_Custo_Unitario) AS Custo,
+	NFe_Entrada_XML.NFe_Entrada_XML_Chave_Acesso AS ChaveNFe
+FROM 
+	Recebimento_CT 
+INNER JOIN Recebimento_IT ON 
+	Recebimento_CT.Recebimento_CT_ID = Recebimento_IT.Recebimento_CT_ID 
+INNER JOIN Pre_Recebimento_IT ON
+	Pre_Recebimento_IT.Pre_Recebimento_IT_ID = Recebimento_IT.Pre_Recebimento_IT_ID 
+INNER JOIN vw_Pedido_Compra_IT ON 
+	vw_Pedido_Compra_IT.Pedido_Compra_CT_ID = Pre_Recebimento_IT.Pedido_Origem_ID 
+AND 
+    vw_Pedido_Compra_IT.Peca_ID = Pre_Recebimento_IT.Objeto_Origem_ID 
+LEFT OUTER JOIN Peca_Codigo_Fornecedor ON 
+	Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_ID = vw_Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID 
+LEFT OUTER JOIN Fornecedor AS Alternativo ON 
+	Alternativo.Forn_ID = Peca_Codigo_Fornecedor.Forn_ID 
+INNER JOIN vw_Peca ON 
+	vw_Peca.Peca_ID = Recebimento_IT.Peca_ID 
+left JOIN Fornecedor ON 
+	Fornecedor.Forn_ID = Recebimento_CT.Forn_ID 
+left JOIN PessoaJuridica AS pj ON 
+	pj.PessoaJuridica_ID = Fornecedor.Pessoa_ID
+LEFT JOIN NFe_Entrada_XML ON
+	NFe_Entrada_XML.NFe_Entrada_XML_ID = Recebimento_CT.NFe_Entrada_XML_ID
+WHERE 
+	(vw_Peca.Fabricante_CD IN (' + @Fabricante + ')) 
+AND 
+	(CAST(Recebimento_CT.Recebimento_CT_Data_Emissao AS DATE) BETWEEN ''' + @DataInicial + ''' AND ''' + @DataFinal + ''')
+
+UNION ALL
+
+SELECT DISTINCT 
+    pj.PessoaJuridica_NmFantasia AS Nome_Fabricante, 
+	Recebimento_CT.Recebimento_CT_Numero_Nota_Fiscal AS Nota_Fiscal, 
+    FORMAT(Recebimento_CT.Recebimento_CT_Data_Emissao, ''dd/MM/yyyy'') AS Data_Emissao, 
+	vw_Peca.Fabricante_CD AS Fabricante_CD, 
+	vw_Peca.Produto_CD AS Produto_CD, 
+	vw_Peca.Peca_CD AS Peca_CD, 
+    CASE WHEN ISNULL(vw_Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID,0) = 0 THEN Peca_CDFabricante ELSE Peca_Codigo_Fornecedor_Codigo END AS Item_Fabricante, 
+    CASE WHEN ISNULL(vw_Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID,0) = 0 THEN '''' ELSE Alternativo.Forn_CD END AS Alternativo, 
+    vw_Peca.Produto_DsResum + '' '' + vw_Peca.Peca_DSTecnica AS Descricao_Peca, 
+	Recebimento_IT.Recebimento_IT_Qtde_Total AS Qtde,
+	CONVERT(Decimal(18, 2), Recebimento_IT.Recebimento_IT_Custo_Unitario) AS Custo,
+	NFe_Entrada_XML.NFe_Entrada_XML_Chave_Acesso AS ChaveNFe
+FROM 
+	Recebimento_CT 
+INNER JOIN Recebimento_IT ON 
+	Recebimento_CT.Recebimento_CT_ID = Recebimento_IT.Recebimento_CT_ID 
+INNER JOIN Recebimento_IT_Pedido_IT ON
+	Recebimento_IT_Pedido_IT.Recebimento_IT_ID = Recebimento_IT.Recebimento_IT_ID 
+INNER JOIN vw_Pedido_Compra_IT ON 
+	vw_Pedido_Compra_IT.Pedido_Compra_CT_ID = Recebimento_IT_Pedido_IT.Pedido_Compra_CT_ID 
+AND 
+    vw_Pedido_Compra_IT.Peca_ID = Recebimento_IT.Peca_ID 
+LEFT OUTER JOIN Peca_Codigo_Fornecedor ON 
+	Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_ID = vw_Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID 
+LEFT OUTER JOIN Fornecedor AS Alternativo ON 
+	Alternativo.Forn_ID = Peca_Codigo_Fornecedor.Forn_ID 
+INNER JOIN vw_Peca ON 
+	vw_Peca.Peca_ID = Recebimento_IT.Peca_ID 
+left JOIN Fornecedor ON 
+	Fornecedor.Forn_ID = Recebimento_CT.Forn_ID 
+left JOIN PessoaJuridica AS pj ON 
+	pj.PessoaJuridica_ID = Fornecedor.Pessoa_ID
+LEFT JOIN NFe_Entrada_XML ON
+	NFe_Entrada_XML.NFe_Entrada_XML_ID = Recebimento_CT.NFe_Entrada_XML_ID
+WHERE 
+	(vw_Peca.Fabricante_CD IN (' + @Fabricante + ')) 
+AND 
+	(CAST(Recebimento_CT.Recebimento_CT_Data_Emissao AS DATE) BETWEEN ''' + @DataInicial + ''' AND ''' + @DataFinal + ''')
+
+ORDER BY
+	vw_Peca.Fabricante_CD, 
+	vw_Peca.Produto_CD, 
+	vw_Peca.Peca_CD'
+
+================================================================================
+
+* Não esquecer de comentar o TESTE no SQL Server:
+
+DECLARE
+@DataInicial	VARCHAR(10),
+@DataFinal		VARCHAR(10),
+@Fabricante		VARCHAR(8000)
+
+SET @DataInicial		= '2016/01/01'
+SET @DataFinal		= '2017/12/31'
+SET @Fabricante		=  '0474'
+
+
+
+================================================================================
+CHAMADO 165448 - Erro ao finalizar processo de estorno - Caixa GUA 
+- Problema detectado pelo incidente 165321
+================================================================================
+
+### TFS ###
+
+Formulários afetados:
+frmSolicitacao_Estorno_Propriedades
+
+Objetivo:
+Finalizar o processo de Solicitação de Estorno.
+
+Menu da Tela:
+Menu > Caixa > Estorno de Cartão de Crédito - NOVO > Estorno de Cartão de Crédito > Solicitação de Estorno;
+
+Situação Atual:
+No processo de Solicitação de Estorno, o botão "Aplicar" permanece ativo do inicio ao fim do procedimento devido o campo "Motivo da Solicitação", ocasionando erro ao confirmar as alterações.
+
+Cenário Proposto:
+Realizada correção que permite o procedimento padrão do botão "Aplicar", concatenando as informações do campo "Motivo da Solicitação" (motivo + código NSU).
+Comportamento padrão para o botão "Aplicar" normalizado, permitindo o processo de Solicitação de Estorno ser finalizada.
+
+================================================================================
+
+### SUPRAVISIO ###
+
+Qual é a origem do problema?
+No processo de Solicitação de Estorno, o botão "Aplicar" permanece ativo do inicio ao fim do procedimento devido o campo "Motivo da Solicitação", ocasionando erro ao confirmar as alterações.
+
+Qual foi a solução implementada?
+Realizada correção que permite o procedimento padrão do botão "Aplicar", concatenando as informações do campo "Motivo da Solicitação" (motivo + código NSU).
+
+Qual a situação do sistema após a implantação?
+Comportamento padrão para o botão "Aplicar" normalizado, permitindo o processo de Solicitação de Estorno ser finalizada.
+
+================================================================================
+
+
+### OBSERVAÇÕES ###
+
+frmSolicitacao_Estorno_Propriedades.cs, na validação na Função Verificar_Mudancas()
+
+SITUAÇÕES:
+- Campo txtMotivo possui string;
+- Campo txtNomeCliente pode possuir o campo "Solicitacao_Estorno_Cliente_Nome" com o nome ou código do CONSUMIDOR FINAL (?)
+
+Problema 1: 
+
+- (btnAplicar.Enabled = true) devido o campo txtMotivo (?) ao iniciar o formulário, pois o campo txtMotivo é carregado com frase padrão ("O estorno não pode ser feito na loja porque...");
+
+Resolução:
+
+- Criada Constante CARTAO_ESTORNO_MOTIVO para a string padrão "O estorno não pode ser feito na loja porque...";
+- Na função Preencher_DataSet_Propriedades(), carregar o dtsPropriedades[Venda_Origem] com a contante (linha 1192):
+this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"] = this.txtMotivo.Text;
+
+
+Problema 2:
+
+- após Aplicar, o txtMotivo continua com os dados informados e o dtsPropriedades[Venda_Origem], concatenado dados informados com o NSU;
+
+
+Causa: ( função Obter_Dados() recarrega o dtsTemporario (PROC concatena campo Solicitacao_Estorno_Motivo com o NSU linha 853));
+
+- Não altera o campo txtMotivo com a concatenação, que é validado na função Verificar_Mudancas() entre o campo correpondente e o dtsPropriedades[Venda_Origem]
+
+
+Resolução:
+
+- Na função Obter_Dados() foi implementada uma validação para o campo txtMotivo, permitindo a atualização do campo com o dtsPropriedades.Tables["Venda_Origem"] (linha 864):
+
+if (this.txtMotivo.Text.Trim().Length.Equals(0) || !this.txtMotivo.Text.Trim().Equals(CARTAO_ESTORNO_MOTIVO))
+                        {
+                            this.txtMotivo.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"].ToString();
+                        }
+
+OBSERVAÇÃO:
+Todos os exemplos anteriores à correção o campo txtNomeCliente recebia o nome, mas ocorrem casos em que este campo recebe códigos (números), 
+ou mesmo que diferem do recebido por parametro no form do dtsPropriedades (possivelmente devido a testes - confirmado com o Mukuno).
+
+Verificado com Mukuno que o combo Operador de Caixa deve ser preenchido por tipos, entre os quais Operador de Caixa. Se o usuario não estiver cadastrado como operador de caixa, causa erro de verificação na linha 794.
+
+preenche Venda_Origem = linha 1193
+preenche combo = linha 1444
+.

@@ -1,0 +1,32 @@
+CTRL+M CTRL+M (that's two key presses!) - collapse/open the current parent region
+
+CTRL+M CTRL+L - Collapse/Open all regions in document recursively (meaning you might get only one line in the document - one big namespace region which is collapsed or you'll see the entire page code uncollapsed
+
+CTRL+M CTRL+O - Collapse all regions not recursively
+
+Ctrl + Shift + n
+cria um novo projeto dentro do Visual Studio
+
+mbox + <tab> + <tab>
+MessageBox.Show
+
+Ctrl + r, Ctrl + r
+renomeação de variáveis
+
+Ctrl + k + d
+Identação do código
+
+Ctrl +
+autocomplete
+
+ctor + +
+declara um construtor dentro da classe
+
+prop + +
+declara uma propriedade dentro da classe
+
+Ctrl + .
+utilizado para fazer consertos rápidos no código. 
+Quando estamos utilizando uma classe que não existe, ele declara a classe dentro do projeto. 
+Ao utilizarmos uma propriedade ou método inexistente, o atalho cria automaticamente o código para a propriedade ou método;
+
