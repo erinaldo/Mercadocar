@@ -1,0 +1,111 @@
+-------------------------------------------------------------------------------
+-- <summary>
+--  Consulta a forma de pagamento realizada na venda de origem
+-- <history>
+--  [mmukuno] - 17/11/2017 Created
+--  [fmoraes] - 16/04/2019 Modifed
+--   Subistituir as referências das tabelas Romaneio_CT e Romaneio_Pagamento_Venda_Liberada
+--   pelas novas Romaneio_Venda_CT e Romaneio_Venda_Pagamento.
+-- </history>
+-------------------------------------------------------------------------------
+CREATE PROCEDURE p_Sac_Consultar_Pagamento_Romaneio_Venda_Origem_DEMANDA_174195
+(
+ @Lojas_ID                                       INT,
+ @Romaneio_Pre_Venda_CT_ID                       INT
+)
+AS
+-------------------------------------------------------------------------------
+--DECLARE @Lojas_ID                                INT
+--DECLARE @Romaneio_Pre_Venda_CT_ID                INT
+
+--SET @Lojas_ID                                    = 1
+--SET @Romaneio_Pre_Venda_CT_ID                    = 3685466
+-------------------------------------------------------------------------------
+
+
+DECLARE @Romaneio_Venda_CT_ID_Nova               INT
+DECLARE @Lojas_ID_Nova                           INT
+
+/*****************************************************************************/
+-- Identifica o romaneio na tabela nova
+/*****************************************************************************/
+SELECT
+  @Romaneio_Venda_CT_ID_Nova = Romaneio_Venda_CT_ID,
+  @Lojas_ID_Nova = Lojas_ID
+FROM Romaneio_Venda_CT
+WHERE Romaneio_Pre_Venda_CT_ID = @Romaneio_Pre_Venda_CT_ID
+AND Lojas_ID = @Lojas_ID
+
+CREATE TABLE #tmp_Romaneio_Origem (
+  Romaneio_CT_ID_Origem                          INT,
+  Lojas_ID_Origem                                INT
+)
+
+/*****************************************************************************/
+-- Identifica os romaneios de origem
+/*****************************************************************************/
+INSERT INTO #tmp_Romaneio_Origem (
+Romaneio_CT_ID_Origem,
+Lojas_ID_Origem)
+  SELECT
+    Romaneio_CT_ID_Filho                         AS Romaneio_CT_ID_Origem,
+    Lojas_ID_Filho                               AS Lojas_ID_Origem
+  FROM
+    dbo.fun_Retorna_Romaneio_Venda_Origem(@Romaneio_Venda_CT_ID_Nova, @Lojas_ID_Nova)
+  WHERE Romaneio_CT_ID_Pai = 0
+
+CREATE TABLE #tmp_Romaneio_Venda_Origem (
+  Lojas_ID                                       INT,
+  Romaneio_Pre_Venda_CT_ID                       INT,
+  Lojas_Origem_ID                                INT,
+  Romaneio_Venda_Origem_Pre_Venda_CT_ID          INT
+)
+
+INSERT INTO #tmp_Romaneio_Venda_Origem (
+Lojas_ID,
+Romaneio_Pre_Venda_CT_ID,
+Lojas_Origem_ID,
+Romaneio_Venda_Origem_Pre_Venda_CT_ID)
+  SELECT
+    @Lojas_ID,
+    @Romaneio_Pre_Venda_CT_ID,
+    Lojas_ID,
+    Romaneio_Pre_Venda_CT_ID
+  FROM Romaneio_Venda_CT
+  JOIN #tmp_Romaneio_Origem
+    ON Romaneio_Venda_CT.Romaneio_Venda_CT_ID = #tmp_Romaneio_Origem.Romaneio_CT_ID_Origem
+    AND Romaneio_Venda_CT.Lojas_ID = #tmp_Romaneio_Origem.Lojas_ID_Origem
+  WHERE Romaneio_Pre_Venda_CT_ID <> @Romaneio_Pre_Venda_CT_ID
+
+SELECT DISTINCT
+  #tmp_Romaneio_Venda_Origem.Romaneio_Venda_Origem_Pre_Venda_CT_ID   AS 'Romaneio_Venda_Origem_Pre_Venda_CT_ID',
+  #tmp_Romaneio_Venda_Origem.Lojas_Origem_ID                         AS 'Lojas_Origem_ID',
+  Romaneio_Venda_Grupo.Romaneio_Grupo_ID                             AS 'Romaneio_Grupo_ID',
+  vw_condicao_Pagamento.Forma_Pagamento_ID                           AS 'Forma_Pagamento_ID',
+  vw_condicao_Pagamento.Forma_Pagamento_DS                           AS 'Forma_Pagamento_DS'
+FROM Romaneio_Venda_CT
+INNER JOIN #tmp_Romaneio_Venda_Origem
+  ON #tmp_Romaneio_Venda_Origem.Romaneio_Venda_Origem_Pre_Venda_CT_ID = Romaneio_Venda_CT.Romaneio_Pre_Venda_CT_ID
+INNER JOIN Romaneio_Venda_Grupo
+  ON Romaneio_Venda_Grupo.Romaneio_Venda_Grupo_ID = Romaneio_Venda_CT.Romaneio_Venda_Grupo_ID
+  AND Romaneio_Venda_Grupo.Lojas_ID = Romaneio_Venda_CT.Lojas_ID
+  AND #tmp_Romaneio_Venda_Origem.Lojas_Origem_ID = Romaneio_Venda_CT.Lojas_ID
+INNER JOIN Romaneio_Venda_Pagamento
+  ON Romaneio_Venda_Pagamento.Lojas_ID = Romaneio_Venda_CT.Lojas_ID
+  AND Romaneio_Venda_Pagamento.Romaneio_Venda_Grupo_ID = Romaneio_Venda_Grupo.Romaneio_Venda_Grupo_ID
+INNER JOIN vw_condicao_Pagamento
+  ON vw_condicao_Pagamento.Loja_ID = Romaneio_Venda_Pagamento.Lojas_ID
+  AND vw_condicao_Pagamento.Condicao_Pagamento_ID = Romaneio_Venda_Pagamento.Condicao_Pagamento_ID
+
+/*****************************************************************************/
+-- DELETA A TABELA TEMPORARIA
+/*****************************************************************************/
+IF OBJECT_ID('tempdb..#tmp_Romaneio_Venda_Origem') IS NOT NULL
+BEGIN
+  DROP TABLE #tmp_Romaneio_Venda_Origem
+END
+
+IF OBJECT_ID('tempdb..#tmp_Romaneio_Origem') IS NOT NULL
+BEGIN
+  DROP TABLE #tmp_Romaneio_Origem
+END
