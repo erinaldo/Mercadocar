@@ -112,11 +112,6 @@ INSERT INTO @Lojas_Filtro (Lojas_Id)
   FROM Analise_Cotacao_Loja_Parametros
   WHERE Analise_Cotacao_Id = @Id_Analise_Cotacao
 
-  --IF (SELECT COUNT(*) FROM @Lojas_Filtro WHERE Lojas_Id = 19) = 1 ----Santo Andre
-  --BEGIN
-  --  SET @Loja_Nova = 1
-  --END
-
 --==Consulta lojas a serem usadas no decorrer do calculo==--
 INSERT INTO #Lojas
   SELECT DISTINCT
@@ -192,8 +187,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
   BEGIN
     DELETE FROM @Pecas_Fabricante_Alternativo
     WHERE Peca_Id IN (
-      SELECT DISTINCT
-        Peca_Id
+      SELECT DISTINCT Peca_Id
       FROM Agenda_Compras
       JOIN Peca
         ON Peca.Produto_Id = Agenda_Compras.Produto_Id
@@ -202,6 +196,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
       AND Enum_Status_Id <> 977--Concluido
     )
   END
+
 
 --------------------------------------------------------------------------------------------------
 ------------------------------Seleciona Informações das Lojas-------------------------------------
@@ -267,7 +262,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
   --  WHERE Estoque_Calculo.Peca_ID = vw.Peca_ID
   --  AND Estoque_Calculo.Loja_ID = #Lojas.Lojas_ID
   --  AND Estoque_Calculo.Loja_ID IN (
-  --    SELECT  Lojas_ID
+  --    SELECT Lojas_ID
   --    FROM #Lojas
   --    WHERE Lojas_Tipo IN ('Loja'))
   --), 0)
@@ -305,8 +300,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
     ON (Estoque_Calculo.Peca_Id = Vw.Peca_Id)
     AND (Estoque_Calculo.Loja_Id = #Lojas.Lojas_Id)
     AND (Estoque_Calculo.Loja_Id IN (
-      SELECT
-        Lojas_Id
+      SELECT Lojas_Id
       FROM @Lojas_Filtro)
     OR Lojas_Tipo = ('CD'))
   LEFT JOIN Fabricante_Alternativo_It
@@ -323,8 +317,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
   OR @Id_Produto = 0)
   AND (Fabricante_Alternativo_It.Fabricante_Alternativo_Ct_Id IS NULL)
   AND (ISNULL(Vw.Peca_Curva_Mista, 'E') IN (
-    SELECT
-      Curva
+    SELECT Curva
     FROM @Curvas_Filtro))
   AND (Vw.Peca_Isativo = 1)
   GROUP BY
@@ -348,8 +341,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
   BEGIN
     DELETE FROM #Analise_Cotacao_Loja
     WHERE Peca_Id IN (
-      SELECT DISTINCT
-        Peca_Id
+      SELECT DISTINCT Peca_Id
       FROM Agenda_Compras
       JOIN Peca
         ON Peca.Produto_Id = Agenda_Compras.Produto_Id
@@ -357,6 +349,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
       AND ISNULL(Agenda_Compras.Fabricante_Id, 0) = 0
       AND Enum_Status_Id <> 977) --Concluido
   END
+
 
 --------------------------------------------------------------------------------------------------
 ------------------Seleciona Informações das Lojas dos Fabricantes Alternativos--------------------
@@ -369,8 +362,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
     CEILING(ISNULL(Estoque_Calculo_Venda_Media, 0)) * @Vezes_Considerar AS Analise_Cotacao_Loja_Qtde_Venda_Media,
     Estoque_Calculo_Venda_Media AS Analise_Cotacao_Loja_Qtde_Venda_Media_Original,
     Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(ISNULL(E.Estoque_Qtde, 0)) - ISNULL((
-      SELECT
-        SUM(Estoque_Divergencia_Qtde)
+      SELECT SUM(Estoque_Divergencia_Qtde)
       FROM Estoque_Divergencia AS Ed
       WHERE Usuario_Tratamento_Id IS NULL
       AND Ed.Objeto_Id = Vw.Peca_Id
@@ -417,8 +409,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
     ISNULL(Estoque_Calculo.Estoque_Calculo_Seguranca_Qtde, 0) AS Analise_Cotacao_Loja_Qtde_Estoque_Seguranca,
     Dbo.Fun_Retorna_Zero_Para_Valores_Negativos ((
     ISNULL(E.Estoque_Qtde, 0) - Dbo.Fun_Retorna_Maior_Valor(Estoque_Calculo_Maximo_Qtde, Estoque_Calculo_Minimo_Qtde) - ISNULL((
-      SELECT
-        SUM(Estoque_Divergencia_Qtde)
+      SELECT SUM(Estoque_Divergencia_Qtde)
       FROM Estoque_Divergencia AS Ed
       WHERE Usuario_Tratamento_Id IS NULL
       AND Ed.Objeto_Id = Vw.Peca_Id
@@ -443,9 +434,7 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
     ON (Estoque_Calculo.Peca_Id = Vw.Peca_Id)
     AND (Estoque_Calculo.Loja_Id = #Lojas.Lojas_Id)
     AND (Estoque_Calculo.Loja_Id IN (
-      SELECT
-        Lojas_Id
-      FROM @Lojas_Filtro)
+      SELECT Lojas_Id FROM @Lojas_Filtro)
       OR Lojas_Tipo = ('CD'))
   JOIN @Pecas_Fabricante_Alternativo AS Pecas_Fabricante_Alternativo
     ON Pecas_Fabricante_Alternativo.Peca_Id = Vw.Peca_Id
@@ -463,7 +452,6 @@ INSERT INTO @Pecas_Fabricante_Alternativo (
     Estoque_Calculo_Venda_Media_Parametrizado,
     Vw.Peca_Estoque_Totalmente_Lojas
 
---  SELECT * FROM #Analise_Cotacao_Loja_Fabricante_Alternativo
 
 --------------------------------------------------------------------------------------------------
 -----------------------------------Insere Informações das Lojas-----------------------------------
@@ -491,10 +479,7 @@ Fabricante_Alternativo_Ct_Id)
     Peca_Id,
     Lojas_Id,
   CASE WHEN Lojas_ID IN (
-    SELECT
-      Lojas_ID
-    FROM #Lojas
-    WHERE Lojas_Tipo = 'CD') THEN 0
+    SELECT Lojas_ID FROM #Lojas WHERE Lojas_Tipo = 'CD') THEN 0
   ELSE Analise_Cotacao_Loja_Qtde_Venda_Media
   END AS Analise_Cotacao_Loja_Qtde_Venda_Media,
   Analise_Cotacao_Loja_Qtde_Venda_Media_Original,
@@ -510,8 +495,7 @@ Fabricante_Alternativo_Ct_Id)
   Fabricante_Alternativo_Ct_Id
   FROM #Analise_Cotacao_Loja
   WHERE Peca_Id NOT IN (
-    SELECT
-      Peca_Id
+    SELECT Peca_Id
     FROM #Analise_Cotacao_Loja_Fabricante_Alternativo)
 
   UNION
@@ -545,15 +529,15 @@ Fabricante_Alternativo_Ct_Id)
   SELECT
     Fabricante_Alternativo_Ct_Id AS Fabricante_Alternativo_Ct_Id,
     Lojas_Id AS Lojas_Id,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque, 0)) AS Qtde_Estoque_Total,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada, 0)) AS Qtde_Estoque_Transito,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Minimo, 0)) AS Qtde_Estoque_Minimo,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Seguranca, 0)) AS Qtde_Estoque_Seguranca,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Maximo, 0)) AS Qtde_Estoque_Maximo,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Venda_Media, 0)) AS Qtde_Venda_Media,
-    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Venda_Periodo, 0)) AS Qtde_Venda_Periodo,
-    0 AS Qtde_Estoque_Cd,
-    0 AS Peca_Principal_Id
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque, 0))                     AS Qtde_Estoque_Total,
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada, 0))    AS Qtde_Estoque_Transito,
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Minimo, 0))              AS Qtde_Estoque_Minimo,
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Seguranca, 0))           AS Qtde_Estoque_Seguranca,
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Estoque_Maximo, 0))              AS Qtde_Estoque_Maximo,
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Venda_Media, 0))                 AS Qtde_Venda_Media,
+    SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Venda_Periodo, 0))               AS Qtde_Venda_Periodo,
+    0                                                                     AS Qtde_Estoque_Cd,
+    0                                                                     AS Peca_Principal_Id
   INTO #Dados_Calculados_Peca_Fabricante_Alternativo
   FROM Analise_Cotacao_Loja
   WHERE Analise_Cotacao_Id = @Id_Analise_Cotacao
@@ -567,8 +551,7 @@ SET
     -- SELECT SUM(ISNULL(
       -- Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque,0) + ISNULL(
       -- Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada,0))
-    -- FROM
-    -- Analise_Cotacao_Loja
+    -- FROM Analise_Cotacao_Loja
     -- WHERE Analise_Cotacao_Loja.Analise_Cotacao_Id = @Id_Analise_Cotacao
     -- AND #Dados_Calculados_Peca_Fabricante_Alternativo.Fabricante_Alternativo_Ct_Id = Analise_Cotacao_Loja.Fabricante_Alternativo_Ct_Id
     -- AND Analise_Cotacao_Loja.Lojas_Id IN (
@@ -583,10 +566,8 @@ SET
   AND Fabricante_Alternativo_It.Fabricante_Alternativo_It_Peca_Principal = 1)
 
   -- Qtde_Estoque_Minimo = (
-    -- SELECT
-    -- SUM(ISNULL(Estoque_Calculo.Estoque_Calculo_Minimo_Qtde,0))
-    -- FROM
-    -- Estoque_Calculo
+    -- SELECT SUM(ISNULL(Estoque_Calculo.Estoque_Calculo_Minimo_Qtde,0))
+    -- FROM Estoque_Calculo
     -- JOIN Analise_Cotacao_Loja
       -- ON Analise_Cotacao_Loja.Lojas_Id = Estoque_Calculo.Loja_Id
       -- AND Analise_Cotacao_Loja.Peca_Id = Estoque_Calculo.Peca_Id
@@ -594,8 +575,6 @@ SET
     -- AND Analise_Cotacao_Loja.Fabricante_Alternativo_Ct_Id = #Dados_Calculados_Peca_Fabricante_Alternativo.Fabricante_Alternativo_Ct_Id
     -- AND Analise_Cotacao_Loja.Lojas_Id = #Dados_Calculados_Peca_Fabricante_Alternativo.Lojas_Id
   -- )
-
-  --SELECT * FROM #Dados_Calculados_Peca_Fabricante_Alternativo WHERE Fabricante_Alternativo_CT_ID = 1030
 
 
 --------------------------------------------------------------------------------------------------
@@ -637,23 +616,22 @@ WHERE Analise_Cotacao_Loja.Analise_Cotacao_Id = @Id_Analise_Cotacao
 AND Analise_Cotacao_Loja.Lojas_ID NOT IN (
   SELECT Lojas_ID FROM #Lojas WHERE Lojas_Tipo = 'CD')
 
---SELECT * FROM Analise_Cotacao_Loja WHERE Fabricante_Alternativo_CT_ID = 1030 AND Analise_Cotacao_ID = @ID_Analise_Cotacao
 
 --------------------------------------------------------------------------------------------------
 --------------------------------Seleciona as informações das peças--------------------------------
 --------------------------------------------------------------------------------------------------
 
 SELECT DISTINCT
-  @Id_Analise_Cotacao AS Analise_Cotacao_Id,
-  Analise_Cotacao_Loja.Peca_Id AS Peca_Id,
-  ISNULL(Peca.Peca_Curva_Mista, 'E') AS Analise_Cotacao_Peca_Curva,
+  @Id_Analise_Cotacao                                 AS Analise_Cotacao_Id,
+  Analise_Cotacao_Loja.Peca_Id                        AS Peca_Id,
+  ISNULL(Peca.Peca_Curva_Mista, 'E')                  AS Analise_Cotacao_Peca_Curva,
   ISNULL((
     SELECT TOP 1 Peca_Embalagem_Id
-    FROM Peca_Embalagem AS Pe
+    FROM Peca_Embalagem                               AS Pe
     WHERE Pe.Peca_Id = Analise_Cotacao_Loja.Peca_Id
     AND Pe.Peca_Embalagem_Ativo = 1
     AND Pe.Peca_Embalagem_Compra = 1
-    ORDER BY Pe.Peca_Embalagem_Quantidade), 0) AS Peca_Embalagem_Compra_Id,
+    ORDER BY Pe.Peca_Embalagem_Quantidade), 0)        AS Peca_Embalagem_Compra_Id,
 
   CASE WHEN (Peca.Peca_Comprar = 0) THEN 0
   ELSE Dbo.Fun_Retorna_Zero_Para_Valores_Negativos
@@ -670,17 +648,17 @@ SELECT DISTINCT
       AND #Analise_Cotacao_Loja.Peca_Id = Analise_Cotacao_Loja.Peca_Id
       AND #Analise_Cotacao_Loja.Analise_Cotacao_Id = @Id_Analise_Cotacao), 0))
   END AS Analise_Cotacao_Peca_Qtde_Calculada,
-  ISNULL(Peca_Preco_Custo_Reposicao, 0) AS Analise_Cotacao_Peca_Custo_Reposicao,
-  ISNULL(Estoque_Custo_Medio, 0) AS Analise_Cotacao_Peca_Custo_Medio,
-  ISNULL(Estoque_Custo_Ultimo_Custo, 0) AS Analise_Cotacao_Peca_Ultimo_Custo,
-  ISNULL(Estoque_Custo_Reposicao_Efetivo, 0) AS Analise_Cotacao_Peca_Custo_Reposicao_Efetivo,
-  ISNULL(Estoque_Custo_Medio_Efetivo, 0) AS Analise_Cotacao_Peca_Custo_Medio_Efetivo,
-  ISNULL(Estoque_Custo_Ultimo_Custo_Efetivo, 0) AS Analise_Cotacao_Peca_Ultimo_Custo_Efetivo,
+  ISNULL(Peca_Preco_Custo_Reposicao, 0)          AS Analise_Cotacao_Peca_Custo_Reposicao,
+  ISNULL(Estoque_Custo_Medio, 0)                 AS Analise_Cotacao_Peca_Custo_Medio,
+  ISNULL(Estoque_Custo_Ultimo_Custo, 0)          AS Analise_Cotacao_Peca_Ultimo_Custo,
+  ISNULL(Estoque_Custo_Reposicao_Efetivo, 0)     AS Analise_Cotacao_Peca_Custo_Reposicao_Efetivo,
+  ISNULL(Estoque_Custo_Medio_Efetivo, 0)         AS Analise_Cotacao_Peca_Custo_Medio_Efetivo,
+  ISNULL(Estoque_Custo_Ultimo_Custo_Efetivo, 0)  AS Analise_Cotacao_Peca_Ultimo_Custo_Efetivo,
 
   CASE WHEN ISNULL(Fabricante_Alternativo_Ct_Id, 0) = 0 THEN FLOOR((
     CASE WHEN SUM(ISNULL(Analise_Cotacao_Loja_Qtde_Venda_Media, 0)) = 0 OR
-      (SELECT
-        SUM(Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(#Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque)) + SUM(
+      (SELECT SUM(
+        Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(#Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque)) + SUM(
         Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(#Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada))
       FROM #Analise_Cotacao_Loja
       WHERE #Analise_Cotacao_Loja.Peca_Id = Analise_Cotacao_Loja.Peca_Id) <= 0 THEN 0
@@ -757,7 +735,7 @@ SELECT DISTINCT
   SUM(Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque) +
   Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(Analise_Cotacao_Loja.Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada)) AS Estoque_Total,
   SUM(Analise_Cotacao_Loja_Qtde_Venda_Media) AS Qtde_Venda_Media,
-  CONVERT(decimal(12, 2), ISNULL(SUM(Analise_Cotacao_Loja_Qtde_Venda_Periodo), 0)) AS Qtde_Venda_Periodo,
+  CONVERT(DECIMAL(12, 2), ISNULL(SUM(Analise_Cotacao_Loja_Qtde_Venda_Periodo), 0)) AS Qtde_Venda_Periodo,
   COALESCE(Peca_Preco.Peca_Preco_Valor_Fabrica, Peca_Preco_Custo_Reposicao, 0) AS Analise_Cotacao_Peca_Preco_Fabrica INTO #Analise_Cotacao_Peca
 FROM Analise_Cotacao_Loja
 INNER JOIN Peca
@@ -781,8 +759,6 @@ GROUP BY
   Fabricante_Alternativo_Ct_Id,
   Peca_Preco.Peca_Preco_Valor_Fabrica
 
---SELECT * FROM Analise_Cotacao_Loja WHERE Analise_Cotacao_ID = 397662 AND Fabricante_Alternativo_CT_ID = 4151
---SELECT * FROM #Analise_Cotacao_Peca WHERE Fabricante_Alternativo_CT_ID = 4151
 
 --------------------------------------------------------------------------------------------------
 --------------Seleciona as informações das peças do Grupo de Fabricante Alternativo---------------
@@ -800,12 +776,12 @@ SELECT
       Analise_Cotacao_Loja_Qtde_Estoque_Maximo - (
       Analise_Cotacao_Loja_Qtde_Estoque + Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada))))
   END,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Reposicao,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Medio,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Ultimo_Custo,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Reposicao_Efetivo,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Medio_Efetivo,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Ultimo_Custo_Efetivo,
+  CONVERT(DECIMAL(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Reposicao,
+  CONVERT(DECIMAL(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Medio,
+  CONVERT(DECIMAL(10, 2), 0) AS Analise_Cotacao_Peca_Ultimo_Custo,
+  CONVERT(DECIMAL(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Reposicao_Efetivo,
+  CONVERT(DECIMAL(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Medio_Efetivo,
+  CONVERT(DECIMAL(10, 2), 0) AS Analise_Cotacao_Peca_Ultimo_Custo_Efetivo,
   0                          AS Analise_Cotacao_Peca_Dias_Estoque_Duracao,
   Fabricante_Alternativo_Ct_Id AS Fabricante_Alternativo_Ct_Id,
   0                          AS Analise_Cotacao_Peca_Garantia_Qtde,
@@ -817,17 +793,11 @@ SELECT
 FROM #Analise_Cotacao_Loja_Fabricante_Alternativo
 WHERE Fabricante_Alternativo_Ct_Id IS NOT NULL
 AND #Analise_Cotacao_Loja_Fabricante_Alternativo.Lojas_Id NOT IN (
-  SELECT
-    Lojas_ID
-  FROM #Lojas
-  WHERE Lojas_Tipo = 'CD')
+  SELECT Lojas_ID FROM #Lojas WHERE Lojas_Tipo = 'CD')
 GROUP BY
   Fabricante_Alternativo_Ct_Id,
   Lojas_Id,
   Peca_Comprar
-
---SELECT * FROM #Analise_Cotacao_Loja_Fabricante_Alternativo WHERE Fabricante_Alternativo_CT_ID = 4151
---SELECT * FROM #Analise_Cotacao_Loja_Fabricante_Alternativo_Agrupado WHERE Fabricante_Alternativo_CT_ID = 4151
 
 SELECT
   @Id_Analise_Cotacao        AS Analise_Cotacao_Id,
@@ -842,21 +812,18 @@ SELECT
     Dbo.Fun_Retorna_Zero_Para_Valores_Negativos(Subquery.Analise_Cotacao_Loja_Qtde_Estoque_Transito_Entrada))
   FROM #Analise_Cotacao_Loja_Fabricante_Alternativo AS Subquery
   WHERE Subquery.Lojas_Id IN (
-  SELECT
-    Lojas_ID
-  FROM #Lojas
-  WHERE Lojas_Tipo = 'CD')
+  SELECT Lojas_ID FROM #Lojas WHERE Lojas_Tipo = 'CD')
   AND @Loja_Nova = 0
   AND Subquery.Fabricante_Alternativo_Ct_Id = #Analise_Cotacao_Loja_Fabricante_Alternativo_Agrupado.Fabricante_Alternativo_Ct_Id
   AND Subquery.Analise_Cotacao_Id = @Id_Analise_Cotacao), 0)),
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Reposicao,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Medio,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Ultimo_Custo,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Reposicao_Efetivo,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Custo_Medio_Efetivo,
-  CONVERT(decimal(10, 2), 0) AS Analise_Cotacao_Peca_Ultimo_Custo_Efetivo,
+  CONVERT(DECIMAL(10, 2), 0)                AS Analise_Cotacao_Peca_Custo_Reposicao,
+  CONVERT(DECIMAL(10, 2), 0)                AS Analise_Cotacao_Peca_Custo_Medio,
+  CONVERT(DECIMAL(10, 2), 0)                AS Analise_Cotacao_Peca_Ultimo_Custo,
+  CONVERT(DECIMAL(10, 2), 0)                AS Analise_Cotacao_Peca_Custo_Reposicao_Efetivo,
+  CONVERT(DECIMAL(10, 2), 0)                AS Analise_Cotacao_Peca_Custo_Medio_Efetivo,
+  CONVERT(DECIMAL(10, 2), 0)                AS Analise_Cotacao_Peca_Ultimo_Custo_Efetivo,
   SUM(Analise_Cotacao_Peca_Dias_Estoque_Duracao) AS Analise_Cotacao_Peca_Dias_Estoque_Duracao,
-  Fabricante_Alternativo_Ct_Id AS Fabricante_Alternativo_Ct_Id,
+  Fabricante_Alternativo_Ct_Id              AS Fabricante_Alternativo_Ct_Id,
   SUM(Analise_Cotacao_Peca_Garantia_Qtde)   AS Analise_Cotacao_Peca_Garantia_Qtde,
   SUM(Analise_Cotacao_Peca_Garantia_Perc)   AS Analise_Cotacao_Peca_Garantia_Perc,
   SUM(Analise_Cotacao_Peca_Excedente_Qtde)  AS Analise_Cotacao_Peca_Excedente_Qtde,
@@ -867,13 +834,13 @@ FROM #Analise_Cotacao_Loja_Fabricante_Alternativo_Agrupado
 WHERE Fabricante_Alternativo_Ct_Id IS NOT NULL
 GROUP BY Fabricante_Alternativo_Ct_Id
 
---SELECT * FROM #Analise_Cotacao_Peca_Fabricante_Alternativo_Agrupado WHERE Fabricante_Alternativo_CT_ID = 4151
 
 --------------------------------------------------------------------------------------------------
 ----------------------------------Insere as informações das peças---------------------------------
 --------------------------------------------------------------------------------------------------
 
-INSERT INTO Analise_Cotacao_Peca (Analise_Cotacao_Id,
+INSERT INTO Analise_Cotacao_Peca (
+Analise_Cotacao_Id,
 Peca_Id,
 Analise_Cotacao_Peca_Curva,
 Peca_Embalagem_Compra_Id,
@@ -936,9 +903,6 @@ Analise_Cotacao_Peca_Preco_Fabrica)
     Analise_Cotacao_Peca_Preco_Fabrica
   FROM #Analise_Cotacao_Peca_Fabricante_Alternativo_Agrupado
 
---SELECT * FROM #Analise_Cotacao_Peca WHERE Fabricante_Alternativo_CT_ID = 4151
---SELECT * FROM #Analise_Cotacao_Peca_Fabricante_Alternativo_Agrupado WHERE Fabricante_Alternativo_CT_ID = 4151
---SELECT * FROM Analise_Cotacao_Peca WHERE Analise_Cotacao_ID = 397662 AND Fabricante_Alternativo_CT_ID = 4151
 
 --------------------------------------------------------------------------------------------------
 -------------------------Aplica a multiplicidade da embalagem de compras--------------------------
@@ -964,10 +928,8 @@ SET Analise_Cotacao_Peca_Qtde_Calculada =
       ELSE CASE
           WHEN (
             Analise_Cotacao_Peca_Qtde_Calculada % Peca_Qtde_Multipla_Compra) > 0 THEN FLOOR(
-            Analise_Cotacao_Peca_Qtde_Calculada +
-            Peca_Qtde_Multipla_Compra - ((
-            Analise_Cotacao_Peca_Qtde_Calculada
-            % Peca_Qtde_Multipla_Compra)))
+            Analise_Cotacao_Peca_Qtde_Calculada + Peca_Qtde_Multipla_Compra - ((
+            Analise_Cotacao_Peca_Qtde_Calculada % Peca_Qtde_Multipla_Compra)))
           ELSE Analise_Cotacao_Peca_Qtde_Calculada
         END
     END
@@ -987,8 +949,7 @@ SET Analise_Cotacao_Peca_Qtde_Calculada =
          WHEN (
            Analise_Cotacao_Peca_Qtde_Calculada % Peca_Qtde_Multipla_Compra) > 0 THEN FLOOR(
            Analise_Cotacao_Peca_Qtde_Calculada + Peca_Qtde_Multipla_Compra - ((
-           Analise_Cotacao_Peca_Qtde_Calculada %
-           Peca_Qtde_Multipla_Compra)))
+           Analise_Cotacao_Peca_Qtde_Calculada % Peca_Qtde_Multipla_Compra)))
          ELSE Analise_Cotacao_Peca_Qtde_Calculada
        END
     END,
@@ -998,18 +959,15 @@ SET Analise_Cotacao_Peca_Qtde_Calculada =
       ELSE CASE
           WHEN (
             Analise_Cotacao_Peca_Qtde_Calculada % Peca_Qtde_Multipla_Compra) > 0 THEN FLOOR(
-            Analise_Cotacao_Peca_Qtde_Calculada +
-            Peca_Qtde_Multipla_Compra - ((
-            Analise_Cotacao_Peca_Qtde_Calculada
-            % Peca_Qtde_Multipla_Compra)))
+            Analise_Cotacao_Peca_Qtde_Calculada + Peca_Qtde_Multipla_Compra - ((
+            Analise_Cotacao_Peca_Qtde_Calculada % Peca_Qtde_Multipla_Compra)))
           ELSE Analise_Cotacao_Peca_Qtde_Calculada
         END
     END
 FROM Analise_Cotacao_Peca
 INNER JOIN Peca
   ON Peca.Peca_Id = (
-  SELECT
-    It.Peca_Id
+  SELECT It.Peca_Id
   FROM Fabricante_Alternativo_It AS It
   WHERE It.Fabricante_Alternativo_Ct_Id = Analise_Cotacao_Peca.Fabricante_Alternativo_Ct_Id
   AND It.Fabricante_Alternativo_It_Peca_Principal = 1
@@ -1038,16 +996,16 @@ BEGIN
   AND Analise_Cotacao_Peca_Qtde_Confirmada_Analise > 0
 END
 
-
-----------Quando a analise de duração tiver origem da pendencia de compra os itens devem ser identificados----------
+--Quando a analise de duração tiver origem da pendencia de compra os itens devem ser identificados--
 DECLARE @Enum_Tipo_Analise_Duracao_Estoque_Pendencias_Id INT = 1047,
         @Enum_Status_Pendencia_Compra_Pendente_Id INT = 1139
 
-IF (SELECT
-    COUNT(Analise_Cotacao_Id) AS Qtde
+IF (
+  SELECT COUNT(Analise_Cotacao_Id) AS Qtde
   FROM Analise_Cotacao
   WHERE Analise_Cotacao_Id = @Id_Analise_Cotacao
-  AND Enum_Tipo_Id = @Enum_Tipo_Analise_Duracao_Estoque_Pendencias_Id) > 0
+  AND Enum_Tipo_Id = @Enum_Tipo_Analise_Duracao_Estoque_Pendencias_Id
+  ) > 0
 BEGIN
   UPDATE Analise_Cotacao_Peca
   SET Analise_Cotacao_Peca_Origem_Pendencia_Compra = 1
@@ -1060,6 +1018,7 @@ BEGIN
     AND Pendencia_Compra.Enum_Status_Id = @Enum_Status_Pendencia_Compra_Pendente_Id
   WHERE Temp_Analise_Cotacao_Peca.Analise_Cotacao_Id = @Id_Analise_Cotacao
 END
+
 
 --------------------------------------------------------------------------------------------------
 ------------------------------------Exclui tabelas temporárias------------------------------------
