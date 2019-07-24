@@ -60,7 +60,7 @@
 --          e na sua cláusula WHERE na verificação do Cliente_Tipo_Grupo_It.
 -- </history>
 -------------------------------------------------------------------------------
-CREATE PROCEDURE [dbo].[p_Venda_Tecnica_Consultar_Romaneio_Venda_Grid_Chamado_185588]
+CREATE PROCEDURE [dbo].[p_Venda_Tecnica_Consultar_Romaneio_Venda_Grid_CHAMADO_185588]
 (@Enum_Filtro_Tipo_Exibicao_Id INT, 
  @Lojas_Id                     INT, 
  @Enum_Tipo_Documento_Venda_Id INT, 
@@ -88,48 +88,48 @@ CREATE PROCEDURE [dbo].[p_Venda_Tecnica_Consultar_Romaneio_Venda_Grid_Chamado_18
 )
 AS 
 --------------------------------------------------------------------------------------
-     --DECLARE 
-     --	@Enum_Filtro_Tipo_Exibicao_ID					INT = 0,
-     --	@Lojas_ID										INT = 1,
-     --	@Enum_Tipo_Documento_Venda_ID					INT = 934,
-     --	@Usuario_Vendedor_ID							INT = NULL,
-     --	@Usuario_Gerente_ID								INT = NULL,
-     --	@Cliente_Tipo_Grupo_CT_ID						INT = 1,
-     --	@Fabricante_ID									INT = NULL,
-     --	@Produto_ID										INT = NULL,
-     --	@Peca_ID										INT = NULL,  
-     --	@Servico_ID										INT = NULL,
-     --	@Numero_Documento								VARCHAR(50) = NULL,
-     --	@Data_Geracao_Inicial							DATE = NULL,
-     --	@Data_Geracao_Final								DATE = NULL,
-     --	@Data_Liberacao_Inicial							DATE = '2019-06-22 00:00:00',
-     --	@Data_Liberacao_Final							DATE = '2019-06-22 00:00:00',
-     --	@Data_Cancelamento_Inicial						DATE = NULL,
-     --	@Data_Cancelamento_Final						DATE = NULL,
-     --	@Exibir_Creditos								BIT = 1,
-     --	@Enum_Tipo_Comanda_ID							INT = NULL,
-     --	@Numero_Comanda									INT = NULL, 
-     --	@Usar_Filtro_Cliente							BIT = NULL, --0,
-     --	@Cliente_ID										VARCHAR(50) = NULL --'6E340EC1-8297-4BB5-A006-2FA49F54B5F8'
+  --   DECLARE 
+  --   	@Enum_Filtro_Tipo_Exibicao_ID					INT = 0,
+  --   	@Lojas_ID										INT = 1,
+  --   	@Enum_Tipo_Documento_Venda_ID					INT = 934,
+  --   	@Usuario_Vendedor_ID							INT = NULL,
+  --   	@Usuario_Gerente_ID								INT = NULL,
+  --   	@Cliente_Tipo_Grupo_CT_ID						INT = 1,
+  --   	@Fabricante_ID									INT = NULL,
+  --   	@Produto_ID										INT = NULL,
+  --   	@Peca_ID										INT = NULL,  
+  --   	@Servico_ID										INT = NULL,
+  --   	@Numero_Documento								VARCHAR(50) = NULL,
+  --   	@Data_Geracao_Inicial							DATE = NULL,
+  --   	@Data_Geracao_Final								DATE = NULL,
+  --   	@Data_Liberacao_Inicial							DATE = '2019-06-22 00:00:00',
+  --   	@Data_Liberacao_Final							DATE = '2019-06-22 00:00:00',
+  --   	@Data_Cancelamento_Inicial						DATE = NULL,
+  --   	@Data_Cancelamento_Final						DATE = NULL,
+  --   	@Exibir_Creditos								BIT = 1,
+  --   	@Enum_Tipo_Comanda_ID							INT = NULL,
+  --   	@Numero_Comanda									INT = NULL, 
+  --   	@Usar_Filtro_Cliente							BIT = 0,
+  --   	@Cliente_ID										VARCHAR(50) = NULL --'6E340EC1-8297-4BB5-A006-2FA49F54B5F8'
 
-     --DECLARE @Enum_Tipos_Romaneio						TABLE (Valor INT NULL)
-     --DECLARE @Enum_Status_Romaneio_Venda				TABLE (Valor INT NULL)
+  --   DECLARE @Enum_Tipos_Romaneio						TABLE (Valor INT NULL)
+  --   DECLARE @Enum_Status_Romaneio_Venda				TABLE (Valor INT NULL)
 
-     --INSERT INTO @Enum_Tipos_Romaneio (VALOR) VALUES 
-     --(551),
-     --(572),
-     --(648),
-     --(797),
-     --(549),
-     --(550)
+  --   INSERT INTO @Enum_Tipos_Romaneio (VALOR) VALUES 
+  --   (549),
+  --   (550),
+  --   (551),
+  --   (572),
+  --   (648),
+  --   (797)
 
-     --INSERT INTO @Enum_Status_Romaneio_Venda (VALOR) VALUES 
-     --(1397),
-     --(1398),
-     --(1399),
-     --(1400),
-     --(1401),
-     --(1952)
+  --   INSERT INTO @Enum_Status_Romaneio_Venda (VALOR) VALUES 
+  --   (1397),
+  --   (1398),
+  --   (1399),
+  --   (1400),
+  --   (1401),
+  --   (1952)
      -------------------------------------------------------------------------------------
      SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
      SET NOCOUNT ON;

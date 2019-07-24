@@ -1,0 +1,64 @@
+/// <summary>
+        /// Formata uma string no formato de Telefone
+        /// - Telefones 0800
+        /// - Números de operadoras e serviços como 10315 e 190
+        /// - Telefones representados com ou sem parênteses
+        /// - Aceita operadora representada como 0xx11
+        /// - Telefones com ou sem os separadores [ .-]
+        /// - Ignora telefones começados com 0 se não tiver DDD (ex: 0999-9999 não é aceito, mas 0xx11 9123-1234 é)
+        /// </summary>
+        /// <history>
+        /// 	[cbarbosa] 	15/12/2011	Created
+        /// 	[fmoraes] 	11/07/2019	Modified
+        /// </history>
+        [Obsolete("Função de formatação de telefone fixo ou celular (com/sem DDD)", false)]
+        public static string Formatar_Telefone_Numero(string strTelefone_Numero)
+        {
+            try
+            {
+                string pattern = @"^1\d\d(\d\d)?$|^0800 ?\d{3} ?\d{4}$|^(\(0?([1-9a-zA-Z][0-9a-zA-Z])?[1-9]\d\) ?|0?([1-9a-zA-Z][0-9a-zA-Z])?[1-9]\d[ .-]?)?(9|9[ .-])?[2-9]\d{3}[ .-]?\d{4}$";
+                Regex rgx = new Regex(pattern);
+
+                strTelefone_Numero = Utilitario.Remover_Caracteres_Formatacao_Telefone(strTelefone_Numero);
+
+                long lngNumero = Convert.ToInt64(strTelefone_Numero);
+
+                foreach (Match match in Regex.Matches(strTelefone_Numero, pattern, RegexOptions.ECMAScript))
+                {
+                    if (rgx.Matches(strTelefone_Numero).Count > 0)
+                    {
+                        switch (strTelefone_Numero.Length)
+                        {
+                            case 8:
+                                return string.Format("{0:0000-0000}", lngNumero);
+
+                            case 9:
+                                return string.Format("{0:00000-0000}", lngNumero);
+
+                            case 10:
+                                return string.Format("{0:(00) 0000-0000}", lngNumero);
+
+                            case 11:
+                                if (strTelefone_Numero.Substring(0, 4) == "0800")
+                                {
+                                    return string.Format("{0:0000-000-0000}", lngNumero);
+                                }
+                                else
+                                return string.Format("{0:(00) 00000-0000}", lngNumero);
+
+                            case 13:
+                                return string.Format("{0:000 (00) 0000-0000}", lngNumero);
+
+                            default:
+                                return strTelefone_Numero;
+                        }
+                    }
+                }
+                return strTelefone_Numero;
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }

@@ -1,0 +1,2267 @@
+using System;
+using System.Collections;
+using System.Data;
+using System.Windows.Forms;
+using Mercadocar.Constantes;
+using Mercadocar.Enumerados;
+using Mercadocar.Herancas;
+using Mercadocar.InfraEstrutura;
+using Mercadocar.InfraEstrutura.Utilidades;
+using Mercadocar.ObjetosNegocio.DataObject;
+using Mercadocar.RegrasNegocio;
+
+namespace Mercadocar.Formularios
+{
+    public partial class frmSolicitacao_Estorno_Propriedades : frmPropriedades
+    {
+
+
+        #region "   Declarações        "
+
+        private const int CARTAO_TEF_AMEX_ID = 5;
+        private const string CARTAO_ESTORNO_MOTIVO = "O estorno não pode ser feito na loja porque...";
+
+        private enum TipoSolicitacao
+        {
+            SolicitacaoNova,
+            Alteracao
+        }
+
+        private int intSolicitacaoEstornoID = 0;
+        private int intLojaID = 0;
+        private int intEstornoCartaoCreditoITID = 0;
+        private int intLoteEnvioAdministradora = 0;
+        private int intOperadoraCartaoID = 0;
+        private string strClienteID = string.Empty;
+        private DataSet dtsPropriedades;
+        private DataRow dtrSolicitacaoEstorno;
+        private DataTable dttIdentificadores;
+        private DataSet dtsCliente;
+        private DataSet dtsTemporario;
+        private TipoSolicitacao enuTipoSolicitacao;
+        private bool blnPermissaoIncluir = false;
+        private bool blnPermissaoImprimir = false;
+        private bool blnPermissaoEnviarEmail = false;
+        private bool blnPermissaoVendaOrigem = false;
+        private bool blnPermissaoDadosEstorno = false;
+        private bool blnPermissaoAlterarStatus = false;
+        private bool blnPermissaoAlterarInformacaoCartao = false;
+
+
+        private UsuarioDO dtoUsuarioAutorizado = null;
+
+        #endregion
+
+        #region "   Construtor         "
+
+        public frmSolicitacao_Estorno_Propriedades()
+            : base()
+        {
+            this.InitializeComponent();
+
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.Load += this.Form_Load;
+                this.btnImprimirComprovante.Click += this.Clicar_Botao_Imprimir_Comprovante;
+                this.btnNotificarCliente.Click += this.Clicar_Botao_Notificar_Cliente;
+                this.txtNumeroCartao.TextChanged += this.Tratar_Botao_Aplicar;
+                this.chkNotificarEmail.CheckedChanged += this.Habilitar_Campo_Email;
+
+                // Tratamento do botão Aplicar
+                this.cboAdministradoraCartao.SelectedValueChanged += this.Tratar_Mudar_Combo_Tipo_TEF;
+                this.txtNumeroParcelas.TextChanged += this.Tratar_Botao_Aplicar;
+                this.cboTipoTransacao.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                this.cboUsuarioCaixaVenda.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                this.dtpDataVenda.ValueChanged += this.Tratar_Botao_Aplicar;
+                this.txtNomeCliente.TextChanged += this.Tratar_Botao_Aplicar;
+                this.objTelefoneCliente.TextBox_DDD.TextChanged += this.Tratar_Botao_Aplicar;
+                this.objTelefoneCliente.TextBox_Numero.TextChanged += this.Tratar_Botao_Aplicar;
+                this.cboClienteTelefone.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
+                this.txtValorVenda.TextChanged += this.Tratar_Botao_Aplicar;
+                this.txtValorEstornar.TextChanged += this.Tratar_Botao_Aplicar;
+                this.chkNotificarEmail.CheckedChanged += this.Tratar_Botao_Aplicar;
+                this.txtEmail2.TextChanged += this.Tratar_Botao_Aplicar;
+                //this.cboClienteEmail.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
+                this.txtMotivo.TextChanged += this.Tratar_Botao_Aplicar;
+                this.cboTipoEstorno.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                this.txtCodigoCancelamento.TextChanged += this.Tratar_Botao_Aplicar;
+                this.cboStatus.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                this.cboFormaEstorno.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                this.txtObservacao.TextChanged += this.Tratar_Botao_Aplicar;
+                this.txtTerminal.TextChanged += this.Tratar_Botao_Aplicar;
+
+                // GridButtons objGridButtonsItensIdentificadores
+                this.objGridButtonsItensIdentificadores.Cadastrar_DataGridViewRow += this.Clicar_Botao_Confirmar_Incluir;
+                this.objGridButtonsItensIdentificadores.Atualizar_DataGridViewRow += this.Clicar_Botao_Confirmar_Alterar;
+                this.objGridButtonsItensIdentificadores.Botao_Propriedade_Excluir.Click += this.Clicar_Botao_Propriedade_Excluir;
+                this.objGridButtonsItensIdentificadores.Botao_Propriedade_Incluir.Click += this.Clicar_Botao_Propriedade_Incluir;
+                this.objGridButtonsItensIdentificadores.Preencher_Formulario = this.Preencher_Formulario;
+                this.objGridButtonsItensIdentificadores.Limpar_Formulario = this.Limpar_Formulario_GridButtons;
+                this.objGridButtonsItensIdentificadores.Verificar_Atualizar_Valido = this.Validar_Alterar_GridButton;
+                this.objGridButtonsItensIdentificadores.Verificar_Cadastro_Valido = this.Validar_Incluir_GridButton;
+
+                this.txtCodigoIdentificador.TextChanged += this.Tratar_Mudar_Texto;
+                this.txtTerminal.TextChanged += this.Tratar_Mudar_Texto;
+                this.txtEmail2.LostFocus += this.Perder_Foco_Email;
+
+                this.btnIncluirTelefone.Click += this.Clicar_btnIncluirClienteContato;
+                this.btnExcluirTelefone.Click += this.Clicar_btnExcluirClienteContato;
+                this.btnIncluirEmail.Click += this.Clicar_btnIncluirClienteContato;
+                this.btnExcluirEmail.Click += this.Clicar_btnExcluirClienteContato;
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        public frmSolicitacao_Estorno_Propriedades(DataRow dtrSolicitacaoParaEstorno, DataTable dttIdentificadores)
+            : this()
+        {
+            try
+            {
+                this.dtrSolicitacaoEstorno = dtrSolicitacaoParaEstorno;
+                this.dttIdentificadores = dttIdentificadores;
+                this.enuTipoSolicitacao = TipoSolicitacao.SolicitacaoNova;
+                this.intLojaID = Root.Loja_Ativa.ID;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public frmSolicitacao_Estorno_Propriedades(int intParamSolicitacaoEstornoID, int intParamLojasID, int intParamLoteEnvioAdministradora, int intParamOperadoraCartaoID)
+            : this()
+        {
+            try
+            {
+                this.intSolicitacaoEstornoID = intParamSolicitacaoEstornoID;
+                this.enuTipoSolicitacao = TipoSolicitacao.Alteracao;
+                this.intLojaID = intParamLojasID;
+                this.intLoteEnvioAdministradora = intParamLoteEnvioAdministradora;
+                this.intOperadoraCartaoID = intParamOperadoraCartaoID;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region "   Inicialização      "
+
+        private void Form_Load(object sender, EventArgs e)
+        {
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.Definir_Formulario_Estilo();
+
+                this.Tratar_Permissoes();
+
+                this.Obter_Dados();
+
+                this.Tratar_Event_Handlers_Botao_Aplicar(false);
+
+                this.Preencher_Combo_Caixas();
+
+                this.Preencher_Combo_Status();
+
+                this.Preencher_Combo_Cartao_TEF();
+
+                this.Preencher_Combos_Tipo();
+
+                this.Preencher_Combo_Forma_Estorno();
+
+                this.Preencher_Propriedades_Form();
+
+                this.Preencher_Painel_Geral();
+
+                this.Preencher_Painel_Venda_Origem();
+
+                this.Preencher_Painel_Dados_Estorno();
+
+                //this.Preencher_Combo_Telefone_Cliente();
+
+                //this.Preencher_Combo_Email_Cliente();
+
+                this.Habilitar_Botao_Notificacao_Cliente();
+
+                if (this.intSolicitacaoEstornoID > 0)
+                {
+                    this.btnImprimirComprovante.Enabled = this.blnPermissaoImprimir;
+                }
+                else
+                {
+                    this.btnImprimirComprovante.Enabled = false;
+                }
+
+                this.Atualizar_DataSet_Temporario();
+
+                this.Adicionar_Colunas_Grid_objGridButtonsItensIdentificadores();
+
+                this.Preencher_Grid_objGridButtonsItensIdentificadores();
+
+                this.Habilitar_Campos_Por_Origem();
+                
+                this.Tratar_Event_Handlers_Botao_Aplicar(true);
+
+                this.Verificar_Mudancas();
+
+                this.ActiveControl = this.btnOk;
+
+                this.Verifica_Se_Solicitacao_Esta_Cancelada();
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        #endregion
+
+        #region "   Eventos            "
+
+        private void Habilitar_Campo_Email(object sender, EventArgs e)
+        {
+            try
+            {
+                this.lblEmail.Enabled = this.chkNotificarEmail.Checked;
+                this.txtEmail2.Enabled = this.chkNotificarEmail.Checked;
+                this.cboClienteEmail.Enabled = this.chkNotificarEmail.Checked;
+                this.btnIncluirEmail.Enabled = this.chkNotificarEmail.Checked;
+                this.btnExcluirEmail.Enabled = this.chkNotificarEmail.Checked;
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Tratar_Botao_Aplicar(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Verificar_Mudancas();
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Tratar_Mudar_Combo_Tipo_TEF(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Preencher_Combo_Identificadores_Por_Operadora_Bandeira();
+
+                this.Verificar_Mudancas();
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_Botao_Imprimir_Comprovante(object sender, EventArgs e)
+        {
+            try
+            {
+                if (MessageBox.Show("Confirma impressão do protocolo?", this.Text, MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK)
+                {
+
+                    this.Imprimir_Comprovante();
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+
+        }
+
+        private void Clicar_Botao_Notificar_Cliente(object sender, EventArgs e)
+        {
+            try
+            {
+                if (MessageBox.Show("Confirma envio de e-mail com notificação?", this.Text, MessageBoxButtons.OKCancel, MessageBoxIcon.Information) == DialogResult.OK)
+                {
+                    this.Enviar_Email_Notificacao();
+
+                    MessageBox.Show("E-mail de notificação enviado com sucesso.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        ///	<summary>
+        ///		Controla os atalhos 
+        ///	</summary>
+        ///	<history>
+        ///		[msisiliani]    17/06/2013  Created 
+        ///	</history>
+        ///-----------------------------------------------------------------------------
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            try
+            {
+
+                if (this.objGridButtonsItensIdentificadores.Tratar_Pressionar_Tecla(ref msg, keyData))
+                {
+                    return true;
+                }
+
+                return base.ProcessCmdKey(ref msg, keyData);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+                return false;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        ///	<summary>
+        ///		Tratar texto alphanumerico
+        ///	</summary>
+        ///	<history>
+        ///		[msisiliani]    17/06/2013  Created 
+        ///	</history>
+        ///-----------------------------------------------------------------------------
+        /// </history>
+        private void Tratar_Mudar_Texto(object sender, EventArgs e)
+        {
+            try
+            {
+                ((TextBox)sender).Text = Utilitario.Permitir_Apenas_Alphanumeric(((TextBox)sender).Text);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Evento manipula os controles necessários ao incluir um novo código 
+        ///		identificador da operadora.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Clicar_Botao_Propriedade_Incluir(object sender, EventArgs e)
+        {
+            try
+            {
+                this.cboTipoIdentificador.Focus();
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Evento método manipula os controles necessários ao excluir código 
+        ///		identificador da operadora.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///----------------------------------------------------------------------------
+        private void Clicar_Botao_Propriedade_Excluir(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Verificar_Mudancas();
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+
+        }
+
+        private void Perder_Foco_Email(object sender, EventArgs e)
+        {
+            try
+            {
+                this.txtEmail2.Text = this.txtEmail2.Text.Trim();
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+
+        }
+
+        private void Clicar_btnIncluirClienteContato(object sender, System.EventArgs e)
+        {
+            try
+            {
+                string btnSender = ((Button)sender).Name;
+                this.Clicar_btnIncluirClienteTelefone(btnSender);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void Clicar_btnExcluirClienteContato(object sender, System.EventArgs e)
+        {
+            try
+            {
+                string btnSender = ((Button)sender).Name;
+                this.Remover_Ultimo_Contato_Cliente(btnSender);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        #endregion
+
+        #region "   Métodos            "
+
+        private void Tratar_Event_Handlers_Botao_Aplicar(bool blnHabilitarEventHandlers)
+        {
+            try
+            {
+                if (blnHabilitarEventHandlers)
+                {
+                    this.cboAdministradoraCartao.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                    this.txtNumeroParcelas.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.cboTipoTransacao.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                    this.cboUsuarioCaixaVenda.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                    this.dtpDataVenda.ValueChanged += this.Tratar_Botao_Aplicar;
+                    this.txtNomeCliente.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.objTelefoneCliente.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.cboClienteTelefone.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
+                    this.txtValorVenda.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.txtValorEstornar.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.chkNotificarEmail.CheckedChanged += this.Tratar_Botao_Aplicar;
+                    this.txtEmail2.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.cboClienteEmail.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
+                    this.txtMotivo.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.cboTipoEstorno.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                    this.txtCodigoCancelamento.TextChanged += this.Tratar_Botao_Aplicar;
+                    this.cboStatus.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                    this.cboFormaEstorno.SelectedValueChanged += this.Tratar_Botao_Aplicar;
+                    this.txtObservacao.TextChanged += this.Tratar_Botao_Aplicar;
+                }
+                else
+                {
+                    this.cboAdministradoraCartao.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.txtNumeroParcelas.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboTipoTransacao.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboUsuarioCaixaVenda.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.dtpDataVenda.ValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.txtNomeCliente.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.objTelefoneCliente.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboClienteTelefone.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
+                    this.txtValorVenda.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.txtValorEstornar.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.chkNotificarEmail.CheckedChanged -= this.Tratar_Botao_Aplicar;
+                    this.txtEmail2.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboClienteEmail.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
+                    this.txtMotivo.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboTipoEstorno.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.txtCodigoCancelamento.TextChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboStatus.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.cboFormaEstorno.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
+                    this.txtObservacao.TextChanged -= this.Tratar_Botao_Aplicar;
+
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Imprimir_Comprovante()
+        {
+            try
+            {
+                DataSet dtsImpressaoComprovante = new Solicitacao_EstornoBUS().Consultar_DataSet_Impressao_Comprovante(this.intSolicitacaoEstornoID, this.intLojaID);
+
+                // Atualiza o valor estornado pois neste momento ele consta como 0 na base devido a possibilidade de cancelamento da ação deste form;
+                dtsImpressaoComprovante.Tables[0].Rows[0]["Valor_Estorno"] = this.txtValorEstornar.Text;
+
+                new InfraEstrutura.Impressao_Romaneio().Imprimir_Solicitacao_Estorno(dtsImpressaoComprovante);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Tratar_Permissoes()
+        {
+            try
+            {
+                this.blnPermissaoEnviarEmail = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Enviar_Email.DefaultString());
+                this.blnPermissaoImprimir = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Imprimir.DefaultString());
+                this.blnPermissaoIncluir = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Incluir.DefaultString());
+                this.blnPermissaoVendaOrigem = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Alterar_Grupo_Venda_Origem.DefaultString());
+                this.blnPermissaoDadosEstorno = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Alterar_Grupo_Dados_Estorno.DefaultString());
+                this.blnPermissaoAlterarStatus = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Alterar_Status.DefaultString());
+                this.blnPermissaoAlterarInformacaoCartao = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Alterar_Informacao_Cartao.DefaultString());
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private void Enviar_Email_Notificacao()
+        {
+            try
+            {
+                new Solicitacao_EstornoBUS().Enviar_Email_Notificacao_Cliente(this.dtsPropriedades);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private void Definir_Formulario_Estilo()
+        {
+            try
+            {
+                Form_Designer.Configurar_Designer_Padrao_MercadoCar(this);
+                Form_Designer.Definir_Label_Estilo_Atencao(this.lblAlertaObservacao);
+                Form_Designer.Definir_Botao_Estilo_Incluir(this.btnIncluirTelefone);
+                Form_Designer.Definir_Botao_Estilo_Excluir(this.btnExcluirTelefone);
+                Form_Designer.Definir_Botao_Estilo_Incluir(this.btnIncluirEmail);
+                Form_Designer.Definir_Botao_Estilo_Excluir(this.btnExcluirEmail);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Verificar_Mudancas()
+        {
+
+            try
+            {
+                if (this.blnPermissaoIncluir)
+                {
+                    if (this.enuTipoSolicitacao == TipoSolicitacao.Alteracao)
+                    {
+                        this.btnAplicar.Enabled = (
+                                (this.chkNotificarEmail.Checked != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"].DefaultBool()) ||
+                                (this.txtEmail2.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
+                                (this.cboClienteEmail.SelectedValue.DefaultString() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
+                                (this.cboTipoEstorno.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Tipo_Estorno"].DefaultInteger()) ||
+                                (this.txtCodigoCancelamento.Text != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Solicitacao_Estorno_Codigo_Cancelamento"].ToString()) ||
+                                (this.cboStatus.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Status_ID"].DefaultInteger()) ||
+                                (this.cboFormaEstorno.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Forma_ID"].DefaultInteger()) ||
+                                (this.txtObservacao.Text != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Solicitacao_Estorno_Observacao"].ToString()) ||
+                                (this.txtValorEstornar.Text.DefaultDecimal() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Valor_Estorno"].DefaultDecimal()) ||
+                                (this.txtNumeroCartao.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Numero_Cartao"].DefaultString()) || 
+                                (this.cboAdministradoraCartao.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cartao_TEF_ID"].DefaultInteger()) ||
+                                (this.cboTipoTransacao.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Tipo_Transacao"].DefaultInteger()) ||
+                                (this.txtNumeroParcelas.Text.DefaultInteger() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Numero_Parcelas"].DefaultInteger()) ||
+                                (this.dtpDataVenda.Value.DefaultDateTime() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Data_Venda"].DefaultDateTime()) ||
+                                (this.cboUsuarioCaixaVenda.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"].DefaultInteger())
+                                );
+                    }
+                    else
+                    {
+                        this.btnAplicar.Enabled = (
+                                (this.txtNomeCliente.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Nome"].ToString()) ||
+                                ((this.objTelefoneCliente.TextBox_DDD.Text + this.objTelefoneCliente.TextBox_Numero.Text).Replace("-", string.Empty) != 
+                                    this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Replace("-", string.Empty)) ||
+                                (this.chkNotificarEmail.Checked != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"].DefaultBool()) ||
+                                (this.txtEmail2.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
+                                (this.cboClienteEmail.SelectedValue.DefaultString() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
+                                (this.txtMotivo.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"].ToString()) ||
+                                (this.txtTerminal.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Terminal"].ToString()) ||
+                                (this.cboUsuarioCaixaVenda.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"].DefaultInteger())
+                                );
+                    }
+
+                }
+
+                if (this.btnAplicar.Enabled)
+                    return;
+
+                if (dtsTemporario != null)
+                this.btnAplicar.Enabled = this.dtsPropriedades.GetXml() != this.dtsTemporario.GetXml();
+
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Habilitar_Botao_Notificacao_Cliente()
+        {
+            try
+            {
+                switch (this.enuTipoSolicitacao)
+                {
+                    case TipoSolicitacao.SolicitacaoNova:
+                        this.btnNotificarCliente.Enabled = false;
+                        break;
+
+                    case TipoSolicitacao.Alteracao:
+                        if (Convert.ToInt32(this.dtsPropriedades.Tables["Geral"].Rows[0]["Status_Estorno_ID"]).Equals(Convert.ToInt32(Enumerados.Status_Estorno.Estorno_Efetuado)) ||
+                            Convert.ToInt32(this.dtsPropriedades.Tables["Geral"].Rows[0]["Status_Estorno_ID"]).Equals(Convert.ToInt32(Enumerados.Status_Estorno.Estorno_Recusado)))
+                        {
+                            this.cboStatus.Enabled = this.blnPermissaoAlterarStatus;
+
+                            if (this.chkNotificarEmail.Checked)
+                            {
+                                this.btnNotificarCliente.Enabled = this.blnPermissaoEnviarEmail;
+                            }
+                            else
+                            {
+                                this.btnNotificarCliente.Enabled = false;
+                            }
+
+                        }
+                        else
+                        {
+                            this.btnNotificarCliente.Enabled = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private bool Verificar_Status_Estorno_Encaminhado_Financeiro_Recusado()
+        {
+            try
+            {
+                return this.dtsPropriedades != null
+                        && this.dtsPropriedades.Tables.Count > 0
+                        && this.dtsPropriedades.Tables["Geral"].Rows.Count > 0
+                        && (this.dtsPropriedades.Tables["Geral"].Rows[0]["Status_Estorno_ID"].DefaultInteger() == Status_Estorno.Estorno_Recusado.DefaultInteger() ||
+                            this.dtsPropriedades.Tables["Geral"].Rows[0]["Status_Estorno_ID"].DefaultInteger() == Status_Estorno.Encaminhado_Financeiro.DefaultInteger());
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+        }
+
+        private void Preencher_Combo_Identificadores_Por_Operadora_Bandeira()
+        {
+            try
+            {
+                this.cboTipoIdentificador.DataSource = null;
+
+                DataTable dttIdentificadores = new Operadora_Cartao_IdentificadoresBUS().Consultar_DataTable_Identificadores_Operadora_Cartao_Bandeira();
+
+                string strFiltro = string.Concat("Cartao_Tef_Id = ",
+                                                 this.cboAdministradoraCartao.SelectedValue.DefaultInteger(),
+                                                 " And Operadora_Cartao_ID = ",
+                                                 this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Operadora_Cartao_ID"].DefaultInteger()
+                                                );
+
+                dttIdentificadores.DefaultView.RowFilter = strFiltro;
+
+                DataTable dttIdentificadoresPermitidos = dttIdentificadores.DefaultView.ToTable(true, "Enum_Extenso", "Enum_Tipo_Identificador_Operadora_ID");
+
+                Utilitario.Preencher_ComboBox_DataTable(ref this.cboTipoIdentificador, dttIdentificadoresPermitidos, "Enum_Extenso", "Enum_Tipo_Identificador_Operadora_ID", string.Empty);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+        }
+
+        private void Habilitar_Campos_Por_Origem()
+        {
+            try
+            {
+                this.grbVendaOrigem.Enabled = false;
+                this.grbEstorno.Enabled = false;
+
+                switch (this.enuTipoSolicitacao)
+                {
+                    case TipoSolicitacao.SolicitacaoNova:
+                        this.grbVendaOrigem.Enabled = this.blnPermissaoVendaOrigem;
+                        this.grbEstorno.Enabled = false;
+                        this.objGridButtonsItensIdentificadores.Botao_Propriedade_Incluir.Enabled = this.blnPermissaoIncluir;
+                        if (this.objGridButtonsItensIdentificadores.DgvPadrao.Rows.Count > 0)
+                        {
+                            this.objGridButtonsItensIdentificadores.Botao_Propriedade_Alterar.Enabled = this.blnPermissaoIncluir;
+                            this.objGridButtonsItensIdentificadores.Botao_Propriedade_Excluir.Enabled = this.blnPermissaoIncluir;
+                        }
+
+                        break;
+
+                    case TipoSolicitacao.Alteracao:
+
+                        this.grbVendaOrigem.Enabled = true;
+                        new UtilidadesForm().DesabilitaForm(this.grbVendaOrigem);
+
+                        bool blnStatusEstornoPermiteAlteracao = this.Verificar_Status_Estorno_Encaminhado_Financeiro_Recusado();
+
+                        this.txtValorEstornar.Enabled = 
+                        this.txtNumeroCartao.Enabled =
+                        this.cboAdministradoraCartao.Enabled =
+                        this.cboTipoTransacao.Enabled =
+                        this.txtNumeroParcelas.Enabled =
+                        this.dtpDataVenda.Enabled = this.blnPermissaoVendaOrigem && blnStatusEstornoPermiteAlteracao;
+                        this.chkNotificarEmail.Enabled = this.blnPermissaoDadosEstorno;
+                        this.txtEmail2.Enabled = this.blnPermissaoDadosEstorno;
+
+                        if (this.chkNotificarEmail.Checked)
+                        {
+                            this.lblEmail.Enabled = this.blnPermissaoDadosEstorno;
+                            this.cboClienteEmail.Enabled = this.blnPermissaoDadosEstorno;
+                            this.btnIncluirEmail.Enabled = this.blnPermissaoDadosEstorno;
+                            this.btnExcluirEmail.Enabled = this.blnPermissaoDadosEstorno;
+                        }
+
+                        this.grbEstorno.Enabled = this.blnPermissaoDadosEstorno;
+
+                        this.txtMotivo.Enabled = true;
+                        this.txtMotivo.ReadOnly = true;
+
+                        this.grbIdentificadores.Enabled = 
+                        this.objGridButtonsItensIdentificadores.Enabled = 
+                        this.objGridButtonsItensIdentificadores.Botao_Propriedade_Incluir.Enabled = 
+                        this.objGridButtonsItensIdentificadores.Botao_Propriedade_Alterar.Enabled = 
+                        this.objGridButtonsItensIdentificadores.Botao_Propriedade_Excluir.Enabled = blnStatusEstornoPermiteAlteracao && 
+                                                                                                    (this.blnPermissaoAlterarInformacaoCartao || this.cboTipoTransacao.SelectedValue.DefaultInteger() == TipoTransacaoTEF.POS.DefaultInteger());
+
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        
+        private void Verifica_Se_Solicitacao_Esta_Cancelada()
+        {
+
+            if (this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Status_ID"].DefaultInteger() == Status_Estorno.Solicitacao_Cancelada.DefaultInteger())
+            {
+                grbVendaOrigem.Enabled = false;
+                grbIdentificadores.Enabled = false;
+                objGridButtonsItensIdentificadores.Enabled = false;
+                grbEstorno.Enabled = false;
+            }
+
+        }
+
+        private void Preencher_Painel_Dados_Estorno()
+        {
+            try
+            {
+                if (this.intSolicitacaoEstornoID.Equals(0))
+                {
+                    this.cboTipoEstorno.SelectedValue = this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Tipo_Estorno"];
+                    this.cboFormaEstorno.SelectedIndex = -1;
+                    this.cboStatus.SelectedIndex = -1;
+                    this.cboTipoIdentificador.SelectedIndex = -1;
+                    return;
+                }
+
+                if (this.dtsPropriedades.Tables["Dados_Estorno"].Rows.Count > 0)
+                {
+                    this.cboTipoEstorno.SelectedValue = this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Tipo_Estorno"];
+                    this.txtCodigoCancelamento.Text = this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Solicitacao_Estorno_Codigo_Cancelamento"].ToString();
+                    this.cboStatus.SelectedValue = this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Status_ID"];
+                    this.cboFormaEstorno.SelectedValue = this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Forma_ID"];
+                    this.txtObservacao.Text = this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Solicitacao_Estorno_Observacao"].ToString();
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Painel_Venda_Origem()
+        {
+            try
+            {
+                if (this.enuTipoSolicitacao == TipoSolicitacao.Alteracao)
+                {
+                    this.txtNumeroCartao.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Numero_Cartao"].ToString();
+                    this.cboAdministradoraCartao.SelectedValue = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cartao_TEF_ID"];
+                    this.txtNumeroParcelas.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Numero_Parcelas"].ToString();
+                    this.cboTipoTransacao.SelectedValue = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Tipo_Transacao"];
+                    this.cboUsuarioCaixaVenda.SelectedValue = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"];
+                    this.dtpDataVenda.Value = Convert.ToDateTime(this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Data_Venda"]);
+                    this.txtNomeCliente.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Nome"].ToString();
+                    if (this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString() != string.Empty)
+                    {
+                        if (
+                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(4) == "0300" ||
+                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(4) == "0500" ||
+                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(4) == "0800"
+                            )
+                        {
+                            this.objTelefoneCliente.TextBox_Numero.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString();
+                            this.cboClienteTelefone.Text = DivUtil.Formatar_Telefone_Numero(
+                                this.cboClienteTelefone.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString());
+                        }
+                        else
+                        {
+                            this.objTelefoneCliente.TextBox_DDD.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(2);
+                            this.objTelefoneCliente.TextBox_Numero.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Substring(3);
+                            this.cboClienteTelefone.Text = DivUtil.Formatar_Telefone_Numero(
+                                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(2) +
+                                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Substring(3));
+                        }
+                    }
+
+                    this.txtValorVenda.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Valor_Venda_Origem"].ToString();
+                    this.txtValorEstornar.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Valor_Estorno"].ToString();
+                    this.chkNotificarEmail.Checked = Convert.ToBoolean(this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"]);
+                    this.txtEmail2.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString();
+                    this.cboClienteEmail.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString();
+                    this.txtMotivo.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"].ToString();
+                    this.txtTerminal.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Terminal"].ToString();
+                }
+                else
+                {
+                    if (this.enuTipoSolicitacao == TipoSolicitacao.SolicitacaoNova)
+                    {
+                        this.chkNotificarEmail.Checked = Convert.ToBoolean(this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"]);
+
+                        if (this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Numero_Cartao"].ToString() != string.Empty)
+                        {
+                            this.txtNumeroCartao.Text = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Numero_Cartao"].ToString();
+                        }
+
+                        if (this.dtrSolicitacaoEstorno["Cartao_TEF_ID"].ToString() != string.Empty)
+                        {
+                            this.cboAdministradoraCartao.SelectedValue = Convert.ToInt32(this.dtrSolicitacaoEstorno["Cartao_TEF_ID"]);
+                            this.cboAdministradoraCartao.Enabled = false;
+                        }
+
+                        if (this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Numero_Parcelas"].ToString() != string.Empty)
+                        {
+                            this.txtNumeroParcelas.Text = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Numero_Parcelas"].ToString();
+                            this.txtNumeroParcelas.Enabled = false;
+                        }
+
+                        if (this.dtrSolicitacaoEstorno["Enum_Tipo_Transacao_TEF_ID"].ToString() != string.Empty)
+                        {
+                            this.cboTipoTransacao.SelectedValue = Convert.ToInt32(this.dtrSolicitacaoEstorno["Enum_Tipo_Transacao_TEF_ID"]);
+                            this.cboTipoTransacao.Enabled = false;
+                        }
+
+                        if (this.dtrSolicitacaoEstorno["Usuario_Operadora_Caixa_ID"].ToString() != string.Empty)
+                        {
+                            this.cboUsuarioCaixaVenda.SelectedValue = this.intEstornoCartaoCreditoITID == 0 ? 
+                                                                            this.dtrSolicitacaoEstorno["Usuario_Operadora_Caixa_ID"].DefaultInteger() :
+                                                                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"].DefaultInteger();
+
+                            if (this.cboUsuarioCaixaVenda.SelectedValue != null)
+                            {
+                                this.cboUsuarioCaixaVenda.Enabled = false;
+                            }
+                            else
+                            {
+                                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"] = 0;
+                            }
+
+                        }
+
+                        if (this.dtrSolicitacaoEstorno["Data_Venda"].ToString() != string.Empty)
+                        {
+                            this.dtpDataVenda.Value = Convert.ToDateTime(this.dtrSolicitacaoEstorno["Data_Venda"]);
+                            this.dtpDataVenda.Enabled = false;
+                        }
+
+
+                        if (this.dtrSolicitacaoEstorno["Cliente_ID"].ToString() != string.Empty)
+                        {
+
+                            this.strClienteID = this.dtrSolicitacaoEstorno["Cliente_ID"].ToString();
+
+                            this.dtsCliente = new ClienteBUS().Consultar_Dados_Cliente(this.strClienteID);
+
+                            if (this.dtsCliente.Tables[0].Columns.Contains("CLIENTE_NOME_FANTASIA"))
+                            {
+                                this.txtNomeCliente.Text = this.dtsCliente.Tables[0].Rows[0]["CLIENTE_RAZAO_SOCIAL"].ToString();
+                            }
+                            else
+                            {
+                                this.txtNomeCliente.Text = this.dtsCliente.Tables[0].Rows[0]["Cliente_Nome"].ToString() + " " + this.dtsCliente.Tables[0].Rows[0]["Cliente_Sobrenome"].ToString();
+                            }
+                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Nome"] = this.txtNomeCliente.Text;
+
+                            this.txtNomeCliente.Enabled = false;
+                        }
+
+
+                        if (this.dtrSolicitacaoEstorno["Valor_Venda_Origem"].ToString() != string.Empty)
+                        {
+                            this.txtValorVenda.Text = this.dtrSolicitacaoEstorno["Valor_Venda_Origem"].ToString();
+                            this.txtValorVenda.Enabled = false;
+                        }
+
+                        if (this.dtrSolicitacaoEstorno["Valor_Estorno"].ToString() != string.Empty)
+                        {
+                            this.txtValorEstornar.Text = this.dtrSolicitacaoEstorno["Valor_Estorno"].ToString();
+                            this.txtValorEstornar.Enabled = false;
+                        }
+
+                        this.txtMotivo.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"].ToString();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Obter_Dados()
+        {
+
+            try
+            {
+                this.dtsPropriedades = new Solicitacao_EstornoBUS().Consultar_DataSet_Propriedades(this.intSolicitacaoEstornoID, this.intLojaID);
+
+                if (this.intSolicitacaoEstornoID.Equals(0))
+                {
+                    this.Preencher_DataSet_Propriedades();
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        private void Atualizar_DataSet_Temporario()
+        {
+            try
+            {
+                this.dtsTemporario = this.dtsPropriedades.Copy();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public override bool Efetuar_Alteracao()
+        {
+            try
+            {
+                this.UsuarioAutorizado = Utilitario.Autenticar_Usuario();
+
+                if (this.UsuarioAutorizado == null)
+                {
+                    return false;
+                }
+
+                if (!Root.Permissao.Obter_Permissao_Do_Usuario(this.UsuarioAutorizado, Root.Loja_Ativa.ID, this.Name, Acao_Formulario.Alterar.ToString()))
+                {
+                    MessageBox.Show("A alteração não pôde ser realizada, pois o Usuário não possui permissão!", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return false;
+                }
+
+                if (this.cboStatus.SelectedValue.DefaultInteger() == Status_Estorno.Solicitacao_Cancelada.DefaultInteger())
+                { 
+                    if (MessageBox.Show("Deseja mesmo Cancelar essa Solicitação?", this.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                    {
+                        return false;
+                    }
+                }
+
+                bool blnReturnValue = false;
+
+                if (!this.Validar_Campos())
+                    return false;
+
+                Solicitacao_EstornoBUS busSolicitacaoEstorno = new Solicitacao_EstornoBUS();
+
+                switch (this.enuTipoSolicitacao)
+                {
+                    case TipoSolicitacao.SolicitacaoNova:
+
+                        this.dtsTemporario.Tables["Venda_Origem"].Rows.Clear();
+                        DataRow dtrEstorno = this.dtsTemporario.Tables["Venda_Origem"].NewRow();
+                        this.Preencher_DataRow_Venda_Origem(dtrEstorno);
+                        this.dtsTemporario.Tables["Venda_Origem"].Rows.Add(dtrEstorno);
+
+                        if (this.intSolicitacaoEstornoID.Equals(0))
+                        {
+                            busSolicitacaoEstorno.Incluir(this.dtsTemporario);
+                            this.intSolicitacaoEstornoID = this.dtsTemporario.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_ID"].DefaultInteger();
+                        }
+                        else
+                        {
+                           busSolicitacaoEstorno.Alterar_Venda_Origem(this.dtsTemporario);
+                        }
+
+                        this.btnImprimirComprovante.Enabled = this.blnPermissaoImprimir;
+
+                        this.btnImprimirComprovante.PerformClick();
+
+                        blnReturnValue = true;
+                        break;
+                    case TipoSolicitacao.Alteracao:
+
+                        this.Preencher_DataRow_Venda_Origem(this.dtsTemporario.Tables["Venda_Origem"].Rows[0]);
+
+                        this.dtsTemporario.Tables["Dados_Estorno"].Rows.Clear();
+                        this.Preencher_DataRow_Dados_Estorno();
+
+                        busSolicitacaoEstorno.Alterar_Dados_Estorno(this.dtsTemporario);
+
+                        blnReturnValue = true;
+                        break;
+
+                    default:
+                        break;
+                }
+                
+                this.Obter_Dados();
+                
+                this.Habilitar_Botao_Notificacao_Cliente();
+                this.Preencher_Painel_Venda_Origem();
+                this.Preencher_Painel_Geral();
+                this.Preencher_Painel_Dados_Estorno();
+                this.Atualizar_DataSet_Temporario();
+                this.Preencher_Grid_objGridButtonsItensIdentificadores();
+                this.Habilitar_Campos_Por_Origem();
+                this.Verificar_Mudancas();
+                this.Registro_Alterado = blnReturnValue;
+                this.Verifica_Se_Solicitacao_Esta_Cancelada();
+
+                return blnReturnValue;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private bool Validar_Campos()
+        {
+            try
+            {
+                switch (this.enuTipoSolicitacao)
+                {
+                    case TipoSolicitacao.SolicitacaoNova:
+                        if (this.txtNumeroCartao.Text.Trim().Length.Equals(0))
+                        {
+                            MessageBox.Show("O preenchimento do número do cartão é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.txtNumeroCartao.Focus();
+                            return false;
+                        }
+
+                        if (this.cboAdministradoraCartao.SelectedValue == null)
+                        {
+                            MessageBox.Show("É obrigatório selecionar um Cartão TEF.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.cboAdministradoraCartao.Focus();
+                            return false;
+                        }
+
+                        if (this.txtNumeroParcelas.Text.Trim().Length.Equals(0))
+                        {
+                            MessageBox.Show("O preenchimento da quantidade de parcelas é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.txtNumeroParcelas.Focus();
+                            return false;
+                        }
+
+                        if (this.cboTipoTransacao.SelectedValue == null)
+                        {
+                            MessageBox.Show("É obrigatório selecionar um tipo de transação.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.cboTipoTransacao.Focus();
+                            return false;
+                        }
+
+                        if (this.cboUsuarioCaixaVenda.SelectedValue == null)
+                        {
+                            MessageBox.Show("É obrigatório selecionar um caixa.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.cboUsuarioCaixaVenda.Focus();
+                            return false;
+                        }
+
+                        if (this.txtNomeCliente.Text.Trim().Length.Equals(0))
+                        {
+                            MessageBox.Show("O preenchimento do nome do cliente é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.txtNomeCliente.Focus();
+                            return false;
+                        }
+
+
+                        if (this.txtValorVenda.Text.Trim().Length.Equals(0))
+                        {
+                            MessageBox.Show("O preenchimento do valor da venda é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.txtValorVenda.Focus();
+                            return false;
+                        }
+
+                        if (this.txtValorEstornar.Text.Trim().Length.Equals(0))
+                        {
+                            MessageBox.Show("O preenchimento do valor a estornar é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.txtValorEstornar.Focus();
+                            return false;
+                        }
+
+                        if (this.chkNotificarEmail.Checked)
+                        {
+                            if (this.txtEmail2.Text.Trim().Length.Equals(0))
+                            {
+                                MessageBox.Show("Para notificar o cliente através de e-mail é necessário informar o mesmo.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                this.txtEmail2.Focus();
+                                return false;
+                            }
+                            if (DivUtil.Validar_Email(this.txtEmail2.Text.Trim(), false) == false)
+                            {
+                                MessageBox.Show("É necessário informar um e-mail válido.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                this.txtEmail2.Focus();
+                                return false;
+
+                            }
+                        }
+
+                        if (this.txtMotivo.Text.Trim().Length.Equals(0) || this.txtMotivo.Text.Trim().Equals(CARTAO_ESTORNO_MOTIVO))
+                        {
+                            MessageBox.Show("O preenchimento do motivo do estorno é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.txtMotivo.Focus();
+                            return false;
+                        }
+
+                        if (this.objGridButtonsItensIdentificadores.DgvPadrao.Rows.Count.Equals(0))
+                        {
+                            MessageBox.Show("O preenchimento de identificadores é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.objGridButtonsItensIdentificadores.Focus();
+                            return false;
+                        }
+
+                        break;
+
+                    case TipoSolicitacao.Alteracao:
+
+                        if (this.cboStatus.SelectedValue.DefaultInteger() == Status_Estorno.Solicitacao_Cancelada.DefaultInteger() &&
+                            this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Status_ID"].DefaultInteger() != Status_Estorno.Encaminhado_Financeiro.DefaultInteger())
+                        {
+                            MessageBox.Show("Só é possível Cancelar a Solicitação se ela está no Status de Encaminhado ao Financeiro!", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return false;
+                        }
+
+
+                        if (this.txtValorEstornar.Text.DefaultDecimal() > this.txtValorVenda.Text.DefaultDecimal() ||
+                            this.txtValorEstornar.Text.DefaultDecimal() == 0)
+                        {
+                            string strMensagem = this.txtValorEstornar.Text.DefaultDecimal() == 0 ? "Valor de estorno não pode ser Zero!" :
+                                                                                                    "Valor de estorno está superior ao valor original da compra!";
+
+                            MessageBox.Show(strMensagem, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return false;
+                        }
+
+                        if (this.objGridButtonsItensIdentificadores.DgvPadrao.RowCount == 0)
+                        {
+                            MessageBox.Show("É necessário pelo menos 1 identificador cadastrado!", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return false;
+                        }
+
+                        if (this.cboTipoEstorno.SelectedValue == null)
+                        {
+                            MessageBox.Show("É obrigatório selecionar o tipo de estorno.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.cboTipoEstorno.Focus();
+                            return false;
+                        }
+
+                        if (this.cboStatus.SelectedValue == null)
+                        {
+                            MessageBox.Show("É obrigatório selecionar o status do estorno.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.cboStatus.Focus();
+                            return false;
+                        }
+
+                        if (this.cboFormaEstorno.SelectedValue == null)
+                        {
+                            MessageBox.Show("É obrigatório selecionar a forma do estorno.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            this.cboFormaEstorno.Focus();
+                            return false;
+                        }
+
+
+                        if (this.cboStatus.SelectedValue.DefaultInteger() == Status_Estorno.Processo_Operadora.DefaultInteger()
+                            && (this.lblNumeroLoteValor.Text == null || this.lblNumeroLoteValor.Text == string.Empty || this.lblNumeroLoteValor.Text.DefaultInteger() == 0))
+                        {
+                            if (MessageBox.Show("Não existe lote para essa solicitação, deseja criar um novo lote?", this.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                            {
+                                this.Obter_Proximo_Numero_Lote_Disponivel();
+                            }
+
+
+                        }
+
+
+                        break;
+
+                    default:
+                        break;
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_DataSet_Propriedades()
+        {
+            try
+            {
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows.Add();
+                this.dtsPropriedades.Tables["Dados_Estorno"].Rows.Add();
+                this.dtsPropriedades.Tables["Geral"].Rows.Add();
+
+                this.intEstornoCartaoCreditoITID = Convert.ToInt32(this.dtrSolicitacaoEstorno["Estorno_Cartao_Credito_IT_ID"]);
+
+
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Lojas_ID"] = Root.Loja_Ativa.ID;
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_ID"] = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_ID"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Numero_Cartao"] = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Numero_Cartao"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cartao_TEF_ID"] = this.dtrSolicitacaoEstorno["Cartao_TEF_ID"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cod_Autorizacao"] = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Cod_Autorizacao"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Numero_Parcelas"] = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Numero_Parcelas"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Tipo_Transacao"] = this.dtrSolicitacaoEstorno["Enum_Tipo_Transacao_TEF_ID"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"] = this.dtrSolicitacaoEstorno["Usuario_Operadora_Caixa_ID"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Data_Venda"] = this.dtrSolicitacaoEstorno["Data_Venda"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"] = CARTAO_ESTORNO_MOTIVO;
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cliente_ID"] = this.dtrSolicitacaoEstorno["Cliente_ID"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Nome"] = this.dtrSolicitacaoEstorno["Solicitacao_Estorno_Cliente_Nome"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Valor_Venda_Origem"] = this.dtrSolicitacaoEstorno["Valor_Venda_Origem"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Valor_Estorno"] = this.dtrSolicitacaoEstorno["Valor_Estorno"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"] = false;
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Estorno_Cartao_Credito_IT_ID"] = this.dtrSolicitacaoEstorno["Estorno_Cartao_Credito_IT_ID"];
+                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Operadora_Cartao_ID"] = this.dtrSolicitacaoEstorno["Operadora_Cartao_ID"];
+                this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Estorno_Cartao_Credito_IT_ID"] = this.dtrSolicitacaoEstorno["Estorno_Cartao_Credito_IT_ID"];
+                this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Tipo_Estorno"] = this.dtrSolicitacaoEstorno["Enum_Tipo_Estorno"];
+                this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Status_ID"] = this.dtrSolicitacaoEstorno["Enum_Status_ID"];
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Preenche as informações da solicitação de estorno para gravação na base.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	14/06/2013	Modified
+        ///		- Inclusão do preenchimento da coluna Solicitacao_Estorno_Terminal
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Preencher_DataRow_Venda_Origem(DataRow dtrEstorno)
+        {
+            try
+            {
+                dtrEstorno["Lojas_ID"] = this.intLojaID;
+                dtrEstorno["Estorno_Cartao_Credito_IT_ID"] = this.intEstornoCartaoCreditoITID;
+                dtrEstorno["Usuario_Operadora_Caixa_ID"] = this.cboUsuarioCaixaVenda.SelectedValue;
+                dtrEstorno["Cliente_ID"] = this.strClienteID;
+                dtrEstorno["Solicitacao_Estorno_Cliente_Nome"] = this.txtNomeCliente.Text;
+
+                if (this.cboClienteTelefone.Visible && this.cboClienteTelefone.SelectedIndex != 0)
+                {
+                    if (this.cboClienteTelefone.Enabled)
+                    {
+                        dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = Utilitario.Remover_Caracteres_Formatacao_Telefone(this.cboClienteTelefone.Text);
+                    }
+                    else
+                    {
+                        dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = Utilitario.Remover_Caracteres_Formatacao_Telefone(this.cboClienteTelefone.Text);
+                    }
+                }
+                else
+                if (this.objTelefoneCliente.TextBox_Numero.Text != string.Empty)
+                {
+                    if (this.objTelefoneCliente.TextBox_DDD.Enabled)
+                    {
+                        dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = this.objTelefoneCliente.TextBox_DDD.Text + "-" + this.objTelefoneCliente.TextBox_Numero.Text;
+                    }
+                    else
+                    {
+                        dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = this.objTelefoneCliente.TextBox_Numero.Text;
+                    }
+                }
+                else
+                {
+                    dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = string.Empty;
+                }
+                dtrEstorno["Solicitacao_Estorno_Cliente_Notificar"] = this.chkNotificarEmail.Checked;
+                dtrEstorno["Solicitacao_Estorno_Cliente_Email"] = this.txtEmail2.Text.Trim();
+                dtrEstorno["Solicitacao_Estorno_Motivo"] = this.txtMotivo.Text;
+                dtrEstorno["Enum_Status_ID"] = this.intSolicitacaoEstornoID == 0 ? Status_Estorno.Encaminhado_Financeiro.DefaultInteger() : this.cboStatus.SelectedValue.DefaultInteger();
+
+                if (dtrEstorno["Usuario_Geracao_ID"].DefaultInteger() == 0)
+                    dtrEstorno["Usuario_Geracao_ID"] = this.UsuarioAutorizado != null ? this.UsuarioAutorizado.ID : Root.Funcionalidades.UsuarioDO_Ativo.ID;
+
+                dtrEstorno["Solicitacao_Estorno_ID"] = this.intSolicitacaoEstornoID;
+                dtrEstorno["Solicitacao_Estorno_Terminal"] = this.txtTerminal.Text.Trim();
+
+                dtrEstorno["Usuario_ID"] = this.UsuarioAutorizado != null ? this.UsuarioAutorizado.ID : Root.Funcionalidades.UsuarioDO_Ativo.ID;
+                dtrEstorno["Valor_Estorno"] = this.txtValorEstornar.Text.DefaultDecimal();
+                dtrEstorno["Numero_Cartao"] = this.txtNumeroCartao.Text;
+                dtrEstorno["Cartao_TEF_ID"] = this.cboAdministradoraCartao.SelectedValue.DefaultInteger();
+                dtrEstorno["Tipo_Transacao"] = this.cboTipoTransacao.SelectedValue.DefaultInteger();
+                dtrEstorno["Numero_Parcelas"] = this.txtNumeroParcelas.Text;
+                dtrEstorno["Data_Venda"] = this.dtpDataVenda.Value.DefaultDateTime();
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_DataRow_Dados_Estorno()
+        {
+            try
+            {
+                
+                if (this.dtsTemporario.Tables["Dados_Estorno"].Columns["Solicitacao_Estorno_Cliente_Notificar"] == null)
+                {
+                    this.dtsTemporario.Tables["Dados_Estorno"].Columns.Add("Solicitacao_Estorno_Cliente_Notificar");
+                    this.dtsTemporario.Tables["Dados_Estorno"].Columns.Add("Solicitacao_Estorno_Cliente_Email");
+                }
+
+                if (!this.dtsTemporario.Tables["Dados_Estorno"].Columns.Contains("Lote_Envio_Administradora"))
+                    this.dtsTemporario.Tables["Dados_Estorno"].Columns.Add("Lote_Envio_Administradora");
+
+                DataRow dtrEstorno = this.dtsTemporario.Tables["Dados_Estorno"].NewRow();
+
+                dtrEstorno["Solicitacao_Estorno_Cliente_Notificar"] = this.chkNotificarEmail.Checked;
+                dtrEstorno["Solicitacao_Estorno_Cliente_Email"] = this.txtEmail2.Text.Trim();
+                dtrEstorno["Lojas_ID"] = this.intLojaID;
+                dtrEstorno["Tipo_Estorno"] = this.cboTipoEstorno.SelectedValue;
+                dtrEstorno["Estorno_Cartao_Credito_IT_ID"] = this.intEstornoCartaoCreditoITID;
+                dtrEstorno["Solicitacao_Estorno_ID"] = this.intSolicitacaoEstornoID;
+                dtrEstorno["Solicitacao_Estorno_Codigo_Cancelamento"] = this.txtCodigoCancelamento.Text;
+                dtrEstorno["Enum_Status_ID"] = this.cboStatus.SelectedValue;
+                dtrEstorno["Enum_Forma_ID"] = this.cboFormaEstorno.SelectedValue;
+                dtrEstorno["Solicitacao_Estorno_Observacao"] = this.txtObservacao.Text;
+                dtrEstorno["Usuario_Ultima_Alteracao_ID"] = this.UsuarioAutorizado != null ? this.UsuarioAutorizado.ID : Root.Funcionalidades.UsuarioDO_Ativo.ID;
+                dtrEstorno["Solicitacao_Estorno_Terminal"] = this.txtTerminal.Text.Trim();
+                dtrEstorno["Lote_Envio_Administradora"] = this.intLoteEnvioAdministradora;
+
+                this.dtsTemporario.Tables["Dados_Estorno"].Rows.Add(dtrEstorno);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Propriedades_Form()
+        {
+            try
+            {
+                if (this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cliente_ID"] != null)
+                {
+                    this.strClienteID = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cliente_ID"].ToString();
+                }
+
+                this.intEstornoCartaoCreditoITID = Convert.ToInt32(this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Estorno_Cartao_Credito_IT_ID"]);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        private void Preencher_Painel_Geral()
+        {
+            try
+            {
+                if (this.enuTipoSolicitacao == TipoSolicitacao.Alteracao)
+                {
+                    this.lblSolicitanteValor.Text = this.dtsPropriedades.Tables["Geral"].Rows[0]["Nome_Usuario_Solicitante"].ToString();
+                    this.lblDataSolicitacaoValor.Text = this.dtsPropriedades.Tables["Geral"].Rows[0]["Solicitacao_Estorno_Data_Geracao"].ToString();
+                    this.lblRomaneioEstornoValor.Text = this.dtsPropriedades.Tables["Geral"].Rows[0]["Romaneio_CT_id"].ToString();
+                    this.lblStatusValor.Text = this.dtsPropriedades.Tables["Geral"].Rows[0]["Status_Estorno"].ToString();
+                    this.lblUsuarioTratamentoValor.Text = this.dtsPropriedades.Tables["Geral"].Rows[0]["Nome_Usuario_Tratamento"].ToString();
+                    this.lblDataTratamentoValor.Text = this.dtsPropriedades.Tables["Geral"].Rows[0]["Data_Ultima_Alteracao"].ToString();
+                    this.lblNumeroLoteValor.Text = this.intLoteEnvioAdministradora.DefaultString();
+                }
+                else
+                {
+                    DBUtil objUtil = new DBUtil();
+
+                    this.lblSolicitanteValor.Text = Root.Funcionalidades.UsuarioDO_Ativo.PessoaFisica.Nome_Completo();
+                    this.lblDataSolicitacaoValor.Text = objUtil.Obter_Data_do_Servidor(true, TipoServidor.LojaAtual).ToString();
+                    this.lblRomaneioEstornoValor.Text = this.dtrSolicitacaoEstorno["Romaneio_Venda_CT_ID"].ToString();
+                    this.lblStatusValor.Text = Status_Estorno.Encaminhado_Financeiro.ToDescription();
+
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Combo_Cartao_TEF()
+        {
+
+            this.cboAdministradoraCartao.SelectedValueChanged -= this.Tratar_Mudar_Combo_Tipo_TEF;
+
+            try
+            {
+                Utilitario.Preencher_ComboBox_DataTable(ref this.cboAdministradoraCartao, new Cartao_TEFBUS().Consultar_DataSet_Grid_Cartao_TEF(string.Empty, Formas_Pagamento.ID_FORMA_PAGAMENTO_CREDITO, true, TipoServidor.LojaAtual).Tables[0],
+                                                         "Cartao_TEF_DS", "Cartao_TEF_ID", string.Empty);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                this.cboAdministradoraCartao.SelectedValueChanged += this.Tratar_Mudar_Combo_Tipo_TEF;
+            }
+        }
+
+        private void Preencher_Combo_Forma_Estorno()
+        {
+            try
+            {
+                Utilitario.Preencher_ComboBox_Enumerado_Exibindo_Extenso(ref this.cboFormaEstorno, "Forma_Estorno", String.Empty, false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Combos_Tipo()
+        {
+            try
+            {
+                Utilitario.Preencher_ComboBox_Enumerado_Exibindo_Extenso(ref this.cboTipoEstorno, "Romaneio_Tipo_Estorno", String.Empty, false);
+                Utilitario.Preencher_ComboBox_Enumerado_Exibindo_Extenso(ref this.cboTipoTransacao, "TipoTransacaoTEF", String.Empty, false);
+                Utilitario.Preencher_ComboBox_Enumerado_Exibindo_Extenso(ref this.cboTipoIdentificador, "Tipo_Identificador_Operadora", string.Empty, false);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        private void Preencher_Combo_Status()
+        {
+            try
+            {
+
+                DataTable dttEnumeradoEstorno = Utilitario.Obter_DataTable_Enumerado_Da_Memoria("Status_Estorno");
+
+                // Remove a opção "Em aberto"
+                for (int intCont = 0; intCont < dttEnumeradoEstorno.Rows.Count; intCont++)
+                {
+                    if (dttEnumeradoEstorno.Rows[intCont][0].Equals(Convert.ToInt32(Enumerados.Status_Estorno.Estorno_Em_Aberto)))
+                    {
+                        dttEnumeradoEstorno.Rows[intCont].Delete();
+                        dttEnumeradoEstorno.AcceptChanges();
+                        break;
+                    }
+                }
+
+                this.cboStatus.DisplayMember = "Enum_Extenso";
+                this.cboStatus.ValueMember = "Enum_ID";
+                this.cboStatus.DropDownStyle = ComboBoxStyle.DropDownList;
+
+                this.cboStatus.DataSource = dttEnumeradoEstorno;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Combo_Caixas()
+        {
+            try
+            {
+                this.cboUsuarioCaixaVenda.DisplayMember = "Usuario_Nome_Completo";
+                this.cboUsuarioCaixaVenda.ValueMember = "Usuario_ID";
+
+                ArrayList colFuncoes = new ArrayList();
+                colFuncoes.Add("Operador(a) Caixa");
+                colFuncoes.Add("Encarregada de Caixas");
+                colFuncoes.Add("Fiscal de Caixa");
+
+                UsuarioBUS busUsuario = new UsuarioBUS();
+                Perm_FormularioDO dtoPermFormulario = (Perm_FormularioDO)Root.Permissao.Obter_Formulario_DO("frmCaixa_Orcamento");
+
+                int intLojasID = 0;
+                if (this.dtrSolicitacaoEstorno == null)
+                {
+                    intLojasID = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Lojas_Origem_ID"].DefaultInteger();
+                }
+                else
+                {
+                    intLojasID = this.dtrSolicitacaoEstorno["Lojas_Origem_ID"].DefaultInteger() == 0 ? this.intLojaID : this.dtrSolicitacaoEstorno["Lojas_Origem_ID"].DefaultInteger();
+                }
+
+                this.cboUsuarioCaixaVenda.DataSource = new UsuarioBUS().Consultar_DataSet_Usuarios_Por_Funcao_E_Permissao(intLojasID, colFuncoes, dtoPermFormulario.ID, Root.AcessoDoServidor.ServidorLocal, Root.Boleano.Todos);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        private void Preencher_Combo_Telefone_Cliente()
+        {
+            try
+            {
+                this.Recarregar_Combo_Cliente_Telefone();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Combo_Email_Cliente()
+        {
+            try
+            {
+                this.Recarregar_Combo_Cliente_Email();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Recarregar_Combo_Cliente_Telefone()
+        {
+            try
+            {
+                if (dtsCliente == null)
+                {
+                    this.dtsCliente = new ClienteBUS().Consultar_Dados_Cliente(this.strClienteID);
+                }
+                this.dtsCliente.Tables[1].Columns.Add("Telefone", typeof(string));
+                this.dtsCliente.Tables[2].Columns.Add("Email", typeof(string));
+
+                foreach (DataRow row in this.dtsCliente.Tables[1].Rows)
+                {
+                    if (DBNull.Value.Equals(row["Cliente_Telefone"]) == false)
+                    {
+                        row["Telefone"] = DivUtil.Formatar_Telefone_Numero(row["Cliente_Telefone_DDD"].DefaultString() + row["Cliente_Telefone"].DefaultString());
+                    }
+                }
+
+                this.cboClienteTelefone.DropDownWidth =
+                Utilitario.Obter_Comprimento_Maior_Elemento_DataTable(this.dtsCliente.Tables[1], "Telefone", this.cboClienteTelefone);
+                Utilitario.Preencher_ComboBox_DataTable(ref this.cboClienteTelefone, this.dtsCliente.Tables[1], "Telefone", "Cliente_Telefone", string.Empty, "Selecione...");
+
+                if (dtsCliente.Tables[1].Rows.Count > 0)
+                {
+                    string strTelefone = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"] + 
+                        this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString();
+
+                    if (strTelefone.IsNotNullOrEmpty())
+                    {
+                        this.cboClienteTelefone.Text = DivUtil.Formatar_Telefone_Numero(
+                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(2) + 
+                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Substring(3));
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Recarregar_Combo_Cliente_Email()
+        {
+            try
+            {
+                foreach (DataRow row in this.dtsCliente.Tables[2].Rows)
+                {
+                    row["Email"] = row["Cliente_Email"].DefaultString().ToLower();
+                }
+
+                this.cboClienteEmail.DropDownWidth =
+                Utilitario.Obter_Comprimento_Maior_Elemento_DataTable(this.dtsCliente.Tables[2], "Email", this.cboClienteEmail);
+                Utilitario.Preencher_ComboBox_DataTable(ref this.cboClienteEmail, this.dtsCliente.Tables[2], "Email", "Cliente_Email", string.Empty, "Selecione...");
+
+                if (dtsCliente.Tables[2].Rows.Count > 0)
+                    this.cboClienteEmail.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Clicar_btnIncluirClienteTelefone(string btnSender)
+        {
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.UsuarioAutorizado = Utilitario.Autenticar_Usuario();
+
+                if (this.UsuarioAutorizado == null)
+                {
+                    return;
+                }
+
+                if (this.blnPermissaoIncluir == false)
+                {
+                    MessageBox.Show("A alteração não pôde ser realizada, pois o Usuário não possui permissão!", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (btnSender.Equals(this.btnIncluirTelefone.Name))
+                {
+                    this.lblTelefone.Visible = false;
+                    this.cboClienteTelefone.Visible = false;
+                    this.btnIncluirTelefone.Visible = false;
+                    this.objTelefoneCliente.Visible = true;
+                    this.objTelefoneCliente.TextBox_DDD.Text = null;
+                    this.objTelefoneCliente.TextBox_Numero.Text = null;
+                    this.objTelefoneCliente.TextBox_DDD.Focus();
+                }
+
+                if (btnSender.Equals(this.btnIncluirEmail.Name))
+                {
+                    this.cboClienteEmail.Visible = false;
+                    this.btnIncluirEmail.Visible = false;
+                    this.txtEmail2.Visible = true;
+                    this.txtEmail2.Text = null;
+                    this.txtEmail2.Focus();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void Remover_Ultimo_Contato_Cliente(string btnSender)
+        {
+            try
+            {
+                if (this.blnPermissaoDadosEstorno == false)
+                {
+                    return;
+                }
+
+                if (btnSender.Equals(this.btnExcluirTelefone.Name) && this.cboClienteTelefone.SelectedIndex == 0 && this.cboClienteTelefone.Visible)
+                {
+                    MessageBox.Show("Selecione um telefone para excluir.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                else if (btnSender.Equals(this.btnExcluirEmail.Name) && this.cboClienteEmail.SelectedIndex == 0 && this.cboClienteEmail.Visible)
+                {
+                    MessageBox.Show("Selecione um e-mail para excluir.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                DataRow dtrItemSelecionado = null;
+
+                if (btnSender.Equals(this.btnExcluirTelefone.Name) && this.cboClienteTelefone.Visible)
+                {
+
+                    if (this.cboClienteTelefone.SelectedItem != null && this.cboClienteTelefone.SelectedIndex > -1)
+                    {
+                        dtrItemSelecionado = ((DataRowView)this.cboClienteTelefone.SelectedItem).Row;
+                    }
+
+                    if (this.objTelefoneCliente.TextBox_DDD.Text.IsNotNullOrEmpty() && this.objTelefoneCliente.TextBox_Numero.Text.IsNotNullOrEmpty())
+                    {
+                        dtrItemSelecionado[0] = DivUtil.Formatar_Telefone_Numero(this.objTelefoneCliente.TextBox_DDD.Text + this.objTelefoneCliente.TextBox_Numero.Text);
+                    }
+                    else
+                    if (dtrItemSelecionado == null)
+                    {
+                        this.lblTelefone.Visible = true;
+                        this.cboClienteTelefone.Visible = true;
+                        this.btnIncluirTelefone.Visible = true;
+                        this.objTelefoneCliente.Visible = false;
+                        return;
+                    }
+                }
+                else if (btnSender.Equals(this.btnExcluirEmail.Name) && this.cboClienteEmail.Visible)
+                {
+                    if (this.cboClienteEmail.SelectedItem != null && this.cboClienteEmail.SelectedIndex > -1)
+                    {
+                        dtrItemSelecionado = ((DataRowView)this.cboClienteEmail.SelectedItem).Row;
+                    }
+                    
+                    if (this.txtEmail2.Text.IsNotNullOrEmpty())
+                    {
+                        dtrItemSelecionado[0] = this.txtEmail2.Text;
+                    }
+                    else
+                    if (dtrItemSelecionado == null)
+                    {
+                        this.cboClienteEmail.Visible = true;
+                        this.btnIncluirEmail.Visible = true;
+                        this.txtEmail2.Visible = false;
+                        return;
+                    }
+                }
+
+                if (btnSender.Equals(this.btnExcluirTelefone.Name))
+                {
+                    if (this.cboClienteTelefone.Visible)
+                    {
+                        foreach (DataRow dtrIncluir in dtsCliente.Tables[1].Rows)
+                        {
+                            if (dtrItemSelecionado["Cliente_Telefone"].DefaultString().Equals(dtrIncluir["Cliente_Telefone"].DefaultString()))
+                            {
+                                if (dtrIncluir.RowState == DataRowState.Added)
+                                {
+                                    this.dtsCliente.Tables[1].Rows.RemoveAt(this.cboClienteTelefone.SelectedIndex);
+                                    this.Recarregar_Combo_Cliente_Telefone();
+                                    break;
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Telefone não pode ser excluido pois não foi adicionado neste atendimento.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.lblTelefone.Visible = true;
+                        this.cboClienteTelefone.Visible = true;
+                        this.cboClienteTelefone.SelectedIndex = 0;
+                        this.btnIncluirTelefone.Visible = true;
+                        this.objTelefoneCliente.Visible = false;
+                        this.objTelefoneCliente.TextBox_DDD.Text = null;
+                        this.objTelefoneCliente.TextBox_Numero.Text = null;
+                        return;
+                    }
+                }
+
+                if (btnSender.Equals(this.btnExcluirEmail.Name))
+                {
+                    if (this.cboClienteEmail.Visible)
+                    {
+                        foreach (DataRow dtrIncluir in dtsCliente.Tables[2].Rows)
+                        {
+                            {
+                                if (dtrItemSelecionado["Cliente_Email"].Equals(dtrIncluir["Cliente_Email"]))
+                                {
+                                    if (dtrIncluir.RowState == DataRowState.Added)
+                                    {
+                                        this.dtsCliente.Tables[2].Rows.RemoveAt(this.cboClienteEmail.SelectedIndex);
+                                        this.Recarregar_Combo_Cliente_Email();
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        MessageBox.Show("E-mail não pode ser excluido pois não foi adicionado neste atendimento.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        this.cboClienteEmail.Visible = true;
+                        this.cboClienteEmail.SelectedIndex = 0;
+                        this.btnIncluirEmail.Visible = true;
+                        this.txtEmail2.Visible = false;
+                        return;
+                    }
+                }
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Adiciona as colunas dos gridbuttons de identificadores da operadora.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Adicionar_Colunas_Grid_objGridButtonsItensIdentificadores()
+        {
+            try
+            {
+                this.objGridButtonsItensIdentificadores.DgvPadrao.AutoGenerateColumns = false;
+
+                this.objGridButtonsItensIdentificadores.DgvPadrao.Adicionar_Coluna("Solicitacao_Estorno_ID");
+                this.objGridButtonsItensIdentificadores.DgvPadrao.Adicionar_Coluna("Lojas_ID");
+                this.objGridButtonsItensIdentificadores.DgvPadrao.Adicionar_Coluna("Enum_Tipo_ID");
+                this.objGridButtonsItensIdentificadores.DgvPadrao.Adicionar_Coluna("Enum_Extenso", "Tipo Identificador", 125);
+                this.objGridButtonsItensIdentificadores.DgvPadrao.Adicionar_Coluna("Solicitacao_Estorno_Identificador_Operadora_Codigo", "Código Identificador", 611);
+
+                this.objGridButtonsItensIdentificadores.Habilitar_Ordenacao_DataGridView();
+                this.objGridButtonsItensIdentificadores.DgvPadrao.AllowUserToResizeRows = false;
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Preenche o gridbuttons com as informações da base.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        ///		[tnovelli]      19/08/2013  Changed
+        ///		Inclusão das linhas atraves do datatable do construtor.
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Preencher_Grid_objGridButtonsItensIdentificadores()
+        {
+            try
+            {
+                if (this.dttIdentificadores != null)
+                {
+                    if (this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].Rows.Count == 0 && this.dttIdentificadores.Rows.Count > 0)
+                    {
+                        foreach (DataRow dtrIdentificador in this.dttIdentificadores.Rows)
+                        {
+                            DataRow dtrSolicitacaoIdentificador = this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].NewRow();
+
+                            dtrSolicitacaoIdentificador["Lojas_ID"] = dtrIdentificador["Lojas_ID"];
+                            dtrSolicitacaoIdentificador["Enum_Tipo_ID"] = dtrIdentificador["Enum_Tipo_ID"];
+                            dtrSolicitacaoIdentificador["Enum_Extenso"] = dtrIdentificador["Enum_Extenso"];
+                            dtrSolicitacaoIdentificador["Solicitacao_Estorno_Identificador_Operadora_Codigo"] = dtrIdentificador["Solicitacao_Estorno_Identificador_Operadora_Codigo"];
+
+                            this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].Rows.Add(dtrSolicitacaoIdentificador);
+                        }
+                    }
+                }
+
+                this.objGridButtonsItensIdentificadores.Carregar_Grid(this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"]);
+
+                this.objGridButtonsItensIdentificadores.Atualizar_Status_Botao_Grid();
+
+                this.dtsPropriedades = this.dtsTemporario.Copy();
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Evento preenche realiza a inclusão das informações de identificadores da 
+        ///		operadora.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Clicar_Botao_Confirmar_Incluir()
+        {
+            try
+            {
+                DataRow dtrSolicitacaoEstornoIdentificadorOperadora = this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].NewRow();
+
+                this.Preencher_DataRow_GridButtons(dtrSolicitacaoEstornoIdentificadorOperadora);
+
+                this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].Rows.Add(dtrSolicitacaoEstornoIdentificadorOperadora);
+                
+                this.Verificar_Mudancas();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Evento preenche realiza a alteração das informações de identificadores da 
+        ///		operadora.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Clicar_Botao_Confirmar_Alterar()
+        {
+            try
+            {
+                DataGridViewRow dgrSolicitacaoEstornoIdentificadorOperadora = this.objGridButtonsItensIdentificadores.DgvPadrao.SelectedRows[0];
+
+                foreach (DataRow dtrItemSolicitacaoEstornoIdentificadorOperadora in this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].Rows)
+                {
+                    if (dtrItemSolicitacaoEstornoIdentificadorOperadora.RowState != DataRowState.Deleted)
+                    {
+                        if (Convert.ToInt32(dgrSolicitacaoEstornoIdentificadorOperadora.Cells["Enum_Tipo_ID"].Value).Equals(Convert.ToInt32(dtrItemSolicitacaoEstornoIdentificadorOperadora["Enum_Tipo_ID"])) &&
+                            Convert.ToString(dgrSolicitacaoEstornoIdentificadorOperadora.Cells["Solicitacao_Estorno_Identificador_Operadora_Codigo"].Value).Equals(Convert.ToString(dtrItemSolicitacaoEstornoIdentificadorOperadora["Solicitacao_Estorno_Identificador_Operadora_Codigo"])))
+                        {
+                            this.Preencher_DataRow_GridButtons(dtrItemSolicitacaoEstornoIdentificadorOperadora);
+                            break;
+                        }
+                    }
+
+                }
+
+                this.objGridButtonsItensIdentificadores.DgvPadrao.Focus();
+
+                this.Verificar_Mudancas();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+                
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método preenche uma linha de tabela com a informações do formulário.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Preencher_DataRow_GridButtons(DataRow dtrSolicitacaoEstornoIdentificadorOperadora)
+        {
+            try
+            {
+                dtrSolicitacaoEstornoIdentificadorOperadora["Solicitacao_Estorno_ID"] = this.intSolicitacaoEstornoID;
+                dtrSolicitacaoEstornoIdentificadorOperadora["Lojas_ID"] = this.intLojaID;
+                dtrSolicitacaoEstornoIdentificadorOperadora["Enum_Tipo_ID"] = this.cboTipoIdentificador.SelectedValue;
+                dtrSolicitacaoEstornoIdentificadorOperadora["Enum_Extenso"] = this.cboTipoIdentificador.Text;
+                dtrSolicitacaoEstornoIdentificadorOperadora["Solicitacao_Estorno_Identificador_Operadora_Codigo"] = this.txtCodigoIdentificador.Text;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método limpa as informações relacionadas ao groupbox do gridButtons.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Limpar_Formulario_GridButtons()
+        {
+            try
+            {
+                this.cboTipoIdentificador.SelectedIndex = -1;
+                this.txtCodigoIdentificador.Text = string.Empty;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método preenche as informações relacionadas ao groupbox do gridButtons
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Preencher_Formulario()
+        {
+            try
+            {
+                DataGridViewRow dgrSolicitacaoEstornoIdentificadorOperadora = this.objGridButtonsItensIdentificadores.DgvPadrao.CurrentRow;
+
+                if (dgrSolicitacaoEstornoIdentificadorOperadora != null)
+                {
+                    this.cboTipoIdentificador.SelectedValue = Convert.ToInt32(dgrSolicitacaoEstornoIdentificadorOperadora.Cells["Enum_Tipo_ID"].Value);
+                    this.txtCodigoIdentificador.Text = dgrSolicitacaoEstornoIdentificadorOperadora.Cells["Solicitacao_Estorno_Identificador_Operadora_Codigo"].Value.ToString();
+                }
+                else
+                {
+                    this.Limpar_Formulario_GridButtons();
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método valida a inclusão de um novo item no gridbuttons
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private bool Validar_Incluir_GridButton()
+        {
+            try
+            {                
+                if (this.Validar_Campos_Obrigatorios_GridButtons() == false || this.Validar_Registros_Duplicados_GridButtons() == false)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método valida a alteração de um item no gridbuttons
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private bool Validar_Alterar_GridButton()
+        {
+            try
+            {
+                DataGridViewRow dgrSolicitacaoEstornoIdentificadorOperadoraSelecionado = this.objGridButtonsItensIdentificadores.DgvPadrao.SelectedRows[0];
+
+
+                if (this.Validar_Campos_Obrigatorios_GridButtons() == false || this.Validar_Registros_Duplicados_GridButtons(dgrSolicitacaoEstornoIdentificadorOperadoraSelecionado) == false)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método valida os campos do GridButtons
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private bool Validar_Campos_Obrigatorios_GridButtons()
+        {
+            try
+            {
+                if (this.cboTipoIdentificador.SelectedValue == null)
+                {
+                    MessageBox.Show("A seleção do tipo de identificador é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    this.cboTipoIdentificador.Focus();
+                    return false;
+                }
+
+                if (this.txtCodigoIdentificador.Text.Equals(string.Empty))
+                {
+                    MessageBox.Show("O preenchimento do código identificador é obrigatório.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    this.txtCodigoIdentificador.Focus();
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método valida registros duplicados do GridButtons
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private bool Validar_Registros_Duplicados_GridButtons()
+        {
+            try
+            {
+                DataRow[] dtrSolicitacaoEstornoIdentificadorOperadora = this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].Select("Enum_Tipo_ID = " + this.cboTipoIdentificador.SelectedValue.ToInteger());
+
+                if (dtrSolicitacaoEstornoIdentificadorOperadora.Length > 0)
+                {
+                    MessageBox.Show("Já existe um código cadastrado para esse identificador.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Método valida registros duplicados do GridButtons a partir de um item
+        ///		selecionado.
+        /// </summary>
+        /// <history>
+        ///		[msisiliani]	17/06/2013	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private bool Validar_Registros_Duplicados_GridButtons(DataGridViewRow dgrSolicitacaoEstornoIdentificadorOperadoraSelecionado)
+        {
+            try
+            {
+                DataRow[] dtrSolicitacaoEstornoIdentificadorOperadora = this.dtsTemporario.Tables["Solicitacao_Estorno_Identificadores_Operadoras"].Select("Enum_Tipo_ID = " + this.cboTipoIdentificador.SelectedValue.ToInteger());
+
+                foreach (DataRow dtrItemdtrSolicitacaoEstornoIdentificadorOperadora in dtrSolicitacaoEstornoIdentificadorOperadora)
+                {
+                    if (dtrItemdtrSolicitacaoEstornoIdentificadorOperadora["Enum_Tipo_ID"].ToString().Equals(dgrSolicitacaoEstornoIdentificadorOperadoraSelecionado.Cells["Enum_Tipo_ID"].Value.ToString()) == false)
+                    {
+                        MessageBox.Show("Já existe um código cadastrado para esse identificador.", this.Text, MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Obter_Proximo_Numero_Lote_Disponivel()
+        {
+            try
+            {
+                Estorno_Cartao_CreditoBUS_NEW busEstornoCartao = new Estorno_Cartao_CreditoBUS_NEW();
+
+                int intCartaoTEFID = this.cboAdministradoraCartao.SelectedValue.DefaultInteger() == CARTAO_TEF_AMEX_ID ? this.cboAdministradoraCartao.SelectedValue.DefaultInteger() : 0;
+                this.intLoteEnvioAdministradora = busEstornoCartao.Selecionar_Numero_Proximo_Lote(this.intLojaID, this.intOperadoraCartaoID, intCartaoTEFID);
+                this.lblNumeroLoteValor.Text = this.intLoteEnvioAdministradora.DefaultString();
+                
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region "   Propriedades       "
+
+        public UsuarioDO UsuarioAutorizado
+        {
+            get { return this.dtoUsuarioAutorizado; }
+            set { this.dtoUsuarioAutorizado = value; }
+        }
+
+        #endregion
+
+    }
+}

@@ -1,0 +1,159 @@
+File=ÎÄ¼ş
+View=²é¿´
+Language=ÓïÑÔ
+Emulation=Ä£Äâ
+Device=Éè±¸
+Help=°ïÖú
+Open...=´ò¿ª...
+Save as...=Áí´æÎª...
+Exit=ÍË³ö
+Extra information=¸½¼ÓĞÅÏ¢
+Preferences...=ÉèÖÃ...
+Start=¿ªÊ¼
+Stop=Í£Ö¹
+Create...=´´½¨...
+Delete...=É¾³ı...
+Reinitialize...=ÖØĞÂ³õÊ¼»¯...
+Properties...=ÊôĞÔ...
+Delete all...=É¾³ıËùÓĞ...
+Help...=°ïÖú(English)...
+Check for updates...=¼ì²é¸üĞÂ...
+About...=¹ØÓÚ...
+Register...=×¢²á...
+Eterlogic.com online...=Èí¼şÖ÷Ò³Eterlogic.com...
+Send bug report...=·¢ËÍ´íÎó±¨¸æ...
+Online forum...=ÔÚÏßÂÛÌ³...
+General=Í¨ÓÃÉèÖÃ
+Advanced=¸ß¼¶ÉèÖÃ
+
+Ask confirmation on quit=ÍË³öÊ±È·¶¨
+Ask confirmation on VSPE quit=ÍË³öVSPEÊ±ĞèÒªÈ·¶¨
+Suppress splash window=Æô¶¯Èí¼ş²»ÏÔÊ¾LOGO
+Hide splash window on VSPE startup=Æô¶¯VSPEÊ±Òş²ØLOGOÍ¼Æ¬
+Display hints in the system tray=ÔÚÏµÍ³ÍĞÅÌÖĞÏÔÊ¾Í¼±ê
+Display message hints in the system tray=ÔÚÏµÍ³ÍĞÅÌÖĞÏÔÊ¾Èí¼şÌáÊ¾ĞÅÏ¢
+Destroy kernel devices on quit=ÍË³öÊ±É¾³ıÒÑ¹¹ÔìµÄĞéÄâÉè±¸
+Destroy virtual kernel devices on VSPE quit=VSPEÍË³öÊ±É¾³ıÔÚÈí¼şÖĞÒÑ¹¹ÔìµÄĞéÄâÉè±¸
+Detailed logging=ÏêÏ¸ÈÕÖ¾
+Log all events into file=°ÑËùÓĞÊÂ¼şĞ´ÈëÈÕÖ¾
+Periodically checks TCP connections state=¶¨ÆÚ¼ì²éTCPÁ¬½Ó×´Ì¬
+Show hidden devices=ÏÔÊ¾Òş²ØÉè±¸
+Show hidden (rarely used or not yet released) devices=ÏÔÊ¾Òş²ØÉè±¸£¨ºÜÉÙÊ¹ÓÃ»òÎ´±»ÊÍ·ÅµÄ£©
+
+Title=±êÌâ
+Device=Éè±¸
+Status=×´Ì¬
+
+Load configuration...=¶ÁÈ¡ÅäÖÃ...
+Start emulation=¿ªÊ¼Ä£Äâ
+Stop emulation=Í£Ö¹Ä£Äâ
+Create new device...=´´½¨ĞÂÉè±¸...
+Device properties...=Éè±¸ÊôĞÔ...
+Delete device=É¾³ıÉè±¸
+Delete all devices=É¾³ıËùÓĞÉè±¸
+
+Emulation started=ÒÑ¿ªÊ¼Ä£Äâ
+Emulation stopped=ÒÑÍ£Ö¹Ä£Äâ
+Please wait...=ÇëÉÔºó...
+
+Are you sure you want to delete device %s?=ÄúÈ·¶¨ÒªÉ¾³ıÉè±¸ %s?
+Are you sure you want to reinitialize device %s?=ÄúÈ·¶¨ÒªÖØĞÂ³õÊ¼»¯Éè±¸ %s?
+Error=´íÎó
+Update information=¸üĞÂĞÅÏ¢
+There are no updates available for download=Ä¿Ç°Ã»ÓĞ¿ÉÓÃµÄ¸üĞÂ
+Registration key is not valid!=×¢²áÂëÎŞĞ§!
+Please paste the registration key=ÇëÕ³Ìù×¢²áÂëş÷
+Thank you!=¸ĞĞ»Äú×¢²á±¾Èí¼ş!
+Success=³É¹¦
+Do you really want to quit?=ÄúÕæµÄÏëÍË³ö?
+To edit device, emulation must be stopped.\nPlease stop emulation first.=ÎªÁË±à¼­Éè±¸,Ä£Äâ±ØĞëÍ£Ö¹.\nÇëÊ×ÏÈÍ£Ö¹Ä£Äâ.
+Are you sure you want to remove all devices?=ÄúÊÇ·ñÈ·¶¨ÒÆ³ıËùÓĞÉè±¸?
+Can not load configuration=²»ÄÜ¼ÓÔØÅäÖÃÎÄ¼ş
+Can not create file=²»ÄÜ´´½¨ÎÄ¼ş
+Can not create device=²»ÄÜ´´½¨Éè±¸
+Are you sure you want to delete host [%s]?=ÄúÈ·¶¨ÒªÉ¾³ıÖ÷»ú [%s]?
+Are you sure you want to delete all clients?=ÄúÈ·¶¨ÒªÉ¾³ıËùÓĞ¿Í»§¶Ë?
+
+Registration info: %s=×¢²áĞÅÏ¢: %s
+[%s] Initialization...%s=[%s] ³õÊ¼»¯ÿ...%s
+[%s] Can not release: device is being used=[%s] ²»ÄÜÊÍ·Å:Éè±¸ÕıÔÚ±»Ê¹ÓÃ
+
+Read=½ÓÊÕ
+Sent=·¢ËÍ
+Process=½ø³Ì
+
+Specify device type=Ö¸¶¨Éè±¸ÀàĞÍ
+Specify device characteristics=Ö¸¶¨Éè±¸ÌØÕ÷
+
+Virtual serial port=ĞéÄâ´®¿Ú
+Emulate baud rate (optional)=Ä£Äâ²¨ÌØÂÊ(¿ÉÑ¡µÄ)
+Data source serial port=ÒÑ´æÔÚµÄCOM¿Ú
+Read only=Ö»¶Á
+Redirect modem registers=ÖØ¶¨Ïòmodem×¢²á
+Initial modem registers state=³õÊ¼»¯modem×¢²á×´Ì¬
+Settings...=ÉèÖÃ...
+Virtual serial port 1=ĞéÄâ´®¿Ú1
+Virtual serial port 2=ĞéÄâ´®¿Ú2
+Local TCP port=±¾µØTCP¶Ë¿Ú
+Source serial port=ÒÑ´æÔÚµÄCOM¿Ú
+DTR/RTS depend on connection status=¸ù¾İÁ¬½Ó×´Ì¬DTR/RTS
+UDP address=UDPµØÖ·
+UDP port=UDP¶Ë¿Ú
+Stream 1=Êı¾İÁ÷1
+Stream 2=Êı¾İÁ÷2
+Remote TCP host=Ô¶³ÌTCPÖ÷»ú
+Remote TCP port=Ô¶³ÌTCP¶Ë¿Ú
+Read data timeout, in seconds (0 if disabled)=¶ÁÈ¡Êı¾İ³¬Ê±Ê±ÏŞ(0ÎªÎŞÏŞÖÆ)
+Script (located in Scripts folder)=½Å±¾(Î»ÓÚScriptsÎÄ¼ş¼ĞÄÚ)
+Remote clients (outgoing data)=Ô¶³Ì¿Í»§¶Ë(Êı¾İ´«³ö)
+Local UDP port for incoming data\n(0 to disable listening)=±¾µØ´«ÈëÊı¾İµÄUDP¶Ë¿Ú\n(0´ú±í½ûÖ¹¼àÌı)
+Add...=Ìí¼Ó...
+Delete...=É¾³ı...
+Modify...=µ÷Õû...
+Clear...=Çå³ı...
+Clear=Çå³ı
+Remote UDP host properties=Ô¶³ÌUDPÖ÷»úÊôĞÔ
+Device properties...=Éè±¸ÊôĞÔ...
+Device type=Éè±¸ÀàĞÍ
+Unlike regular serial port, connector is a virtual device that can be opened twice. When opened, it creates data pipe between its clients. That allows separate applications use the same serial port to exchange data.=ÓëÍ¨³£µÄ´®¿Ú²»Í¬£¬Á¬½ÓÆ÷ÊÇÒ»¸ö¿ÉÒÔ´ò¿ªÁ½´ÎµÄĞéÄâÉè±¸¡£µ±´ò¿ªÊ±£¬Ëü»áÔÚÁ½¸ö¿Í»§¶ËÖ®¼ä´´½¨Êı¾İ¹ÜµÀ¡£ÔÊĞíÏà»¥¶ÀÁ¢µÄÓ¦ÓÃ³ÌĞòÊ¹ÓÃÍ¬Ò»¸ö´®¿Ú½»»»Êı¾İ¡£
+The pair device consists of two logically connected virtual ports.=½¨Á¢Ò»¶Ô½øĞĞÂß¼­Á¬½ÓµÄÁ½¸öĞéÄâ´®¿Ú¡£\n(ÀıÈçCOM1µÄ½ÓÊÕÁ¬COM2µÄ·¢ËÍ£¬COM2µÄ½ÓÊÕÁ¬COM1µÄ·¢ËÍ)
+Data splitter creates virtual device that represents existing serial port to share it between different applications. Please note that if you have created virtual serial port COM5, all applications must be configured to use COM5.=Êı¾İ·ÖÀëÆ÷°ÑÒÑ´æÔÚµÄ´®¿ÚÍ¨¹ıĞéÄâÉè±¸¹²ÏíÓÚ²»Í¬µÄÓ¦ÓÃ³ÌĞò¡£Çë×¢Òâ£¬Èç¹ûÄúÒÑ¾­´´½¨ÁËĞéÄâ´®¿ÚCOM5£¬ËùÓĞµÄÓ¦ÓÃ³ÌĞò±ØĞëÅäÖÃÊ¹ÓÃCOM5¡£
+Bridge connects two data streams\n\n* This device does not create new serial port.=ÇÅ½ÓÁ½¸öÊı¾İÁ÷\n\n*Õâ¸öÉè±¸²»ÔÙ´´½¨ĞÂµÄ´®¿Ú¡£
+Serial Redirector redirects data between two serial devices.\n\n* This device does not create new serial port.=´®¿ÚÖØ¶¨Ïò×°ÖÃ¿ÉÒÔÖØĞÂ¶¨ÏòÁ½¸ö´®¿ÚÉè±¸\n\n*Õâ¸öÉè±¸²»ÔÙ´´½¨ĞÂµÄ´®¿Ú¡£
+TcpClient establishes TCP/IP connection to remote computer and transfers data from existing serial port to remote PC and vice versa.If connection is lost it will reconnect automatically.\n\n* This device does not create new serial port.=TCP¿Í»§¶Ë½¨Á¢TCP/IPÁ¬½Óµ½Ô¶³Ì¼ÆËã»ú£¬²¢ÇÒ´ÓÏÖÓĞ´®¿Úµ½Ô¶³ÌPC¼°Ô¶³ÌPCµ½´®¿Ú½øĞĞÊı¾İ´«Êä¡£Èç¹ûÁ¬½Ó¶ªÊ§£¬Ëü½«×Ô¶¯ÖØĞÂÁ¬½Ó¡£\n\n*Õâ¸öÉè±¸²»ÔÙ´´½¨ĞÂµÄ´®¿Ú¡£
+TCPServer opens TCP port to deliver existing serial port data to network clients. Number of clients is unlimited.\n\n* This device does not create new serial port.=TCP·şÎñÆ÷´ò¿ªTCP¶Ë¿Ú£¬½ÓÊÕÏÖÓĞµÄ´®¿ÚÊı¾İµ½ÍøÂç¿Í»§¶Ë¡£¿Í»§¶ËµÄÊıÁ¿Ã»ÓĞÏŞÖÆ¡£\n\n*Õâ¸öÉè±¸²»ÔÙ´´½¨ĞÂµÄ´®¿Ú¡£
+UDP manager device can send/receive serial port data via UDP protocol. It can be configured to exchange data with many clients.\n\n* This device does not create new serial port.=UDPÁ¬½Ó¹ÜÀíÆ÷Éè±¸¿ÉÒÔÍ¨¹ıUDPĞ­Òé·¢ËÍ/½ÓÊÕ´®¿ÚÊı¾İ¡£Ëü¿ÉÒÔÓëĞí¶à¿Í»§¶ËÅäÖÃ½»»»Êı¾İ¡£\n\n*Õâ¸öÉè±¸²»ÔÙ´´½¨ĞÂµÄ´®¿Ú¡£
+
+
+Monitoring mode=¼àÌıÄ£Ê½
+Binary mode=¶ş½øÖÆÄ£Ê½
+Incoming=´«Èë
+Outgoing=´«³ö
+Start/Stop HTTP server=Æô¶¯/Í£Ö¹HTTP·şÎñ
+HTTP server=HTTP·şÎñ
+
+Automatically start HTTP server=×Ô¶¯Æô¶¯HTTP·şÎñ
+Automatically start HTTP server on VSPE startup=´ò¿ªVSPEÊ±×Ô¶¯Æô¶¯HTTP·şÎñ
+HTTP port=HTTP¶Ë¿Ú
+HTTP port for incoming connections=HTTP¶Ë¿ÚµÄ´«ÈëÁ¬½Ó
+Interface IP=IP½Ó¿Ú
+Interface IP Address=IP½Ó¿ÚµØÖ·
+HTML page access password=HTMLÒ³Ãæ·ÃÎÊÃÜÂë
+Debug=µ÷ÊÔ
+Debugging=µ÷ÊÔÖĞ
+Fix=ĞŞ¸´
+Fix broken devices=ĞŞ¸´Ëğ»µµÄÉè±¸
+Try to automatically fix broken devices=³¢ÊÔ×Ô¶¯ĞŞ¸´Ëğ»µµÄÉè±¸
+
+Ready=×¼±¸ºÃ
+Initializing=³õÊ¼»¯ÖĞ
+n/a=²»ÊÊÓÃ
+Critical error=ÑÏÖØ´íÎó
+Device settings=Éè±¸ÉèÖÃ
+
+Old serial port=±»Ó³Éä´®¿Ú
+New serial port=Ó³Éäµ½´®¿Ú
+Mapper can redirect all requests from one serial port to another. Can be extremely useful tool when it is needed to change serial port for third-party application without ability to change its settings. Connector is an excellent companion for this device.\n\n* This device does not create new serial port.=Ó³Éä¿ÉÒÔÖØ¶¨ÏòËùÓĞ´ÓÒ»¸ö´®¿Úµ½ÁíÒ»¸ö´®¿ÚµÄÇëÇó£¬µ±ĞèÒª¸Ä±äµÚÈı·½Ó¦ÓÃ³ÌĞòµÄ´®¿Ú¶øÎŞ·¨¸Ä±äËüµÄÉèÖÃÊ±£¬ÕâÊÇ·Ç³£ÓĞÓÃµÄ¹¤¾ß¡£Ó³ÉäÆ÷¶ÔÓÚµÚÈı·½Èí¼ş¿°³ÆÒ»¸öÍêÃÀµÄ¸¨Öú¡£\n\n*Õâ¸öÉè±¸²»ÔÙ´´½¨ĞÂµÄ´®¿Ú¡£
+
+
+

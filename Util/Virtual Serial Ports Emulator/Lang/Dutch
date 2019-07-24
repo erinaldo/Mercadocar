@@ -1,0 +1,159 @@
+File=Bestand
+View=Beeld
+Language=Taal
+Emulation=Emulatie
+Device=Apparaat
+Help=Hulp
+Open...=Openen
+Save as...=Opslaan als
+Exit=Verlaten
+Extra information=Meer informatie
+Preferences...=Voorkeuren
+Start=Start
+Stop=Stop
+Create...=Aanmaken
+Delete...=Wissen
+Reinitialize...=Herinitialiseren
+Properties...=Eigenschappen
+Delete all...=Alles wissen
+Help...=Hulp
+Check for updates...=Controleren op nieuwe versie
+About...=Over
+Register...=Registreer
+Eterlogic.com online...=Webpagina Eterlogic.com
+Send bug report...=Foutrapport verzenden
+Online forum...=Online forum
+General=Algemeen
+Advanced=Geavanceerd
+
+Ask confirmation on quit=Vraag bevestiging bij afsluiten
+Ask confirmation on VSPE quit=Vraag bevestiging bij afsluiten VSPE
+Suppress splash window=Splashscreen onderdrukken
+Hide splash window on VSPE startup=Splashscreen verbergen bij opstart VSPE
+Display hints in the system tray=Hints in de systemtray tonen
+Display message hints in the system tray=Boodschappen in de systemtray tonen
+Destroy kernel devices on quit=Kernel-apparaten verwijderen bij afsluiten
+Destroy virtual kernel devices on VSPE quit=Kernel-apparaten verwijderen bij afsluiten VSPE
+Detailed logging=Gedetailleerde logging
+Log all events into file=Alle events in bestand loggen
+Periodically checks TCP connections state=TCP verbindingsstatus periodiek controleren
+Show hidden devices=Verborgen apparaten weergeven
+Show hidden (rarely used or not yet released) devices=Verborgen (zelden gebruikte of nog niet vrijgegeven) apparaten weergeven
+Title=Titel
+Device=Apparaat
+Status=Status
+
+Load configuration...=Configuratie laden
+Save configuration...=Configuratie opslaan
+Start emulation=Emulatie starten
+Stop emulation=Emulatie stoppen
+Create new device...=Nieuw apparaat aanmaken
+Device properties...=Eigenschappen apparaat
+Delete device=Apparaat verwijderen
+Delete all devices=Alle apparaten verwijderen
+
+Emulation started=Emulatie gestart
+Emulation stopped=Emulatie gestopt
+Please wait...=Een ogenblik aub
+
+Are you sure you want to delete device %s?=Bent u zeker dat u apparaat %s wil verwijderen ?
+Are you sure you want to reinitialize device %s?=Bent u zeker dat u apparaat %s wil herinitialiseren ?
+Error=Fout
+Update information=Informatie betreffende updates
+There are no updates available for download=Er zijn geen beschikbare updates
+Registration key is not valid!=Registratiesleutel ongeldig !
+Please paste the registration key=Gelieve de registratiesleutel te plakken
+Thank you!=Hartelijk dank !
+Success=Succes
+Do you really want to quit?=Wilt u zeker afsluiten ?
+To edit device, emulation must be stopped.\nPlease stop emulation first.=Om de eigenschappen te bewerken dient u eerst de emulatie te stoppen.
+Are you sure you want to remove all devices?=Bent u zeker dat u alle apparaten wil verwijderen ?
+Can not load configuration=De configuratie kan niet worden geladen
+Can not create file=Het bestand kan niet worden aangemaakt
+Can not create device=Het apparaat kan niet worden aangemaakt
+Are you sure you want to delete host [%s]?=Bent u zeker dat u de host [%s] wil aanmaken ?
+Are you sure you want to delete all clients?=Bent u zeker dat u alle clients wil verwijderen ?
+
+Registration info: %s=Registratie informatie: %s
+[%s] Initialization...%s=[%s] Initialisatie %s
+[%s] Can not release: device is being used=[%s] Onmogelijk de releasen: apparaat is in gebruik
+
+Read=Gelezen
+Sent=Verzonden
+Process=Proces
+
+Specify device type=Specifieer apparaattype
+Specify device characteristics=Specifieer apparaateigenschappen
+
+Virtual serial port=Virtuele seriële poort
+Emulate baud rate (optional)=Baud rate emulatie (optioneel)
+Data source serial port=Data source seriële poort
+Read only=Alleen-lezen
+Redirect modem registers=Modem registers doorschakelen
+Initial modem registers state=Initiële status modem registers
+Settings...=Parameters
+Virtual serial port 1=Virtuele seriële poort 1
+Virtual serial port 2=Virtuele seriële poort 2
+Local TCP port=Lokale TCP poort
+Source serial port=Seriële bronpoort
+DTR/RTS depend on connection status=DTR/RTS afhankelijk van connectiestatus
+UDP address=UDP adres
+UDP port=UDP poort
+Stream 1=Stroom 1
+Stream 2=Stroom 2
+Remote TCP host=Remote TCP host
+Remote TCP port=Remote TCP poort
+Read data timeout, in seconds (0 if disabled)=Timeout bij lezen, in seconden (0 wanneer uitgeschakeld)
+Script (located in Scripts folder)=Script (bevindt zich in Scripts map)
+Remote clients (outgoing data)=Remote clients (uitgaande data)
+Local UDP port for incoming data\n(0 to disable listening)=Lokale UDP poort voor binnenkomende data\n(0 om luisteren uit te schakelen)
+Add...=Toevoegen
+Delete...=Verwijderen
+Modify...=Wijzigen
+Clear...=Wissen
+Clear=Leegmaken
+Remote UDP host properties=Eigenschappen remote UDP host
+Device properties...=Eigenschappen apparaat
+Device type=Apparaattype
+Unlike regular serial port, connector is a virtual device that can be opened twice. When opened, it creates data pipe between its clients. That allows separate applications use the same serial port to exchange data.=Anders dan bij een gewone seriële poort is een Connector een virtueel apparaat dat tweemaal kan worden geopend. Wanneer het geopend wordt maakt het een datapipe tussen de clients. Dit zorgt ervoor dat verschillende applicaties dezelfde poort kunnen gebruiken om data uit te wisselen.
+The pair device consists of two logically connected virtual ports.=Een Pair bestaat uit twee logisch verbonden virtuele poorten.
+Data splitter creates virtual device that represents existing serial port to share it between different applications. Please note that if you have created virtual serial port COM5, all applications must be configured to use COM5.=Een Splitter maakt een virtuele poort die een bestaande seriële poort vertegenwoordigt om deze te delen tussen twee verschillende applicaties. Merk op dat bij het creëren van een virtuele poort COM5 alle applicaties moeten worden geconfigureerd zodat ze gebruik maken van COM5.
+Bridge connects two data streams\n\n* This device does not create new serial port.=Een Bridge verbindt twee datastromen.\n\n* Dit apparaat maakt geen nieuwe seriële poort aan.
+Serial Redirector redirects data between two serial devices.\n\n* This device does not create new serial port.=Een Serial Redirector leidt data tussen twee seriële apparaten.\n\n* Dit apparaat maakt geen nieuwe seriële poort aan.
+TcpClient establishes TCP/IP connection to remote computer and transfers data from existing serial port to remote PC and vice versa.If connection is lost it will reconnect automatically.\n\n* This device does not create new serial port.=Een TcpClient legt een TCP/IP connectie naar een remote computer en zendt data van een bestaande seriële poort naar een remote PC en vice versa. Wanneer de connectie verloren gaat zal automatisch opnieuw worden verbonden.\n\n* Dit apparaat maakt geen nieuwe seriële poort aan.
+TCPServer opens TCP port to deliver existing serial port data to network clients. Number of clients is unlimited.\n\n* This device does not create new serial port.=Een TcpServer opent een TCP poort om seriële data aan te leveren bij netwerk clients. Het aantal clients is onbeperkt.\n\n* Dit apparaat maakt geen nieuwe seriële poort aan.
+UDP manager device can send/receive serial port data via UDP protocol. It can be configured to exchange data with many clients.\n\n* This device does not create new serial port.=Een UDPManager kan seriële data sturen en ontvangen via het UDP protocol. Deze kan worden geconfigureerd om data uit te wisselen met verschillende clients.\n\n* Dit apparaat maakt geen nieuwe seriële poort aan.
+
+
+Monitoring mode=Monitor mode
+Binary mode=Binaire mode
+Incoming=Binnenkomend
+Outgoing=Uitgaand
+Start/Stop HTTP server=Start/Stop HTTP server
+HTTP server=HTTP server
+
+Automatically start HTTP server=Start HTTP server automatisch
+Automatically start HTTP server on VSPE startup=Start HTTP server bij opstart VSPE
+HTTP port=HTTP poort
+HTTP port for incoming connections=HTTP poort voor inkomende connecties
+Interface IP=IP interface
+Interface IP Address=IP adres interface
+HTML page access password=HTML pagina toegangswachtwoord
+Debug=Debug
+Debugging=Debugging
+Fix=Herstellen
+Fix broken devices=Herstel defecte apparaten
+Try to automatically fix broken devices=Probeer defecte apparaten automatisch te herstellen
+
+Ready=Gereed
+Initializing=Initialisatie
+n/a=n/a
+Critical error=Kritieke fout
+Device settings=Eigenschappen apparaat
+
+Old serial port=Oude seriële poort
+New serial port=Nieuwe seriële poort
+Mapper can redirect all requests from one serial port to another. Can be extremely useful tool when it is needed to change serial port for third-party application without ability to change its settings. Connector is an excellent companion for this device.\n\n* This device does not create new serial port.=Een Mapper kan alle aanvragen van een seriële poort doorsturen naar een andere poort. Dit kan heel handig zijn wanneer dit nodig is voor derde-partij applicaties zonder de mogelijkheid de configuratie hiervan aan te passen. Een Connector is de ideale partner voor dit apparaat.\n\n* Dit apparaat maakt geen nieuwe seriële poort aan.
+
+
+

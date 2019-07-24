@@ -1,0 +1,160 @@
+-------------------------------------------------------------------------------------
+-- <summary>
+--  Consulta os dados do cliente informado.
+-- </summary>
+-- <remarks></remarks>
+-- <history>
+--  fneves	08/05/2007
+--  [msisiliani]	04/02/2013	Modified
+--    Exclusa a coluna Cliente_Bloqueado, pois a mesma foi exclusa da tabela de 
+--    Cliente.
+--  [fmoraes]	05/07/2019	Modified
+--    Adcionada consultas para compor o DataSet com
+--    os registros de e-mail e telefone do Cliente.
+-- </history>
+-------------------------------------------------------------------------------------
+ALTER PROCEDURE [dbo].[p_Cliente_Web_Consultar_Dados_Cliente_FT_176959](
+@Cliente_ID VARCHAR(40)
+)
+
+AS
+
+-------------------------------------------------------------------------------------
+--DECLARE @Cliente_ID VARCHAR(40);
+--SET @Cliente_ID = '51d20c21-424a-4106-af6c-8be26f02536a' --'42A8B1A4-ABF6-4E36-B936-D17F1010805D';
+-------------------------------------------------------------------------------------
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SET NOCOUNT ON;
+
+DECLARE @Enum_Pessoa_Fisica INT;
+DECLARE @Tipo_Pessoa INT;
+
+SET @Tipo_Pessoa =
+(
+    SELECT Enum_Tipo_Pessoa_ID
+    FROM Cliente
+    WHERE Cliente_ID = @Cliente_ID
+);
+
+SET @Enum_Pessoa_Fisica = 520;
+
+------------------------------------------------------------------------------------------  
+-- Tabelas Cliente Contatos
+------------------------------------------------------------------------------------------  
+
+CREATE TABLE [#Cliente_Telefones]
+([CLIENTE_TELEFONE_DDD] [VARCHAR](3), 
+ [CLIENTE_TELEFONE]     [VARCHAR](18)
+);
+
+CREATE TABLE [#Cliente_Emails]
+([CLIENTE_EMAIL] [VARCHAR](120)
+);
+
+------------------------------------------------------------------------------------------  
+-- Cliente Dados  
+------------------------------------------------------------------------------------------  
+
+IF @Tipo_Pessoa = @Enum_Pessoa_Fisica
+    BEGIN
+        SELECT DISTINCT 
+               CLI.Cliente_IsAtivo AS CLIENTE_ATIVO, 
+               ISNULL(CLI.Cliente_CD, '') AS CLIENTE_CD, 
+               PF.PessoaFisica_NM AS CLIENTE_NOME, 
+               PF.PessoaFisica_Sobrenome AS CLIENTE_SOBRENOME, 
+               PF.PessoaFisica_OBS AS CLIENTE_OBSERVACAO, 
+               ENU.Enum_Extenso AS CLIENTE_TIPO
+        FROM Cliente CLI
+             INNER JOIN PessoaFisica PF ON CLI.Pessoa_ID = PF.PessoaFisica_ID
+             INNER JOIN ENUMERADO ENU ON CLI.Enum_Tipo_Pessoa_ID = ENU.Enum_ID
+        WHERE CLI.Cliente_ID = @Cliente_ID;
+END;
+    ELSE
+    SELECT DISTINCT 
+           CLI.Cliente_IsAtivo AS CLIENTE_ATIVO, 
+           ISNULL(CLI.Cliente_CD, '') AS CLIENTE_CD, 
+           PJ.PessoaJuridica_CNPJ AS CLIENTE_CNPJ, 
+           PJ.PessoaJuridica_NmFantasia AS CLIENTE_NOME_FANTASIA, 
+           PJ.PessoaJuridica_RazaoSocial AS CLIENTE_RAZAO_SOCIAL, 
+           ENU.Enum_Extenso AS CLIENTE_TIPO
+    FROM Cliente CLI
+         INNER JOIN PessoaJuridica PJ ON CLI.Pessoa_ID = PJ.PessoaJuridica_ID
+         INNER JOIN Enumerado ENU ON CLI.Enum_Tipo_Pessoa_ID = ENU.Enum_ID
+    WHERE CLI.Cliente_ID = @Cliente_ID;
+
+------------------------------------------------------------------------------------------  
+-- Cliente TELEFONES  
+------------------------------------------------------------------------------------------
+
+IF @Tipo_Pessoa = @Enum_Pessoa_Fisica
+    BEGIN
+        INSERT INTO [#Cliente_Telefones]
+               SELECT DISTINCT 
+                      C.Contato_DDD AS CLIENTE_TELEFONE_DDD, 
+                      C.Contato_Telefone AS CLIENTE_TELEFONE
+               FROM Cliente CLI
+                    INNER JOIN Contato C ON CLI.Pessoa_ID = C.Pessoa_ID
+               WHERE CLI.Cliente_ID = @Cliente_ID;
+END;
+    ELSE
+	INSERT INTO [#Cliente_Telefones]
+    SELECT DISTINCT 
+           CLI.Cliente_IsAtivo AS CLIENTE_ATIVO, 
+           C.Contato_DDD AS CLIENTE_TELEFONE_DDD, 
+           C.Contato_Telefone AS CLIENTE_TELEFONE
+    FROM Cliente CLI
+         INNER JOIN Contato C ON CLI.Pessoa_ID = C.Pessoa_ID
+    WHERE CLI.Cliente_ID = @Cliente_ID;
+
+------------------------------------------------------------------------------------------  
+-- Cliente EMAILS  
+------------------------------------------------------------------------------------------
+
+IF @Tipo_Pessoa = @Enum_Pessoa_Fisica
+    BEGIN
+        INSERT INTO [#Cliente_Emails]
+               SELECT DISTINCT 
+                      CV.ContatoVirtual_Email AS CLIENTE_EMAIL
+               FROM Cliente CLI
+                    INNER JOIN ContatoVirtual CV ON CLI.Pessoa_ID = CV.Pessoa_ID
+               WHERE CLI.Cliente_ID = @Cliente_ID;
+END;
+    ELSE
+    INSERT INTO [#Cliente_Emails]
+           SELECT DISTINCT 
+                  CV.ContatoVirtual_Email AS CLIENTE_EMAIL
+           FROM Cliente CLI
+                INNER JOIN ContatoVirtual CV ON CLI.Pessoa_ID = CV.Pessoa_ID
+           WHERE CLI.Cliente_ID = @Cliente_ID;
+
+------------------------------------------------------------------------------------------  
+--  Cliente TELEFONES da Solicitação de Estorno  
+------------------------------------------------------------------------------------------
+
+INSERT INTO [#Cliente_Telefones]
+       SELECT DISTINCT 
+              SUBSTRING(Solicitacao_Estorno_Cliente_Telefone,0,3) AS CLIENTE_TELEFONE_DDD, 
+              SUBSTRING(REPLACE(EST.Solicitacao_Estorno_Cliente_Telefone, '-',''),4,10) AS CLIENTE_TELEFONE
+       FROM Solicitacao_Estorno EST
+       WHERE EST.Cliente_ID = @Cliente_ID
+             AND EST.Solicitacao_Estorno_Cliente_Telefone IS NOT NULL;
+
+------------------------------------------------------------------------------------------  
+--  Cliente EMAILS da Solicitação de Estorno  
+------------------------------------------------------------------------------------------
+
+INSERT INTO [#Cliente_Emails]
+       SELECT DISTINCT 
+              EST.Solicitacao_Estorno_Cliente_Email AS CLIENTE_EMAIL
+       FROM Solicitacao_Estorno EST
+       WHERE EST.Cliente_ID = @Cliente_ID
+             AND EST.Solicitacao_Estorno_Cliente_Email IS NOT NULL;
+
+SELECT DISTINCT * FROM [#Cliente_Telefones];
+SELECT DISTINCT * FROM [#Cliente_Emails];
+
+DROP TABLE [#Cliente_Telefones];
+DROP TABLE [#Cliente_Emails];
+
+SET NOCOUNT OFF;

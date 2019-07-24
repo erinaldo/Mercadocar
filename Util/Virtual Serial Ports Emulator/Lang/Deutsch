@@ -1,0 +1,159 @@
+File=Akte
+View=Ansicht
+Language=Sprache
+Emulation=Emulation
+Device=Vorrichtung
+Help=Hilfe
+Open...=Geöffnet…
+Save as...=Außer wie…
+Exit=Ausgang
+Extra information=Extrainformationen
+Preferences...=Präferenzen…
+Start=Anfang
+Stop=Anschlag
+Create...=Verursachen Sie…
+Delete...=Löschen Sie…
+Reinitialize...=Initialisieren Sie…
+Properties...=neu Eigenschaften…
+Delete all...=Löschen Sie alle…
+Help...=Helfen Sie…
+Check for updates...=Überprüfen Sie auf Updates…
+About...=Über…
+Register...=Register…
+Eterlogic.com online...=Web Eterlogic.com
+Send bug report...=Senden Sie bugreport…
+Online forum...=On-line Forum…
+General=Allgemein
+Advanced=Vorgerückt
+
+Ask confirmation on quit=Bitten Sie um um Bestätigung auf beendigt
+Ask confirmation on VSPE quit=Bitten Sie um um Bestätigung auf beendigtem VSPE
+Suppress splash window=Unterdrücken Sie Spritzenfenster
+Hide splash window on VSPE startup=Verstecken Sie Spritzenfenster auf VSPE Start 
+Display hints in the system tray=Zeigen Sie Tips im Systemsbehälter an
+Display message hints in the system tray=Zeigen Sie Mitteilungtips im Systemsbehälter an
+Destroy kernel devices on quit=Zerstören Sie Kernvorrichtungen auf beendigt 
+Destroy virtual kernel devices on VSPE quit=Zerstören Sie virtuelle Kernvorrichtungen auf beendigtem VSPE 
+Detailed logging=Ausführliche Protokollierung
+Log all events into file=Loggen Sie alle Ereignisse in Akte
+Periodically checks TCP connections state=Überprüft regelmäßig TCP-Anschlusszustand
+Show hidden devices=Zeigen Sie versteckte Vorrichtungen
+Show hidden (rarely used or not yet released) devices=Zeigen Sie versteckte (selten verwendet oder nicht schon freigegeben) Vorrichtungen
+
+Title=Titel
+Device=Vorrichtung
+Status=Status
+
+Load configuration...=Lastskonfiguration…
+Save configuration...=Außer Konfiguration…
+Start emulation=Beginnen Sie Emulation
+Stop emulation=Stoppen Sie Emulation
+Create new device...=Verursachen Sie neue Vorrichtung…
+Device properties...=Vorrichtungseigenschaften…
+Delete device=Löschungvorrichtung 
+Delete all devices=Löschen Sie alle Vorrichtungen
+
+Emulation started=Emulation begann
+Emulation stopped=Emulation stoppte
+Please wait...=Warten Sie bitte…
+
+Are you sure you want to delete device %s?=Sind Sie Sie möchten Vorrichtung löschen sicher %s?
+Are you sure you want to reinitialize device %s?=Sind Sie Sie möchten Vorrichtung neu initialisieren sicher %s?
+Error=Störung
+Update information=Updateinformationen
+There are no updates available for download=Es gibt keine Updates, die für Download vorhanden sind
+Registration key is not valid!=Ausrichtungsschlüssel ist unzulässig!
+Please paste the registration key=Kleben Sie bitte den Ausrichtungsschlüssel
+Thank you!=Danke!
+Success=Erfolg
+Do you really want to quit?=Möchten Sie wirklich beendigen?
+To edit device, emulation must be stopped.\nPlease stop emulation first.=Um Vorrichtung zu redigieren, muss Emulation gestoppt werden.\nstoppen Bitte Emulation zuerst. 
+Are you sure you want to remove all devices?=Sind Sie Sie möchten alle Vorrichtungen entfernen sicher?
+Can not load configuration=Kann Konfiguration nicht laden
+Can not create file=Kann Akte nicht herstellen
+Can not create device=Kann Vorrichtung nicht verursachen
+Are you sure you want to delete host [%s]?=Sind Sie Sie möchten Wirt löschen sicher [%s]?
+Are you sure you want to delete all clients?=Sind Sie Sie möchten alle Klienten löschen sicher?
+
+Registration info: %s=Ausrichtungsinfo: %s
+[%s] Initialization...[%s]=Initialisierung…
+[%s] Can not release: device is being used=[%s] Kann nicht freigeben: Vorrichtung wird benutzt
+
+Read=Gelesen
+Sent=Gesendet
+Process=Prozess
+
+Specify device type=Spezifizieren Sie Einheitentyp
+Specify device characteristics=Spezifizieren Sie Vorrichtungseigenschaften
+
+Virtual serial port=Virtuelle serielle Schnittstelle
+Emulate baud rate (optional)=Emulieren Sie die Baudrate (wahlweise freigestellt)
+Data source serial port=Serielle Schnittstelle der Datenquelle
+Read only=Nur gelesen
+Redirect modem registers=Adressieren Sie Modemregister um Zeichnen
+Initial modem registers state=Sie Modemregisterzustand ab
+Settings...=Einstellungen…
+Virtual serial port 1=Virtuelle serielle Schnittstelle 1
+Virtual serial port 2=Virtuelle serielle Schnittstelle 2
+Local TCP port=Lokaler TCP-Hafen
+Source serial port=Quellserielle Schnittstelle
+DTR/RTS depend on connection status=DTR/RTS =DTR/RTS hängen vom Anschluss statusDTR/RTS ab
+UDP address=UDP-Adresse
+UDP port=UDP-Hafen
+Stream 1=Strom 1
+Stream 2=Strom 2
+Remote TCP host=Fern-TCP-Wirt 
+Remote TCP port=Fern-TCP-Hafen
+Read data timeout, in seconds (0 if disabled)=Lesen Sie Datenabschaltung, in den Sekunden (0, wenn untauglich) 
+Script (located in Scripts folder)=Script (gefunden im Indexfaltblatt) 
+Remote clients (outgoing data)=Fernklienten (abgehende Daten)
+Local UDP port for incoming data\n(0 to disable listening)=Lokaler UDP-Hafen für ankommende Daten\n (0, zum des Hörens zu sperren)
+Add...=Fügen Sie…
+Delete...=hinzu Löschen Sie…
+Modify...=Ändern Sie…
+Clear...=Löschen Sie…
+Clear=Löschen Sie
+Remote UDP host properties=Fern-UDP-Wirtseigenschaften
+Device properties...=Vorrichtungseigenschaften…
+Device type=Einheitentyp
+Unlike regular serial port, connector is a virtual device that can be opened twice. When opened, it creates data pipe between its clients. That allows separate applications use the same serial port to exchange data.=Anders als regelmäßige serielle Schnittstelle ist Verbindungsstück ein virtuelles Gerät, das zweimal geöffnet werden kann. Wenn es geöffnet wird, stellt es Datenrohr zwischen seinen Klienten her. Das erlaubt unterschiedlichem Anwendungsgebrauch die gleiche serielle Schnittstelle zu den Austauschdaten. 
+The pair device consists of two logically connected virtual ports.=Die Paarvorrichtung besteht aus zwei logisch verbundenen virtuellen Häfen.
+Data splitter creates virtual device that represents existing serial port to share it between different applications. Please note that if you have created virtual serial port COM5, all applications must be configured to use COM5.=Datenteiler verursacht virtuelles Gerät, das vorhandene serielle Schnittstelle darstellt, um sie zwischen verschiedenen Anwendungen zu teilen. Merken Sie bitte, dass, wenn Sie virtuelle serielle Schnittstelle COM5 hergestellt haben, alle Anwendungen zusammengebaut werden müssen, um COM5 zu verwenden. 
+Bridge connects two data streams\n\n* This device does not create new serial port.=Brücke schließt zwei Datenströme\n\n* an, die diese Vorrichtung nicht neue serielle Schnittstelle herstellt.
+Serial Redirector redirects data between two serial devices.\n\n* This device does not create new serial port.=SerienRedirector adressiert Daten zwischen zwei Serienvorrichtungen um.\stelltn\n* diese Vorrichtung nicht neue serielle Schnittstelle her.
+TcpClient establishes TCP/IP connection to remote computer and transfers data from existing serial port to remote PC and vice versa.If connection is lost it will reconnect automatically.\n\n* This device does not create new serial port.=TcpClient stellt IP-Anschluss zum Ferncomputer her und überträgt Daten von vorhandener serieller Schnittstelle zum Fern-PC und umgekehrt. Wenn Anschluss verloren ist, schließt er automatisch wieder an.\stellt n\n* diese Vorrichtung nicht neue serielle Schnittstelle her. 
+TCPServer opens TCP port to deliver existing serial port data to network clients. Number of clients is unlimited.\n\n* This device does not create new serial port.=TCPServer öffnet TCP-Hafen, um vorhandene Schnittstelledaten an Netzklienten zu liefern. Zahl der Klienten ist unbegrenzt.\stelltn\n* diese Vorrichtung nicht neue serielle Schnittstelle her. 
+UDP manager device can send/receive serial port data via UDP protocol. It can be configured to exchange data with many clients.\n\n* This device does not create new serial port.=UDP-Managervorrichtung kann, senden/empfängt Schnittstelledaten über UDP-Protokoll. Sie kann zu den Austauschdaten mit vielen Klienten zusammengebaut werden. \ stellt n \ n* diese Vorrichtung nicht neue serielle Schnittstelle her. 
+
+Monitoring mode=Überwachungmodus
+Binary mode=Binärer Modus
+Incoming=Ankommend
+Outgoing=Abgehend 
+Start/Stop HTTP server=Anfangs-,/End-HTTP server 
+HTTP server=HTTP-server 
+
+Automatically start HTTP server=Stellen Sie automatisch HTTP server an
+Automatically start HTTP server on VSPE startup=Sie automatisch HTTP server auf VSPE Start an
+HTTP port=HTTP-Hafen
+HTTP port for incoming connections=HTTP-Hafen für ankommende Anschlüsse 
+Interface IP=Schnittstelle IP 
+Interface IP Address=Schnittstellen-IP address
+HTML page access password=HTML pagezugangskennwort 
+Debug=Prüfen Sie
+Debugging=Entstörung
+Fix=Verlegenheit 
+Fix broken devices=Verlegenheit gebrochene Vorrichtungen 
+Try to automatically fix broken devices=Versuchen Sie, gebrochene Vorrichtungen automatisch zu reparieren 
+
+Ready=Bereiten Sie vor 
+Initializing=Initialisierung
+n/a=n/a
+Critical error=Kritische Störung
+Device settings=Vorrichtungseinstellungen 
+
+Old serial port=Alte serielle Schnittstelle
+New serial port=Neue serielle Schnittstelle
+Mapper can redirect all requests from one serial port to another. Can be extremely useful tool when it is needed to change serial port for third-party application without ability to change its settings. Connector is an excellent companion for this device.\n\n* This device does not create new serial port.="Mapper" kann alle Anträge von einer seriellen Schnittstelle zu anderen umadressieren. Sein kann extrem nützliches Werkzeug, wenn es erforderlich ist, serielle Schnittstelle für aus dritter Quelleanwendung ohne Fähigkeit zu ändern, seine Einstellungen zu ändern. Verbindungsstück ist ein ausgezeichneter Begleiter für diese Vorrichtung.\stelltn\n* diese Vorrichtung nicht neue serielle Schnittstelle her. 
+
+
+

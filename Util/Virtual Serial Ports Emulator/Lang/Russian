@@ -1,0 +1,172 @@
+File=Файл
+View=Вид
+Language=Язык
+Emulation=Эмуляция
+Device=Устройство
+Help=Помощь
+Open...=Открыть...
+Save as...=Сохранить как...
+Exit=Выход
+Extra information=Дополнительная информация
+Preferences...=Настройки...
+Start=Старт
+Stop=Стоп
+Create...=Создать...
+Delete...=Удалить...
+Reinitialize...=Реинициализация...
+Properties...=Свойства...
+Delete all...=Удалить все...
+Help...=Справка...
+Check for updates...=Проверка обновлений...
+About...=О программе...
+Register...=Регистрация...
+Eterlogic.com online...=Eterlgic.com онлайн...
+Send bug report...=Сообщить об ошибке...
+Online forum...=Посетить форум...
+General=Общие
+Advanced=Продвинутые
+
+Ask confirmation on quit=Подтверждение при выходе
+Ask confirmation on VSPE quit=Запрашивать подтверждение при выходе из программы
+Suppress splash window=Убрать заставку
+Hide splash window on VSPE startup=Убрать заставку при запуске программы
+Display hints in the system tray=Отображать подсказки
+Display message hints in the system tray=Отображать подсказки (уведомления)
+Destroy kernel devices on quit=Уничтожать устройства при выходе
+Destroy virtual kernel devices on VSPE quit=Уничтожать устройства при выходе из программы
+Detailed logging=Подробный журнал событий
+Log all events into file=Записывать все события в файл
+Periodically checks TCP connections state=Периодически проверять состояние TCP соединений
+Show hidden devices=Скрытые устройства
+Show hidden (rarely used or not yet released) devices=Показывать скрытые (редко используемые или еще не выпущенные) устройства
+
+Title=Имя
+Device=Устройство
+Status=Статус
+
+Load configuration...=Загрузить конфигурацию...
+Start emulation=Начать эмуляцию
+Stop emulation=Остановить эмуляцию
+Create new device...=Создать новое устройство...
+Device properties...=Свойства устройства...
+Delete device=Удалить устройство
+Delete all devices=Удалить все устройства
+
+Emulation started=Эмуляция запущена
+Emulation stopped=Эмуляция остановлена
+Please wait...=Пожалуйста, подождите...
+
+Are you sure you want to delete device %s?=Вы действительно хотите удалить устройство %s?
+Are you sure you want to reinitialize device %s?=Вы действительно хотите переинициализировать устройство %s?
+Error=Ошибка
+Update information=Информация об обновлении
+There are no updates available for download=Обновлений нет
+Registration key is not valid!=Регистрационный ключ некорректный!
+Please paste the registration key=Вставьте (из буфера обмена) регистрационный ключ
+Thank you!=Спасибо!
+Success=Успех
+Do you really want to quit?=Вы действительно хотите выйти?
+To edit device, emulation must be stopped.\nPlease stop emulation first.=Для редактирования устройства, эмуляция должна быть остановлена.\nПожалуйста, остановите эмуляцию.
+Are you sure you want to remove all devices?=Вы действительно хотите удалить все устройства?
+Can not load configuration=Невозможно загрузить конфигурацию
+Can not create file=Невозможно создать файл
+Can not create device=Невозможно создать устройство
+Are you sure you want to delete host [%s]?=Вы действительно хотите удалить хост [%s]?
+Are you sure you want to delete all clients?=Вы действительно хотите удалить всех клиентов?
+
+Registration info: %s=Регистрация: %s
+[%s] Initialization...%s=[%s] Инициализация...%s
+[%s] Can not release: device is being used=[%s] Невозможно освободить: устройство используется
+
+Read=Принято
+Sent=Послано
+Process=Процесс
+
+Specify device type=Тип устройства
+Specify device characteristics=Характеристики устройства
+
+Virtual serial port=Виртуальный порт
+Emulate baud rate (optional)=Эмулировать скорость (опт)
+Data source serial port=COM Порт - источник данных
+Read only=Только чтение
+Redirect modem registers=Перенаправление регистров
+Initial modem registers state=Изначальное значение регистров
+Settings...=Настройки...
+Virtual serial port 1=Виртуальный порт 1
+Virtual serial port 2=Виртуальный порт 2
+Local TCP port=Локальный TCP порт
+Source serial port=COM Порт - источник данных
+DTR/RTS depend on connection status=DTR/RTS = статус соединения
+UDP address=UDP адрес
+UDP port=UDP порт
+Stream 1=Поток 1
+Stream 2=Поток 2
+Remote TCP host=Удаленный TCP хост
+Remote TCP port=Удаленный TCP порт
+Read data timeout, in seconds (0 if disabled)=Таймаут чтения данных (0 - отключить)
+Script (located in Scripts folder)=Скрипт (в папке Scripts)
+Remote clients (outgoing data)=Удаленные клиенты (исходящие данные)
+Local UDP port for incoming data\n(0 to disable listening)=Локальный UDP порт для входящих данных\n(0 для отключения прослушивания)
+Add...=Добавить...
+Delete...=Удалить...
+Modify...=Изменить...
+Clear...=Очистить...
+Clear=Очистить
+Remote UDP host properties=Свойства удаленного UDP хоста
+Device properties...=Свойства устройства...
+Device type=Тип устройства
+Unlike regular serial port, connector is a virtual device that can be opened twice. When opened, it creates data pipe between its clients. That allows separate applications use the same serial port to exchange data.=В отличие от обычного COM порта, коннектор - виртуальное устройство, которое может быть открыто дважды. Когда оно открыто, оно создает канал данных между своими клиентами. Это позволяет разным приложениям использовать один и тот же COM порт для обмена данными.
+The pair device consists of two logically connected virtual ports.=Pair (пара) состоит из двух логически соединенных между собой виртуальных портов.
+Data splitter creates virtual device that represents existing serial port to share it between different applications. Please note that if you have created virtual serial port COM5, all applications must be configured to use COM5.=Сплиттер создает виртуальное устройство, которое соединено с уже существующим COM портом, чтобы разделить его между различными приложениями (может быть открыт много раз). Пример использования: COM1 => COM5. Это значит, что все приложения должны использовать COM5 (виртуальный порт) вместо COM1.
+Bridge connects two data streams\n\n* This device does not create new serial port.=Мост соединяет два различных потока данных. Более продвинутый, чем Serial Redirector или TcpClient, т.к. позволяет соединять не только COM порты.\n\n* Это устройство не создает нового COM порта
+Serial Redirector redirects data between two serial devices.\n\n* This device does not create new serial port.=Serial Redirector перенаправляет данные мужду двумя COM портами. Аналог Bridge, заточенный под COM порты.\n\n* Это устройство не создает нового COM порта
+TcpClient establishes TCP/IP connection to remote computer and transfers data from existing serial port to remote PC and vice versa.If connection is lost it will reconnect automatically.\n\n* This device does not create new serial port.=TcpClient создает соединение с удаленным компьютером и перенаправляет данные между существующим COM портом и удаленным компьютером. При потере соединения, соединение пересоздается автоматически.\n\n* Это устройство не создает нового COM порта
+TCPServer opens TCP port to deliver existing serial port data to network clients. Number of clients is unlimited.\n\n* This device does not create new serial port.=TcpServer открывает TCP порт, чтобы доставить данные от существующего COM порта к сетевым клиентам. Количество клиентов неограничено.\n\n* Это устройство не создает нового COM порта
+UDP manager device can send/receive serial port data via UDP protocol. It can be configured to exchange data with many clients.\n\n* This device does not create new serial port.=UDP менеджер умеет посылать/получать данные через UDP протокол. Он может быть сконфигурирован, чтобы обмениваться данными со множеством клиентов.\n\n* Это устройство не создает нового COM порта
+
+
+Monitoring mode=Режим слежения
+Binary mode=Бинарный режим
+Incoming=Входящие
+Outgoing=Исходящие
+Start/Stop HTTP server=Старт/Стоп HTTP сервера
+HTTP server=HTTP сервер
+
+Automatically start HTTP server=Автоматически стартовать HTTP сервер
+Automatically start HTTP server on VSPE startup=Автоматически стартовать HTTP сервер при запуске VSPE
+HTTP port=HTTP порт
+HTTP port for incoming connections=HTTP порт для входящих соединений
+Interface IP=IP интерфейса
+Interface IP Address=IP адрес интерфейса
+HTML page access password=Пароль для доступа к HTML странице
+Debug=Отладка
+Debugging=Отладка
+Fix=Исправить
+Fix broken devices=Исправление ошибок устройств
+Try to automatically fix broken devices=Пытаться автоматически исправлять ошибки устройств
+
+Ready=Готово
+Initializing=Инициализация
+n/a=Не используется
+Critical error=Критическая ошибка
+Device settings=Настройки устройства
+
+Old serial port=Старый COM порт
+New serial port=Новый COM port
+Mapper can redirect all requests from one serial port to another. Can be extremely useful tool when it is needed to change serial port for third-party application without ability to change its settings. Connector is an excellent companion for this device.\n\n* This device does not create new serial port.=Mapper умеет перенаправлять все запросы от одного COM порта к другому. Это может быть весьма полезно, когде необходимо изменить используемый COM порт в каком-либо приложении, но это нельзя сделать в его настройках. Connector - отличный компаньон для этого устройства.\n\n* Это устройство не создает нового COM порта
+
+
+
+[%s] COM port read-only cannot be used with write-only=[%s] COM порт "только для чтения" не может быть совмещен с "только для записи"
+Read-only=Только для чтения
+Write-only=Только для записи
+Move up=Переместить вверх
+Move down=Переместить вниз
+Emulation should be stopped to execute this command=Эмуляция должна быть остановлена для выполнения данного действия
+Reinitialize failed devices=Переинициализировать нестартовавшие устройства
+Reinitalization period=Период реинициализации
+Reinitalization period, in seconds=Период реинициализации, в секундах
+Spy allows to spy on VSPE device that supports spying.\n\n* This device does not create new serial port.=Spy (шпион) позволяет следить за VSPE устройствами, которые предоставляют такую возможность.\n\n* Это устройство не создает нового COM порта
+Destination stream=Поток перенаправления
+Index of VSPE device to spy on=Индекс VSPE устройства для слежки
+

@@ -1,0 +1,160 @@
+File=File
+View=Visualizza
+Language=Lingua
+Emulation=Emulazione
+Device=Dispositivo
+Help=Aiuto
+Open...=Apri…
+Save as...=Salva come…
+Exit=Uscita
+Extra information=Informazioni supplementari
+Preferences...=Preferenze…
+Start=Inizio
+Stop=Arresto
+Create...=Genera…
+Delete...=Cancella…
+Reinitialize...=Reinizializza…
+Properties...=Proprietà…
+Delete all...=Cancella tutto…
+Help...=Aiuto…
+Check for updates...=Controlla aggiornamenti…
+About...=Info…
+Register...=Registro…
+Eterlogic.com online...=Eterlogic.com on-line…
+Send bug report...=Trasmetti rapporto bug…
+Online forum...=Forum online…
+General=Generale
+Advanced=Avanzato
+
+Ask confirmation on quit=Chiedi conferma di chiusura
+Ask confirmation on VSPE quit=Chiedi conferma di chiusura VSPE
+Suppress splash window=Nascondi la finestra di benvenuto
+Hide splash window on VSPE startup=Nascondi la finestra di benvenuto di VSPE
+Display hints in the system tray=Visualizzi i suggerimenti nella barra di sistema
+Display message hints in the system tray=Visualizzi i messaggi nella barra di sistema
+Destroy kernel devices on quit=Distrugga i dispositivi all'uscita
+Destroy virtual kernel devices on VSPE quit=Distrugga i dispositivi all'uscita di VSPE 
+Detailed logging=Log dettagliato
+Log all events into file=Salva gli eventi su file
+Periodically checks TCP connections state=Controlla periodicamente la condizione dei collegamenti TCP
+Show hidden devices=Mostri i dispositivi nascosti 
+Show hidden (rarely used or not yet released) devices=Mostra i dispositivi nascosti(usato raramente o non ancora rilasciato)  
+
+Title=Titolo
+Device=Dispositivo
+Status=Stato
+
+Load configuration...=Carica configurazione…
+Save configuration...=Salva configurazione…
+Start emulation=Iniza l'emulazione 
+Stop emulation=Ferma l'emulazione
+Create new device...=Genera nuovo dispositivo…
+Device properties...=Proprietà del dispositivo…
+Delete device=Cancella dispositivo
+Delete all devices=Cancella tutti i dispositivi 
+
+Emulation started=L'emulazione è cominciata
+Emulation stopped=L'emulazione è ferma
+Please wait...=Attendere prego…
+
+Are you sure you want to delete device %s?=Siete sicuro voi volete cancellare il dispositivo %s?
+Are you sure you want to reinitialize device %s?=Siete sicuro voi volete reinizializzare il dispositivo %s?
+Error=Errore
+Update information= Aggiorna informazioni
+There are no updates available for download=Non ci sono aggiornamenti disponibili
+Registration key is not valid!=La chiave di registro è non valida!
+Please paste the registration key=Incollare la chiave di registrazione
+Thank you!=Grazie!
+Success=Successo
+Do you really want to quit?=Sei sicuro di voler chiudere?
+To edit device, emulation must be stopped.\nPlease stop emulation first.=Per modificare il dispositivo, l'emulazione deve essere interrotta.\nArresta l'emulazione prima di procedere. 
+Are you sure you want to remove all devices?=Siete sicuro di voler rimuovere tutti i dispositivi?
+Can not load configuration=Non è possibile caricare la configurazione
+Can not create file=Impossibile creare il file
+Can not create device=Impossibile creare il dispositivo 
+Are you sure you want to delete host [%s]?=Sei sicuro di voler cancellare l'host [%s]? 
+Are you sure you want to delete all clients?=Siete sicuro di voler cancellare tutti i clients?
+
+Registration info: %s=Informazioni di registrazione: %s 
+[%s] Initialization...%s=[%s] Inizializzazione… %s
+[%s] Can not release: device is being used=[%s] Impossibile liberare: il dispositivo è utilizzato
+
+Read=Letto
+Sent=Trasmesso
+Process=Elabora
+
+Specify device type=Specifica il tipo di dispositivo
+Specify device characteristics=Specifica le caratteristiche del dispositivo
+
+Virtual serial port=Porta seriale virtuale
+Emulate baud rate (optional)=Emula il baud rate (facoltativo) 
+Data source serial port=Porta seriale di origine dati
+Read only=Sola lettura
+Redirect modem registers=Redirigi i registri del modem
+Initial modem registers state=Stato iniziale dei registri del modem
+Settings...=Settaggi…
+Virtual serial port 1=Porta seriale virtuale 1
+Virtual serial port 2=Porta seriale virtuale 2
+Local TCP port=Porta TCP locale 
+Source serial port=Porta seriale di origine
+DTR/RTS depend on connection status=DTR/RTS dipendono dallo stato del collegamento
+UDP address=Indirizzo UDP
+UDP port=Porta UDP
+Stream 1=Stream 1
+Stream 2=Stream 2
+Remote TCP host=Host TCP remoto
+Remote TCP port=Porta TCP remota
+Read data timeout, in seconds (0 if disabled)=Timeout di lettura dati, in secondi (0 se disabilitato)
+Script (located in Scripts folder)=Script (situato nella cartella Scripts)
+Remote clients (outgoing data)=Client remoti (dati uscenti)
+Local UDP port for incoming data\n(0 to disable listening)=Porta UDP locale per i dati ricevuti\n (0 per disabilitare)
+Add...=Aggiungi…
+Delete...=Cancella…
+Modify...=Modifica…
+Clear...=Pulisci…
+Clear=Pulisci
+Remote UDP host properties=Proprietà dell'host UDP remoto
+Device properties...=Proprietà del dispositivo…
+Device type=Tipo di dispositivo
+Unlike regular serial port, connector is a virtual device that can be opened twice. When opened, it creates data pipe between its clients. That allows separate applications use the same serial port to exchange data.=Diversamente dalle porte seriali reali, il Connector è un dispositivo virtuale che può essere aperto due volte. Una volta aperto, genera un collegamento di dati fra i suoi clients. Questo permette ad applicazioni diverse di utilizzare la stessa porta seriale per scambiare dati.
+The pair device consists of two logically connected virtual ports.=Il dispositivo Pair è costituito da due porte virtuali connesse tra loro.
+Data splitter creates virtual device that represents existing serial port to share it between different applications. Please note that if you have created virtual serial port COM5, all applications must be configured to use COM5.=Lo Splitter crea dispositivi virtuali che rendono possibile la condivisione di una stessa porta reale tra più applicazioni. Facciamo notare che se si è creata la porta vistuale COM5, tutte le applicazioni devono essere configurate per utilizzare la COM5.
+Bridge connects two data streams\n\n* This device does not create new serial port.=il Bridge connette due stream di dati\n\*Questo dispositivo non crea alcuna porta seriale virtuale. 
+Serial Redirector redirects data between two serial devices.\n\n* This device does not create new serial port.=Il Redirector redirige i dati tra due dispositivi virtuali.\n\n*Questo dispositivo non crea alcuna porta seriale virtuale.  
+TcpClient establishes TCP/IP connection to remote computer and transfers data from existing serial port to remote PC and vice versa.If connection is lost it will reconnect automatically.\n\n* This device does not create new serial port.=Il TCPClient stabilisce connessioni TCP/IP verso un computer remoto e trasferisce dati da una porta seriale esistente verso un PC remoto e vice versa. Se la connessione va persa, è presente un meccanismo di riconeessione automatica.\n\n*Questo dispositivo non crea alcuna porta seriale virtuale. 
+TCPServer opens TCP port to deliver existing serial port data to network clients. Number of clients is unlimited.\n\n* This device does not create new serial port.=Il TCPServer apre una porta TCP per esportare dati di una porta seriale verso i propri clients.\n\n*Questo dispositivo non crea alcuna porta seriale virtuale.  
+UDP manager device can send/receive serial port data via UDP protocol. It can be configured to exchange data with many clients.\n\n* This device does not create new serial port.=L' UDPManager può spedire e ricevere dati seriali utilizzando il protocollo UDP. Può essere configurato per scambiare dati con più clients.
+
+
+Monitoring mode=Modalità osservatore
+Binary mode=Modalità binaria
+Incoming=Entrante
+Outgoing=Uscente
+Start/Stop HTTP server=Avvio/arresto del server HTTP
+HTTP server=Server HTTP
+
+Automatically start HTTP server=Avvia automaticamente il server HTTP
+Automatically start HTTP server on VSPE startup=Avvia automaticamente il server HTTP su VSPE alla partenza
+HTTP port=Porta HTTP
+HTTP port for incoming connections=Porta HTTP per i collegamenti in entrata
+Interface IP=Interfaccia IP
+Interface IP Address=Indirizzo interfaccia IP
+HTML page access password=Password di accesso alle pagine HTML
+Debug=Debug
+Debugging=Debug in corso
+Fix=Sistema
+Fix broken devices=Sistema dispositivi corrotti
+Try to automatically fix broken devices=Provi a riparare automaticamente i dispositivi corrotti
+
+Ready=Pronto 
+Initializing=Inizializzazione
+n/a=n/a
+Critical error=Errore critico
+Device settings=Impostazioni del dispositivo
+
+Old serial port=Vecchia porta seriale
+New serial port=Nuova porta seriale
+Mapper can redirect all requests from one serial port to another. Can be extremely useful tool when it is needed to change serial port for third-party application without ability to change its settings. Connector is an excellent companion for this device.\n\n* This device does not create new serial port.=Il Mapper può redirigere tutte le richieste provenienti da una porta seriale ad un'altra. Può essere molto utile quando è necessario cambiare porta seriale per applicazioni di terze parti senza cambiare i loro settaggi. Il Connector è un eccellente compagno per questo device\n\n*Questo dispositivo non crea alcuna porta seriale virtuale. 
+
+
+
