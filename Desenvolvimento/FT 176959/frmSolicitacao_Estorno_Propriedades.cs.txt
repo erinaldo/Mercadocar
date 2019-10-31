@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Data;
-using System.Windows.Forms;
 using Mercadocar.Constantes;
 using Mercadocar.Enumerados;
 using Mercadocar.Herancas;
@@ -9,6 +5,10 @@ using Mercadocar.InfraEstrutura;
 using Mercadocar.InfraEstrutura.Utilidades;
 using Mercadocar.ObjetosNegocio.DataObject;
 using Mercadocar.RegrasNegocio;
+using System;
+using System.Collections;
+using System.Data;
+using System.Windows.Forms;
 
 namespace Mercadocar.Formularios
 {
@@ -35,8 +35,9 @@ namespace Mercadocar.Formularios
         private string strClienteID = string.Empty;
         private DataSet dtsPropriedades;
         private DataRow dtrSolicitacaoEstorno;
+        private DataRow dtrClienteContato;
         private DataTable dttIdentificadores;
-        private DataSet dtsCliente;
+        private DataSet dtsClienteCadastro;
         private DataSet dtsTemporario;
         private TipoSolicitacao enuTipoSolicitacao;
         private bool blnPermissaoIncluir = false;
@@ -46,7 +47,6 @@ namespace Mercadocar.Formularios
         private bool blnPermissaoDadosEstorno = false;
         private bool blnPermissaoAlterarStatus = false;
         private bool blnPermissaoAlterarInformacaoCartao = false;
-
 
         private UsuarioDO dtoUsuarioAutorizado = null;
 
@@ -78,12 +78,10 @@ namespace Mercadocar.Formularios
                 this.txtNomeCliente.TextChanged += this.Tratar_Botao_Aplicar;
                 this.objTelefoneCliente.TextBox_DDD.TextChanged += this.Tratar_Botao_Aplicar;
                 this.objTelefoneCliente.TextBox_Numero.TextChanged += this.Tratar_Botao_Aplicar;
-                this.cboClienteTelefone.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
                 this.txtValorVenda.TextChanged += this.Tratar_Botao_Aplicar;
                 this.txtValorEstornar.TextChanged += this.Tratar_Botao_Aplicar;
                 this.chkNotificarEmail.CheckedChanged += this.Tratar_Botao_Aplicar;
                 this.txtEmail2.TextChanged += this.Tratar_Botao_Aplicar;
-                //this.cboClienteEmail.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
                 this.txtMotivo.TextChanged += this.Tratar_Botao_Aplicar;
                 this.cboTipoEstorno.SelectedValueChanged += this.Tratar_Botao_Aplicar;
                 this.txtCodigoCancelamento.TextChanged += this.Tratar_Botao_Aplicar;
@@ -106,10 +104,10 @@ namespace Mercadocar.Formularios
                 this.txtTerminal.TextChanged += this.Tratar_Mudar_Texto;
                 this.txtEmail2.LostFocus += this.Perder_Foco_Email;
 
+                this.cboClienteTelefone.SelectedIndexChanged += this.Selecionar_combosClienteContato;
+                this.cboClienteEmail.SelectedIndexChanged += this.Selecionar_combosClienteContato;
                 this.btnIncluirTelefone.Click += this.Clicar_btnIncluirClienteContato;
-                this.btnExcluirTelefone.Click += this.Clicar_btnExcluirClienteContato;
                 this.btnIncluirEmail.Click += this.Clicar_btnIncluirClienteContato;
-                this.btnExcluirEmail.Click += this.Clicar_btnExcluirClienteContato;
 
             }
             catch (Exception)
@@ -166,35 +164,21 @@ namespace Mercadocar.Formularios
                 Cursor.Current = Cursors.WaitCursor;
 
                 this.Definir_Formulario_Estilo();
-
                 this.Tratar_Permissoes();
-
                 this.Obter_Dados();
-
+                this.Preencher_DataSet_Cliente_Cadastro();
                 this.Tratar_Event_Handlers_Botao_Aplicar(false);
-
                 this.Preencher_Combo_Caixas();
-
                 this.Preencher_Combo_Status();
-
                 this.Preencher_Combo_Cartao_TEF();
-
                 this.Preencher_Combos_Tipo();
-
                 this.Preencher_Combo_Forma_Estorno();
-
+                this.Preencher_Combo_Cliente_Telefone();
+                this.Preencher_Combo_Cliente_Email();
                 this.Preencher_Propriedades_Form();
-
                 this.Preencher_Painel_Geral();
-
                 this.Preencher_Painel_Venda_Origem();
-
                 this.Preencher_Painel_Dados_Estorno();
-
-                //this.Preencher_Combo_Telefone_Cliente();
-
-                //this.Preencher_Combo_Email_Cliente();
-
                 this.Habilitar_Botao_Notificacao_Cliente();
 
                 if (this.intSolicitacaoEstornoID > 0)
@@ -207,21 +191,13 @@ namespace Mercadocar.Formularios
                 }
 
                 this.Atualizar_DataSet_Temporario();
-
                 this.Adicionar_Colunas_Grid_objGridButtonsItensIdentificadores();
-
                 this.Preencher_Grid_objGridButtonsItensIdentificadores();
-
                 this.Habilitar_Campos_Por_Origem();
-                
                 this.Tratar_Event_Handlers_Botao_Aplicar(true);
-
                 this.Verificar_Mudancas();
-
                 this.ActiveControl = this.btnOk;
-
                 this.Verifica_Se_Solicitacao_Esta_Cancelada();
-
             }
             catch (Exception ex)
             {
@@ -241,12 +217,23 @@ namespace Mercadocar.Formularios
         {
             try
             {
+                if (this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato_Virtual.ToString()].Rows.Count > 0)
+                {
+                    this.txtEmail2.Visible = false;
+                    this.cboClienteEmail.Visible = true;
+                    this.cboClienteEmail.Enabled = this.chkNotificarEmail.Checked;
+                    this.btnIncluirEmail.Enabled = this.chkNotificarEmail.Checked;
+                }
+                else
+                {
+                    this.txtEmail2.Visible = true;
+                    this.cboClienteEmail.Visible = false;
+                    this.cboClienteEmail.Enabled = false;
+                    this.btnIncluirEmail.Enabled = false;
+                }
+
                 this.lblEmail.Enabled = this.chkNotificarEmail.Checked;
                 this.txtEmail2.Enabled = this.chkNotificarEmail.Checked;
-                this.cboClienteEmail.Enabled = this.chkNotificarEmail.Checked;
-                this.btnIncluirEmail.Enabled = this.chkNotificarEmail.Checked;
-                this.btnExcluirEmail.Enabled = this.chkNotificarEmail.Checked;
-
             }
             catch (Exception ex)
             {
@@ -331,6 +318,16 @@ namespace Mercadocar.Formularios
 
                 if (this.objGridButtonsItensIdentificadores.Tratar_Pressionar_Tecla(ref msg, keyData))
                 {
+                    return true;
+                }
+                else if (keyData == (Keys.Control | Keys.F2))
+                {
+                    this.btnIncluirTelefone.PerformClick();
+                    return true;
+                }
+                else if (keyData == (Keys.Control | Keys.F3))
+                {
+                    this.btnIncluirEmail.PerformClick();
                     return true;
                 }
 
@@ -425,27 +422,27 @@ namespace Mercadocar.Formularios
 
         private void Clicar_btnIncluirClienteContato(object sender, System.EventArgs e)
         {
+            Cursor.Current = Cursors.WaitCursor;
+
             try
             {
-                string btnSender = ((Button)sender).Name;
-                this.Clicar_btnIncluirClienteTelefone(btnSender);
+                this.Clicar_btnIncluirClienteContato(((Button)sender).Name);
             }
             catch (Exception ex)
             {
                 Root.Tratamento_Erro.Tratar_Erro(ex, this);
             }
-            finally
-            {
-                Cursor.Current = Cursors.Default;
-            }
+
+            Cursor.Current = Cursors.Default;
         }
 
-        private void Clicar_btnExcluirClienteContato(object sender, System.EventArgs e)
+        private void Selecionar_combosClienteContato(object sender, System.EventArgs e)
         {
             try
             {
-                string btnSender = ((Button)sender).Name;
-                this.Remover_Ultimo_Contato_Cliente(btnSender);
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.Selecionar_combosClienteContato(((ComboBox)sender).Name);
             }
             catch (Exception ex)
             {
@@ -474,12 +471,10 @@ namespace Mercadocar.Formularios
                     this.dtpDataVenda.ValueChanged += this.Tratar_Botao_Aplicar;
                     this.txtNomeCliente.TextChanged += this.Tratar_Botao_Aplicar;
                     this.objTelefoneCliente.TextChanged += this.Tratar_Botao_Aplicar;
-                    this.cboClienteTelefone.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
                     this.txtValorVenda.TextChanged += this.Tratar_Botao_Aplicar;
                     this.txtValorEstornar.TextChanged += this.Tratar_Botao_Aplicar;
                     this.chkNotificarEmail.CheckedChanged += this.Tratar_Botao_Aplicar;
                     this.txtEmail2.TextChanged += this.Tratar_Botao_Aplicar;
-                    this.cboClienteEmail.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
                     this.txtMotivo.TextChanged += this.Tratar_Botao_Aplicar;
                     this.cboTipoEstorno.SelectedValueChanged += this.Tratar_Botao_Aplicar;
                     this.txtCodigoCancelamento.TextChanged += this.Tratar_Botao_Aplicar;
@@ -496,12 +491,10 @@ namespace Mercadocar.Formularios
                     this.dtpDataVenda.ValueChanged -= this.Tratar_Botao_Aplicar;
                     this.txtNomeCliente.TextChanged -= this.Tratar_Botao_Aplicar;
                     this.objTelefoneCliente.TextChanged -= this.Tratar_Botao_Aplicar;
-                    this.cboClienteTelefone.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
                     this.txtValorVenda.TextChanged -= this.Tratar_Botao_Aplicar;
                     this.txtValorEstornar.TextChanged -= this.Tratar_Botao_Aplicar;
                     this.chkNotificarEmail.CheckedChanged -= this.Tratar_Botao_Aplicar;
                     this.txtEmail2.TextChanged -= this.Tratar_Botao_Aplicar;
-                    this.cboClienteEmail.SelectedIndexChanged += this.Tratar_Botao_Aplicar;
                     this.txtMotivo.TextChanged -= this.Tratar_Botao_Aplicar;
                     this.cboTipoEstorno.SelectedValueChanged -= this.Tratar_Botao_Aplicar;
                     this.txtCodigoCancelamento.TextChanged -= this.Tratar_Botao_Aplicar;
@@ -574,9 +567,7 @@ namespace Mercadocar.Formularios
                 Form_Designer.Configurar_Designer_Padrao_MercadoCar(this);
                 Form_Designer.Definir_Label_Estilo_Atencao(this.lblAlertaObservacao);
                 Form_Designer.Definir_Botao_Estilo_Incluir(this.btnIncluirTelefone);
-                Form_Designer.Definir_Botao_Estilo_Excluir(this.btnExcluirTelefone);
                 Form_Designer.Definir_Botao_Estilo_Incluir(this.btnIncluirEmail);
-                Form_Designer.Definir_Botao_Estilo_Excluir(this.btnExcluirEmail);
             }
             catch (Exception)
             {
@@ -595,8 +586,7 @@ namespace Mercadocar.Formularios
                     {
                         this.btnAplicar.Enabled = (
                                 (this.chkNotificarEmail.Checked != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"].DefaultBool()) ||
-                                (this.txtEmail2.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
-                                (this.cboClienteEmail.SelectedValue.DefaultString() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
+                                (this.txtEmail2.Text.ToLower() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString().ToLower()) ||
                                 (this.cboTipoEstorno.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Tipo_Estorno"].DefaultInteger()) ||
                                 (this.txtCodigoCancelamento.Text != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Solicitacao_Estorno_Codigo_Cancelamento"].ToString()) ||
                                 (this.cboStatus.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Dados_Estorno"].Rows[0]["Enum_Status_ID"].DefaultInteger()) ||
@@ -619,7 +609,6 @@ namespace Mercadocar.Formularios
                                     this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Replace("-", string.Empty)) ||
                                 (this.chkNotificarEmail.Checked != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"].DefaultBool()) ||
                                 (this.txtEmail2.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
-                                (this.cboClienteEmail.SelectedValue.DefaultString() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString()) ||
                                 (this.txtMotivo.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"].ToString()) ||
                                 (this.txtTerminal.Text != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Terminal"].ToString()) ||
                                 (this.cboUsuarioCaixaVenda.SelectedValue.DefaultInteger() != this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Usuario_Operadora_Caixa_ID"].DefaultInteger())
@@ -631,7 +620,6 @@ namespace Mercadocar.Formularios
                 if (this.btnAplicar.Enabled)
                     return;
 
-                if (dtsTemporario != null)
                 this.btnAplicar.Enabled = this.dtsPropriedades.GetXml() != this.dtsTemporario.GetXml();
 
 
@@ -758,22 +746,14 @@ namespace Mercadocar.Formularios
 
                         bool blnStatusEstornoPermiteAlteracao = this.Verificar_Status_Estorno_Encaminhado_Financeiro_Recusado();
 
-                        this.txtValorEstornar.Enabled = 
+                        this.txtValorEstornar.Enabled =
                         this.txtNumeroCartao.Enabled =
                         this.cboAdministradoraCartao.Enabled =
                         this.cboTipoTransacao.Enabled =
                         this.txtNumeroParcelas.Enabled =
                         this.dtpDataVenda.Enabled = this.blnPermissaoVendaOrigem && blnStatusEstornoPermiteAlteracao;
-                        this.chkNotificarEmail.Enabled = this.blnPermissaoDadosEstorno;
-                        this.txtEmail2.Enabled = this.blnPermissaoDadosEstorno;
 
-                        if (this.chkNotificarEmail.Checked)
-                        {
-                            this.lblEmail.Enabled = this.blnPermissaoDadosEstorno;
-                            this.cboClienteEmail.Enabled = this.blnPermissaoDadosEstorno;
-                            this.btnIncluirEmail.Enabled = this.blnPermissaoDadosEstorno;
-                            this.btnExcluirEmail.Enabled = this.blnPermissaoDadosEstorno;
-                        }
+                        this.chkNotificarEmail.Enabled = this.blnPermissaoDadosEstorno;
 
                         this.grbEstorno.Enabled = this.blnPermissaoDadosEstorno;
 
@@ -785,11 +765,53 @@ namespace Mercadocar.Formularios
                         this.objGridButtonsItensIdentificadores.Botao_Propriedade_Incluir.Enabled = 
                         this.objGridButtonsItensIdentificadores.Botao_Propriedade_Alterar.Enabled = 
                         this.objGridButtonsItensIdentificadores.Botao_Propriedade_Excluir.Enabled = blnStatusEstornoPermiteAlteracao && 
-                                                                                                    (this.blnPermissaoAlterarInformacaoCartao || this.cboTipoTransacao.SelectedValue.DefaultInteger() == TipoTransacaoTEF.POS.DefaultInteger());
+                        (this.blnPermissaoAlterarInformacaoCartao || this.cboTipoTransacao.SelectedValue.DefaultInteger() == TipoTransacaoTEF.POS.DefaultInteger());
 
                         break;
+
                     default:
                         break;
+                }
+
+                if (this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato.ToString()].Rows.Count > 0)
+                {
+                    this.objTelefoneCliente.Visible = false;
+                    this.lblTelefone.Visible = true;
+                    this.cboClienteTelefone.Visible = true;
+                    if (this.enuTipoSolicitacao == TipoSolicitacao.Alteracao)
+                    {
+                        this.btnIncluirTelefone.Enabled = false;
+                    }
+                    else
+                    {
+                        this.btnIncluirTelefone.Enabled = true;
+                    }
+                    this.cboClienteTelefone.Text = this.objTelefoneCliente.TextBox_Numero.Text == string.Empty ? string.Empty
+                        : "(" + this.objTelefoneCliente.TextBox_DDD.Text + ")  " + this.objTelefoneCliente.TextBox_Numero.Text.ToFormatTelefoneNumero();
+                }
+                else
+                {
+                    this.objTelefoneCliente.Visible = true;
+                    this.lblTelefone.Visible = false;
+                    this.cboClienteTelefone.Visible = false;
+                    this.btnIncluirTelefone.Enabled = false;
+                }
+
+                if (this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato_Virtual.ToString()].Rows.Count > 0)
+                {
+                    this.txtEmail2.Visible = false;
+                    this.cboClienteEmail.Visible = true;
+                    this.cboClienteEmail.Enabled = this.chkNotificarEmail.Checked;
+                    this.btnIncluirEmail.Enabled = this.chkNotificarEmail.Checked;
+                    this.cboClienteEmail.Text = this.txtEmail2.Text;
+                }
+                else
+                {
+                    this.txtEmail2.Visible = true;
+                    this.txtEmail2.Enabled = this.chkNotificarEmail.Checked;
+                    this.cboClienteEmail.Visible = false;
+                    this.cboClienteEmail.Enabled = false;
+                    this.btnIncluirEmail.Enabled = false;
                 }
             }
             catch (Exception)
@@ -863,16 +885,11 @@ namespace Mercadocar.Formularios
                             )
                         {
                             this.objTelefoneCliente.TextBox_Numero.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString();
-                            this.cboClienteTelefone.Text = DivUtil.Formatar_Telefone_Numero(
-                                this.cboClienteTelefone.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString());
                         }
                         else
                         {
                             this.objTelefoneCliente.TextBox_DDD.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(2);
                             this.objTelefoneCliente.TextBox_Numero.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Substring(3);
-                            this.cboClienteTelefone.Text = DivUtil.Formatar_Telefone_Numero(
-                                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(2) +
-                                this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Substring(3));
                         }
                     }
 
@@ -880,7 +897,6 @@ namespace Mercadocar.Formularios
                     this.txtValorEstornar.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Valor_Estorno"].ToString();
                     this.chkNotificarEmail.Checked = Convert.ToBoolean(this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Notificar"]);
                     this.txtEmail2.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString();
-                    this.cboClienteEmail.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString();
                     this.txtMotivo.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Motivo"].ToString();
                     this.txtTerminal.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Terminal"].ToString();
                 }
@@ -939,18 +955,14 @@ namespace Mercadocar.Formularios
 
                         if (this.dtrSolicitacaoEstorno["Cliente_ID"].ToString() != string.Empty)
                         {
-
-                            this.strClienteID = this.dtrSolicitacaoEstorno["Cliente_ID"].ToString();
-
-                            this.dtsCliente = new ClienteBUS().Consultar_Dados_Cliente(this.strClienteID);
-
-                            if (this.dtsCliente.Tables[0].Columns.Contains("CLIENTE_NOME_FANTASIA"))
+                            DataSet dtsCliente = new ClienteBUS().Consultar_Dados_Cliente(this.strClienteID);
+                            if (dtsCliente.Tables[0].Columns.Contains("CLIENTE_NOME_FANTASIA"))
                             {
-                                this.txtNomeCliente.Text = this.dtsCliente.Tables[0].Rows[0]["CLIENTE_RAZAO_SOCIAL"].ToString();
+                                this.txtNomeCliente.Text = dtsCliente.Tables[0].Rows[0]["CLIENTE_RAZAO_SOCIAL"].ToString();
                             }
                             else
                             {
-                                this.txtNomeCliente.Text = this.dtsCliente.Tables[0].Rows[0]["Cliente_Nome"].ToString() + " " + this.dtsCliente.Tables[0].Rows[0]["Cliente_Sobrenome"].ToString();
+                                this.txtNomeCliente.Text = dtsCliente.Tables[0].Rows[0]["Cliente_Nome"].ToString() + " " + dtsCliente.Tables[0].Rows[0]["Cliente_Sobrenome"].ToString();
                             }
                             this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Nome"] = this.txtNomeCliente.Text;
 
@@ -1060,7 +1072,7 @@ namespace Mercadocar.Formularios
                         }
                         else
                         {
-                           busSolicitacaoEstorno.Alterar_Venda_Origem(this.dtsTemporario);
+                            busSolicitacaoEstorno.Alterar_Venda_Origem(this.dtsTemporario);
                         }
 
                         this.btnImprimirComprovante.Enabled = this.blnPermissaoImprimir;
@@ -1069,6 +1081,7 @@ namespace Mercadocar.Formularios
 
                         blnReturnValue = true;
                         break;
+
                     case TipoSolicitacao.Alteracao:
 
                         this.Preencher_DataRow_Venda_Origem(this.dtsTemporario.Tables["Venda_Origem"].Rows[0]);
@@ -1084,9 +1097,21 @@ namespace Mercadocar.Formularios
                     default:
                         break;
                 }
-                
+
+                this.Preencher_DataRow_Cliente_Telefone();
+                this.Preencher_DataRow_Cliente_Email();
+
+                if (this.dtsClienteCadastro.HasChanges())
+                {
+                    new ClienteBUS().Alterar(this.dtsClienteCadastro);
+
+                    this.Preencher_DataSet_Cliente_Cadastro();
+                    this.Preencher_Combo_Cliente_Telefone();
+                    this.Preencher_Combo_Cliente_Email();
+                }
+
                 this.Obter_Dados();
-                
+
                 this.Habilitar_Botao_Notificacao_Cliente();
                 this.Preencher_Painel_Venda_Origem();
                 this.Preencher_Painel_Geral();
@@ -1175,15 +1200,25 @@ namespace Mercadocar.Formularios
                             if (this.txtEmail2.Text.Trim().Length.Equals(0))
                             {
                                 MessageBox.Show("Para notificar o cliente através de e-mail é necessário informar o mesmo.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                                this.txtEmail2.Focus();
+                                if (this.dtsClienteCadastro.Tables["Contato"].Rows.Count > 0)
+                                {
+                                    this.cboClienteEmail.Focus();
+                                    this.cboClienteEmail.DroppedDown = true;
+                                }
+                                else
+                                {
+                                    this.txtEmail2.Focus();
+                                }
+
                                 return false;
                             }
+
                             if (DivUtil.Validar_Email(this.txtEmail2.Text.Trim(), false) == false)
                             {
                                 MessageBox.Show("É necessário informar um e-mail válido.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                                 this.txtEmail2.Focus();
-                                return false;
 
+                                return false;
                             }
                         }
 
@@ -1258,10 +1293,34 @@ namespace Mercadocar.Formularios
                             {
                                 this.Obter_Proximo_Numero_Lote_Disponivel();
                             }
-
-
                         }
 
+                        if (this.chkNotificarEmail.Checked)
+                        {
+                            if (this.txtEmail2.Text.Trim().Length.Equals(0))
+                            {
+                                MessageBox.Show("Para notificar o cliente através de e-mail é necessário informar o mesmo.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                if (this.dtsClienteCadastro.Tables["Contato"].Rows.Count > 0)
+                                {
+                                    this.cboClienteEmail.Focus();
+                                    this.cboClienteEmail.DroppedDown = true;
+                                }
+                                else
+                                {
+                                    this.txtEmail2.Focus();
+                                }
+
+                                return false;
+                            }
+
+                            if (DivUtil.Validar_Email(this.txtEmail2.Text.Trim(), false) == false)
+                            {
+                                MessageBox.Show("É necessário informar um e-mail válido.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                this.txtEmail2.Focus();
+
+                                return false;
+                            }
+                        }
 
                         break;
 
@@ -1316,6 +1375,48 @@ namespace Mercadocar.Formularios
             }
         }
 
+        private void Preencher_DataSet_Cliente_Cadastro()
+        {
+            try
+            {
+                this.strClienteID = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cliente_ID"].DefaultString();
+                this.dtsClienteCadastro = new ClienteBUS().Consultar_DataSet_Propriedades(this.strClienteID);
+
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Cliente].TableName = ClienteBUS.Tabelas.Cliente.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Cliente_Detalhes].TableName = ClienteBUS.Tabelas.Cliente_Detalhes.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Pessoa_Fisica].TableName = ClienteBUS.Tabelas.Pessoa_Fisica.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Pessoa_Juridica].TableName = ClienteBUS.Tabelas.Pessoa_Juridica.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Estado].TableName = ClienteBUS.Tabelas.Estado.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Cidade].TableName = ClienteBUS.Tabelas.Cidade.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Classificacao_Endereco].TableName = ClienteBUS.Tabelas.Classificacao_Endereco.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Tipo_Endereco].TableName = ClienteBUS.Tabelas.Tipo_Endereco.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Tipo_Telefone].TableName = ClienteBUS.Tabelas.Tipo_Telefone.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Endereco].TableName = ClienteBUS.Tabelas.Endereco.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Contato].TableName = ClienteBUS.Tabelas.Contato.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Contato_Virtual].TableName = ClienteBUS.Tabelas.Contato_Virtual.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.PJ_Responsavel_PF].TableName = ClienteBUS.Tabelas.PJ_Responsavel_PF.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.PJ_Responsavel_Cliente_Autorizado].TableName = ClienteBUS.Tabelas.PJ_Responsavel_Cliente_Autorizado.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.PJ_Autorizados_PF].TableName = ClienteBUS.Tabelas.PJ_Autorizados_PF.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.PJ_Autorizados_Cliente_Autorizado].TableName = ClienteBUS.Tabelas.PJ_Autorizados_Cliente_Autorizado.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Banco].TableName = ClienteBUS.Tabelas.Banco.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Agencia].TableName = ClienteBUS.Tabelas.Agencia.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Conta].TableName = ClienteBUS.Tabelas.Conta.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Cliente_Veiculo].TableName = ClienteBUS.Tabelas.Cliente_Veiculo.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Cliente_Historico].TableName = ClienteBUS.Tabelas.Cliente_Historico.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Nacionalidade].TableName = ClienteBUS.Tabelas.Nacionalidade.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Estado_Civil].TableName = ClienteBUS.Tabelas.Estado_Civil.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Cliente_Tipo].TableName = ClienteBUS.Tabelas.Cliente_Tipo.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Forma_Pgto].TableName = ClienteBUS.Tabelas.Forma_Pgto.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Prazo_Pgto].TableName = ClienteBUS.Tabelas.Prazo_Pgto.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Ramo_Atividade].TableName = ClienteBUS.Tabelas.Ramo_Atividade.ObterDescricaoEnum();
+                this.dtsClienteCadastro.Tables[(int)ClienteBUS.Tabelas.Interface_Cliente].TableName = ClienteBUS.Tabelas.Interface_Cliente.ObterDescricaoEnum();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         ///-----------------------------------------------------------------------------
         /// <summary>
         ///		Preenche as informações da solicitação de estorno para gravação na base.
@@ -1334,19 +1435,6 @@ namespace Mercadocar.Formularios
                 dtrEstorno["Usuario_Operadora_Caixa_ID"] = this.cboUsuarioCaixaVenda.SelectedValue;
                 dtrEstorno["Cliente_ID"] = this.strClienteID;
                 dtrEstorno["Solicitacao_Estorno_Cliente_Nome"] = this.txtNomeCliente.Text;
-
-                if (this.cboClienteTelefone.Visible && this.cboClienteTelefone.SelectedIndex != 0)
-                {
-                    if (this.cboClienteTelefone.Enabled)
-                    {
-                        dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = Utilitario.Remover_Caracteres_Formatacao_Telefone(this.cboClienteTelefone.Text);
-                    }
-                    else
-                    {
-                        dtrEstorno["Solicitacao_Estorno_Cliente_Telefone"] = Utilitario.Remover_Caracteres_Formatacao_Telefone(this.cboClienteTelefone.Text);
-                    }
-                }
-                else
                 if (this.objTelefoneCliente.TextBox_Numero.Text != string.Empty)
                 {
                     if (this.objTelefoneCliente.TextBox_DDD.Enabled)
@@ -1427,15 +1515,82 @@ namespace Mercadocar.Formularios
             }
         }
 
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///		Preenche informações de Contato do Cliente para gravação na base.
+        /// </summary>
+        /// <history>
+        ///		[fmoraes]	31/07/2019	Create
+        /// </history>
+        ///-----------------------------------------------------------------------------
+        private void Preencher_DataRow_Cliente_Telefone()
+        {
+            try
+            {
+                if (this.objTelefoneCliente.TextBox_Numero.Text != string.Empty)
+                {
+                    foreach (DataRow row in this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato.ToString()].Rows)
+                    {
+                        if (this.objTelefoneCliente.TextBox_DDD.Text == row["Contato_DDD"].DefaultString() &&
+                            Utilitario.Remover_Caracteres_Formatacao_Telefone(this.objTelefoneCliente.TextBox_Numero.Text) == row["Contato_Telefone"].DefaultString())
+                        {
+                            return;
+                        }
+                    }
+
+                    this.dtrClienteContato = this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato.ToString()].NewRow();
+
+                    this.dtrClienteContato["Tipo_Telefone"] = Tipo_Telefone.Nao_Informado.ObterDescricaoEnum();
+                    this.dtrClienteContato["Enum_TipoTelefone_ID"] = Tipo_Telefone.Nao_Informado.DefaultInteger();
+                    this.dtrClienteContato["Enum_Departamento_ID"] = 0;
+                    this.dtrClienteContato["Departamento_ID"] = 0;
+                    this.dtrClienteContato["Contato_DDD"] = this.objTelefoneCliente.TextBox_DDD.Text;
+                    this.dtrClienteContato["Contato_Telefone"] = this.objTelefoneCliente.TextBox_Numero.Text.ToFormatTelefoneNumero();
+
+                    this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato.ToString()].Rows.Add(this.dtrClienteContato);
+
+                    new ContatoBUS().Atualizar_Usuario_Que_Manipulou_Contato(this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato.ToString()], this.UsuarioAutorizado.ID);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private void Preencher_DataRow_Cliente_Email()
+        {
+            try
+            {
+                if (this.txtEmail2.Text != string.Empty)
+                {
+                    foreach (DataRow row in this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato_Virtual.ToString()].Rows)
+                    {
+                        if (this.txtEmail2.Text.ToLower() == row["ContatoVirtual_Email"].DefaultString().ToLower())
+                        {
+                            return;
+                        }
+                    }
+
+                    this.dtrClienteContato = this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato_Virtual.ToString()].NewRow();
+
+                    this.dtrClienteContato["ContatoVirtual_Email"] = this.txtEmail2.Text.ToLower();
+
+                    this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato_Virtual.ToString()].Rows.Add(this.dtrClienteContato);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         private void Preencher_Propriedades_Form()
         {
             try
             {
-                if (this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cliente_ID"] != null)
-                {
-                    this.strClienteID = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Cliente_ID"].ToString();
-                }
-
                 this.intEstornoCartaoCreditoITID = Convert.ToInt32(this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Estorno_Cartao_Credito_IT_ID"]);
             }
             catch (Exception)
@@ -1588,63 +1743,22 @@ namespace Mercadocar.Formularios
 
         }
 
-        private void Preencher_Combo_Telefone_Cliente()
+        private void Preencher_Combo_Cliente_Telefone()
         {
             try
             {
-                this.Recarregar_Combo_Cliente_Telefone();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+                this.cboClienteTelefone.Items.Clear();
 
-        private void Preencher_Combo_Email_Cliente()
-        {
-            try
-            {
-                this.Recarregar_Combo_Cliente_Email();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        private void Recarregar_Combo_Cliente_Telefone()
-        {
-            try
-            {
-                if (dtsCliente == null)
+                foreach (DataRow row in this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato.ToString()].Rows)
                 {
-                    this.dtsCliente = new ClienteBUS().Consultar_Dados_Cliente(this.strClienteID);
-                }
-                this.dtsCliente.Tables[1].Columns.Add("Telefone", typeof(string));
-                this.dtsCliente.Tables[2].Columns.Add("Email", typeof(string));
-
-                foreach (DataRow row in this.dtsCliente.Tables[1].Rows)
-                {
-                    if (DBNull.Value.Equals(row["Cliente_Telefone"]) == false)
+                    if (DBNull.Value.Equals(row["Contato_Telefone"]) == false)
                     {
-                        row["Telefone"] = DivUtil.Formatar_Telefone_Numero(row["Cliente_Telefone_DDD"].DefaultString() + row["Cliente_Telefone"].DefaultString());
-                    }
-                }
+                        string itens = string.Concat("(", row["Contato_DDD"].DefaultString(), ")  ", row["Contato_Telefone"].DefaultString().ToFormatTelefoneNumero());
 
-                this.cboClienteTelefone.DropDownWidth =
-                Utilitario.Obter_Comprimento_Maior_Elemento_DataTable(this.dtsCliente.Tables[1], "Telefone", this.cboClienteTelefone);
-                Utilitario.Preencher_ComboBox_DataTable(ref this.cboClienteTelefone, this.dtsCliente.Tables[1], "Telefone", "Cliente_Telefone", string.Empty, "Selecione...");
-
-                if (dtsCliente.Tables[1].Rows.Count > 0)
-                {
-                    string strTelefone = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"] + 
-                        this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString();
-
-                    if (strTelefone.IsNotNullOrEmpty())
-                    {
-                        this.cboClienteTelefone.Text = DivUtil.Formatar_Telefone_Numero(
-                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Left(2) + 
-                            this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Telefone"].ToString().Substring(3));
+                        if (itens != string.Empty)
+                        {
+                            this.cboClienteTelefone.Items.Insert(this.cboClienteTelefone.Items.Count, itens);
+                        }
                     }
                 }
             }
@@ -1654,21 +1768,24 @@ namespace Mercadocar.Formularios
             }
         }
 
-        private void Recarregar_Combo_Cliente_Email()
+        private void Preencher_Combo_Cliente_Email()
         {
             try
             {
-                foreach (DataRow row in this.dtsCliente.Tables[2].Rows)
+                this.cboClienteEmail.Items.Clear();
+
+                foreach (DataRow row in this.dtsClienteCadastro.Tables[ClienteBUS.Tabelas.Contato_Virtual.ToString()].Rows)
                 {
-                    row["Email"] = row["Cliente_Email"].DefaultString().ToLower();
+                    if (DBNull.Value.Equals(row["ContatoVirtual_Email"]) == false)
+                    {
+                        string itens = row["ContatoVirtual_Email"].DefaultString();
+
+                        if (itens != string.Empty)
+                        {
+                            this.cboClienteEmail.Items.Insert(this.cboClienteEmail.Items.Count, itens);
+                        }
+                    }
                 }
-
-                this.cboClienteEmail.DropDownWidth =
-                Utilitario.Obter_Comprimento_Maior_Elemento_DataTable(this.dtsCliente.Tables[2], "Email", this.cboClienteEmail);
-                Utilitario.Preencher_ComboBox_DataTable(ref this.cboClienteEmail, this.dtsCliente.Tables[2], "Email", "Cliente_Email", string.Empty, "Selecione...");
-
-                if (dtsCliente.Tables[2].Rows.Count > 0)
-                    this.cboClienteEmail.Text = this.dtsPropriedades.Tables["Venda_Origem"].Rows[0]["Solicitacao_Estorno_Cliente_Email"].ToString();
             }
             catch (Exception)
             {
@@ -1676,32 +1793,18 @@ namespace Mercadocar.Formularios
             }
         }
 
-        private void Clicar_btnIncluirClienteTelefone(string btnSender)
+        private void Clicar_btnIncluirClienteContato(string btnSender)
         {
             try
             {
-                Cursor.Current = Cursors.WaitCursor;
-
-                this.UsuarioAutorizado = Utilitario.Autenticar_Usuario();
-
-                if (this.UsuarioAutorizado == null)
-                {
-                    return;
-                }
-
-                if (this.blnPermissaoIncluir == false)
-                {
-                    MessageBox.Show("A alteração não pôde ser realizada, pois o Usuário não possui permissão!", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
                 if (btnSender.Equals(this.btnIncluirTelefone.Name))
                 {
                     this.lblTelefone.Visible = false;
                     this.cboClienteTelefone.Visible = false;
-                    this.btnIncluirTelefone.Visible = false;
+                    this.btnIncluirTelefone.Enabled = false;
                     this.objTelefoneCliente.Visible = true;
                     this.objTelefoneCliente.TextBox_DDD.Text = null;
+                    this.objTelefoneCliente.TextBox_Numero.Visible = true;
                     this.objTelefoneCliente.TextBox_Numero.Text = null;
                     this.objTelefoneCliente.TextBox_DDD.Focus();
                 }
@@ -1709,156 +1812,34 @@ namespace Mercadocar.Formularios
                 if (btnSender.Equals(this.btnIncluirEmail.Name))
                 {
                     this.cboClienteEmail.Visible = false;
-                    this.btnIncluirEmail.Visible = false;
+                    this.btnIncluirEmail.Enabled = false;
                     this.txtEmail2.Visible = true;
+                    this.txtEmail2.Enabled = true;
                     this.txtEmail2.Text = null;
                     this.txtEmail2.Focus();
                 }
-
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Root.Tratamento_Erro.Tratar_Erro(ex, this);
-            }
-            finally
-            {
-                Cursor.Current = Cursors.Default;
+                throw;
             }
         }
 
-        private void Remover_Ultimo_Contato_Cliente(string btnSender)
+        private void Selecionar_combosClienteContato(string comboSender)
         {
             try
             {
-                if (this.blnPermissaoDadosEstorno == false)
+                if (comboSender.Equals(this.cboClienteTelefone.Name))
                 {
-                    return;
+                    this.objTelefoneCliente.TextBox_DDD.Text = DivUtil.Remover_Caracteres_Especiais(this.cboClienteTelefone.SelectedItem.DefaultString()).Left(3);
+                    this.objTelefoneCliente.TextBox_Numero.Text = DivUtil.Remover_Caracteres_Especiais(this.cboClienteTelefone.SelectedItem.DefaultString()).Substring(3);
                 }
 
-                if (btnSender.Equals(this.btnExcluirTelefone.Name) && this.cboClienteTelefone.SelectedIndex == 0 && this.cboClienteTelefone.Visible)
+                if (comboSender.Equals(this.cboClienteEmail.Name))
                 {
-                    MessageBox.Show("Selecione um telefone para excluir.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-                else if (btnSender.Equals(this.btnExcluirEmail.Name) && this.cboClienteEmail.SelectedIndex == 0 && this.cboClienteEmail.Visible)
-                {
-                    MessageBox.Show("Selecione um e-mail para excluir.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    return;
-                }
-
-                DataRow dtrItemSelecionado = null;
-
-                if (btnSender.Equals(this.btnExcluirTelefone.Name) && this.cboClienteTelefone.Visible)
-                {
-
-                    if (this.cboClienteTelefone.SelectedItem != null && this.cboClienteTelefone.SelectedIndex > -1)
-                    {
-                        dtrItemSelecionado = ((DataRowView)this.cboClienteTelefone.SelectedItem).Row;
-                    }
-
-                    if (this.objTelefoneCliente.TextBox_DDD.Text.IsNotNullOrEmpty() && this.objTelefoneCliente.TextBox_Numero.Text.IsNotNullOrEmpty())
-                    {
-                        dtrItemSelecionado[0] = DivUtil.Formatar_Telefone_Numero(this.objTelefoneCliente.TextBox_DDD.Text + this.objTelefoneCliente.TextBox_Numero.Text);
-                    }
-                    else
-                    if (dtrItemSelecionado == null)
-                    {
-                        this.lblTelefone.Visible = true;
-                        this.cboClienteTelefone.Visible = true;
-                        this.btnIncluirTelefone.Visible = true;
-                        this.objTelefoneCliente.Visible = false;
-                        return;
-                    }
-                }
-                else if (btnSender.Equals(this.btnExcluirEmail.Name) && this.cboClienteEmail.Visible)
-                {
-                    if (this.cboClienteEmail.SelectedItem != null && this.cboClienteEmail.SelectedIndex > -1)
-                    {
-                        dtrItemSelecionado = ((DataRowView)this.cboClienteEmail.SelectedItem).Row;
-                    }
-                    
-                    if (this.txtEmail2.Text.IsNotNullOrEmpty())
-                    {
-                        dtrItemSelecionado[0] = this.txtEmail2.Text;
-                    }
-                    else
-                    if (dtrItemSelecionado == null)
-                    {
-                        this.cboClienteEmail.Visible = true;
-                        this.btnIncluirEmail.Visible = true;
-                        this.txtEmail2.Visible = false;
-                        return;
-                    }
-                }
-
-                if (btnSender.Equals(this.btnExcluirTelefone.Name))
-                {
-                    if (this.cboClienteTelefone.Visible)
-                    {
-                        foreach (DataRow dtrIncluir in dtsCliente.Tables[1].Rows)
-                        {
-                            if (dtrItemSelecionado["Cliente_Telefone"].DefaultString().Equals(dtrIncluir["Cliente_Telefone"].DefaultString()))
-                            {
-                                if (dtrIncluir.RowState == DataRowState.Added)
-                                {
-                                    this.dtsCliente.Tables[1].Rows.RemoveAt(this.cboClienteTelefone.SelectedIndex);
-                                    this.Recarregar_Combo_Cliente_Telefone();
-                                    break;
-                                }
-                                else
-                                {
-                                    MessageBox.Show("Telefone não pode ser excluido pois não foi adicionado neste atendimento.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        this.lblTelefone.Visible = true;
-                        this.cboClienteTelefone.Visible = true;
-                        this.cboClienteTelefone.SelectedIndex = 0;
-                        this.btnIncluirTelefone.Visible = true;
-                        this.objTelefoneCliente.Visible = false;
-                        this.objTelefoneCliente.TextBox_DDD.Text = null;
-                        this.objTelefoneCliente.TextBox_Numero.Text = null;
-                        return;
-                    }
-                }
-
-                if (btnSender.Equals(this.btnExcluirEmail.Name))
-                {
-                    if (this.cboClienteEmail.Visible)
-                    {
-                        foreach (DataRow dtrIncluir in dtsCliente.Tables[2].Rows)
-                        {
-                            {
-                                if (dtrItemSelecionado["Cliente_Email"].Equals(dtrIncluir["Cliente_Email"]))
-                                {
-                                    if (dtrIncluir.RowState == DataRowState.Added)
-                                    {
-                                        this.dtsCliente.Tables[2].Rows.RemoveAt(this.cboClienteEmail.SelectedIndex);
-                                        this.Recarregar_Combo_Cliente_Email();
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        MessageBox.Show("E-mail não pode ser excluido pois não foi adicionado neste atendimento.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        this.cboClienteEmail.Visible = true;
-                        this.cboClienteEmail.SelectedIndex = 0;
-                        this.btnIncluirEmail.Visible = true;
-                        this.txtEmail2.Visible = false;
-                        return;
-                    }
+                    this.txtEmail2.Text = this.cboClienteEmail.SelectedItem.DefaultString();
                 }
             }
-
             catch (Exception)
             {
                 throw;

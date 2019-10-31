@@ -1,0 +1,300 @@
+using System;
+using System.Collections.Generic;
+namespace Mercadocar.ObjetosNegocio.DataObject
+{
+
+    public class Pedido_Compra_CTDO : Pedido_CTDO
+    {
+
+        #region "   Declarações        "
+
+        private Int32 intCondicaoPagamentoCTID;
+        private Int32 intUsuarioCompradorID;
+        private Int32 intPedidoCompraCTSaldoOrigemID;
+        private Int32 intEnumTipoID;
+        private int intUsuarioUltimaAlteracaoID = 0;
+        private DateTime dtmDataUltimaAlteracao = new DateTime(1900, 1, 1);
+
+        private decimal dcmPercentualDesconto;
+        private decimal dcmPercentualImposto;
+        private decimal dcmPercentualSubstituicao;
+        private bool blnFaturamentoAntecipado;
+        private bool blnConsiderarIPI;
+
+        private bool blnEnvioEmail;
+        private LojasDO dtoLojaOrigem = new LojasDO();
+
+        private LojasDO dtoLojaDestino = new LojasDO();
+
+        private Condicao_Pagamento_CTDO dtoCondicaoPagamento = new Condicao_Pagamento_CTDO();
+        private List<Pedido_Compra_ITDO> lstItems = new List<Pedido_Compra_ITDO>();
+
+        private List<Pre_DistribuicaoDO> lstPreDistribuicao = new List<Pre_DistribuicaoDO>();
+        #endregion
+
+        #region "   Construtores       "
+
+        public Pedido_Compra_CTDO()
+            : base()
+        {
+        }
+
+        #endregion
+
+        #region "   Propriedades       "
+
+        public Int32 ID_Condicao_Pagamento
+        {
+            get { return intCondicaoPagamentoCTID; }
+            set { intCondicaoPagamentoCTID = value; }
+        }
+
+        public Int32 ID_Usuario_Comprador
+        {
+            get { return intUsuarioCompradorID; }
+            set { intUsuarioCompradorID = value; }
+        }
+
+        public Int32 ID_Pedido_Compra_CT_Saldo_Origem
+        {
+            get { return intPedidoCompraCTSaldoOrigemID; }
+            set { intPedidoCompraCTSaldoOrigemID = value; }
+        }
+
+        public Int32 ID_Enum_Tipo
+        {
+            get { return intEnumTipoID; }
+            set { intEnumTipoID = value; }
+        }
+
+        public decimal Desconto
+        {
+            get { return dcmPercentualDesconto; }
+            set { dcmPercentualDesconto = value; }
+        }
+
+        public decimal Imposto
+        {
+            get { return dcmPercentualImposto; }
+            set { dcmPercentualImposto = value; }
+        }
+
+        public decimal Substituicao
+        {
+            get { return dcmPercentualSubstituicao; }
+            set { dcmPercentualSubstituicao = value; }
+        }
+
+        public bool Faturamento_Antecipado
+        {
+            get { return blnFaturamentoAntecipado; }
+            set { blnFaturamentoAntecipado = value; }
+        }
+
+        public bool Considerar_IPI
+        {
+            get { return blnConsiderarIPI; }
+            set { blnConsiderarIPI = value; }
+        }
+
+
+        public bool Envio_Email
+        {
+            get { return blnEnvioEmail; }
+            set { blnEnvioEmail = value; }
+        }
+
+
+        public LojasDO Loja_Origem
+        {
+            get { return dtoLojaOrigem; }
+            set { dtoLojaOrigem = value; }
+        }
+                
+        public Condicao_Pagamento_CTDO Condicao_Pagamento
+        {
+            get { return dtoCondicaoPagamento; }
+            set { dtoCondicaoPagamento = value; }
+        }
+
+        public new List<Pedido_Compra_ITDO> Items
+        {
+            get { return lstItems; }
+            set { lstItems = value; }
+        }
+
+        public List<Pre_DistribuicaoDO> Pre_Distribuicao
+        {
+            get { return lstPreDistribuicao; }
+            set { lstPreDistribuicao = value; }
+        }
+
+        public new Enumerados.Origem_Pedido_Compras ID_Enum_Tipo_Origem
+        {
+            get { return base.ID_Enum_Tipo_Origem; }
+            set { base.ID_Enum_Tipo_Origem = value; }
+        }
+
+
+        public new Int32 ID_Status
+        {
+            get { return base.ID_Status; }
+            set { base.ID_Status = (int)value; }
+        }
+
+        public decimal Valor_Total
+        {
+            get
+            {
+                decimal dcmValor = 0;
+
+                foreach (Pedido_Compra_ITDO dtoItem in this.Items)
+                {
+                    dcmValor += (dtoItem.Quantidade_Embalagens * dtoItem.Custo_Embalagem) * (1 + (dtoItem.IPI / 100) - (dtoItem.Desconto / 100));
+                }
+
+                return dcmValor;
+            }
+        }
+
+        public Int32 Usuario_Ultima_Alteracao_ID
+        {
+            get { return this.intUsuarioUltimaAlteracaoID; }
+            set { this.intUsuarioUltimaAlteracaoID = value; }
+        }
+
+        public DateTime Data_Ultima_Alteracao
+        {
+            get { return this.dtmDataUltimaAlteracao; }
+            set { this.dtmDataUltimaAlteracao = value; }
+        }
+
+        #endregion
+
+        #region "   Métodos Publicos   "
+
+        public override object Clone()
+        {
+            try
+            {
+                Pedido_Compra_CTDO dtoClone = new Pedido_Compra_CTDO();
+
+                dtoClone.ID = this.ID;
+                dtoClone.ID_Fornecedor = this.ID_Fornecedor;
+                dtoClone.ID_Loja_Destino = this.ID_Loja_Destino;
+                dtoClone.ID_Loja_Origem = this.ID_Loja_Origem;
+                dtoClone.ID_Status = this.ID_Status;
+                dtoClone.ID_Condicao_Pagamento = this.ID_Condicao_Pagamento;
+                dtoClone.ID_Usuario_Geracao = this.ID_Usuario_Geracao;
+                dtoClone.ID_Usuario_Comprador = this.ID_Usuario_Comprador;
+                dtoClone.ID_Pedido_Compra_CT_Saldo_Origem = this.ID_Pedido_Compra_CT_Saldo_Origem;
+                dtoClone.ID_Enum_Tipo = this.ID_Enum_Tipo;
+                dtoClone.ID_Enum_Tipo_Origem = this.ID_Enum_Tipo_Origem;
+                dtoClone.Objeto_Origem_ID = this.Objeto_Origem_ID;
+                dtoClone.Data_Geracao = this.Data_Geracao;
+                dtoClone.Data_Prevista = this.Data_Prevista;
+                dtoClone.Data_Entrega = this.Data_Entrega;
+                dtoClone.Desconto = this.Desconto;
+                dtoClone.Imposto = this.Imposto;
+                dtoClone.Substituicao = this.Substituicao;
+                dtoClone.Faturamento_Antecipado = this.Faturamento_Antecipado;
+                dtoClone.Nome_Vendedor = this.Nome_Vendedor;
+                dtoClone.Observacao = this.Observacao;
+                dtoClone.Cobranca_Fornecedor = this.Cobranca_Fornecedor;
+                dtoClone.Considerar_IPI = this.Considerar_IPI;
+                dtoClone.blnEnvioEmail = this.blnEnvioEmail;
+                dtoClone.ID_Loja_Faturamento = this.ID_Loja_Faturamento;
+                dtoClone.Usuario_Ultima_Alteracao_ID = this.Usuario_Ultima_Alteracao_ID;
+                dtoClone.Data_Ultima_Alteracao = this.Data_Ultima_Alteracao;
+
+                if (this.Items != null)
+                {
+                    foreach (Pedido_Compra_ITDO dtoItem in this.Items)
+                    {
+                        dtoClone.Items.Add((Pedido_Compra_ITDO)dtoItem.Clone());
+                    }
+                }
+                else
+                {
+                    dtoClone.Items = null;
+                }
+
+                if (this.Fornecedor != null)
+                {
+                    dtoClone.Fornecedor = this.Fornecedor.Clone();
+                }
+                else
+                {
+                    dtoClone.Fornecedor = null;
+                }
+
+                if (this.Loja != null)
+                {
+                    dtoClone.Loja = this.Loja.Clone();
+                }
+                else
+                {
+                    dtoClone.Loja = null;
+                }
+                
+                if (this.Loja_Origem != null)
+                {
+                    dtoClone.Loja_Origem = this.Loja_Origem.Clone();
+                }
+                else
+                {
+                    dtoClone.Loja_Origem = null;
+                }
+
+                if (this.Condicao_Pagamento != null)
+                {
+                    dtoClone.Condicao_Pagamento = this.Condicao_Pagamento.Clone();
+                }
+                else
+                {
+                    dtoClone.Condicao_Pagamento = null;
+                }
+
+                if (this.Status != null)
+                {
+                    dtoClone.Status = this.Status.Clone();
+                }
+                else
+                {
+                    dtoClone.Status = null;
+                }
+
+                if (this.OrigemPedido != null)
+                {
+                    dtoClone.OrigemPedido = this.OrigemPedido.Clone();
+                }
+                else
+                {
+                    dtoClone.OrigemPedido = null;
+                }
+
+                if (this.Pre_Distribuicao != null)
+                {
+                    foreach (Pre_DistribuicaoDO dtoItem in this.Pre_Distribuicao)
+                    {
+                        dtoClone.Pre_Distribuicao.Add(dtoItem.Clone());
+                    }
+                }
+                else
+                {
+                    dtoClone.Pre_Distribuicao = null;
+                }
+
+                return dtoClone;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
+    }
+
+}

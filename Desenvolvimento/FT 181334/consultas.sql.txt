@@ -1,0 +1,40 @@
+SELECT * FROM Usuario WHERE Usuario_Login = 'fmoraes'
+
+SELECT * FROM Perm_Modulo WHERE Perm_Modulo_ID = 17
+
+SELECT * FROM Perm_Formulario
+WHERE Perm_Frm_ID = 677
+
+SELECT * FROM Perm_Formulario_REL_Acao
+WHERE Perm_Frm_ID = 696
+
+SELECT * FROM perm_acao 
+WHERE Perm_Acao_ID = 113
+
+-- Grupo de Usuário
+SELECT * FROM Perm_Grupo WHERE Perm_Grupo_ID IN (904, 1347, 1348, 1392)
+
+-- Grupo de Permissão
+SELECT * FROM Perm_Grupo_REL_Grupo PGR
+INNER JOIN Perm_Grupo PG ON PG.Perm_Grupo_ID = PGR.Perm_Grupo_Pai_ID 
+WHERE 
+--Perm_Grupo_Pai_ID = 2459
+Perm_Grupo_NM LIKE '%Permissão para estornar serviços finalizados%'
+
+-- Líderes CD
+SELECT * FROM Perm_Grupo_REL_Grupo PGR
+INNER JOIN Perm_Grupo PG ON PG.Perm_Grupo_ID = PGR.Perm_Grupo_Filho_ID 
+WHERE 
+--Perm_Grupo_Pai_ID = 2459
+Perm_Grupo_NM = 'Líderes CD'
+
+
+SELECT DISTINCT PG.Perm_Grupo_ID, PG.Perm_Grupo_NM 
+FROM Perm_Grupo_REL_Grupo PGG 
+INNER JOIN Perm_Grupo PG ON PG.Perm_Grupo_ID = PGG.Perm_Grupo_Filho_ID 
+WHERE 
+--PGG.Perm_Grupo_Pai_ID = 2459 
+--OR 
+PG.Perm_Grupo_NM LIKE 'Líderes CD'
+
+

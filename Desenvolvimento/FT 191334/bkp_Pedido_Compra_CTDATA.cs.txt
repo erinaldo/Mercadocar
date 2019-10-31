@@ -1,0 +1,1635 @@
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Text;
+using System.Reflection;
+using Mercadocar.Enumerados;
+using Mercadocar.InfraEstrutura.Erro;
+using Mercadocar.ObjetosNegocio.DataObject;
+using Mercadocar.InfraEstrutura.BancoDados;
+using Mercadocar.InfraEstrutura.Utilidades;
+using Mercadocar.InfraEstrutura.Validadores;
+using Mercadocar.InfraEstrutura;
+
+namespace Mercadocar.ObjetosNegocio.Data
+{
+
+    public class Pedido_Compra_CTDATA
+    {
+
+        #region "   CRUDE              "
+
+        public void Incluir(Pedido_Compra_CTDO dtoIncluir, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                this.Validar_Geral_Incluir(dtoIncluir, objErro, ref objTransaction);
+                if (objErro.TemErro())
+                    return;
+
+                System.Text.StringBuilder stbSql = new System.Text.StringBuilder();
+                stbSql.AppendLine("INSERT INTO ");
+                stbSql.AppendLine("     Pedido_Compra_CT ");
+                stbSql.AppendLine("( ");
+                stbSql.AppendLine("     Loja_Origem_ID, ");
+                stbSql.AppendLine("     Loja_Destino_ID, ");
+                stbSql.AppendLine("     Fornecedor_ID, ");
+                stbSql.AppendLine("     Enum_Status_ID, ");
+                stbSql.AppendLine("     Condicao_Pagamento_CT_ID, ");
+                stbSql.AppendLine("     Usuario_Geracao_ID, ");
+                stbSql.AppendLine("     Usuario_Comprador_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Saldo_Origem_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_Origem_ID, ");
+                stbSql.AppendLine("     Objeto_Origem_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("     Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Ultima_Alteracao ");
+                stbSql.AppendLine(") ");
+                stbSql.AppendLine("VALUES ");
+                stbSql.AppendLine("( ");
+                stbSql.AppendLine("     @Loja_Origem_ID, ");
+                stbSql.AppendLine("     @Loja_Destino_ID, ");
+                stbSql.AppendLine("     @Fornecedor_ID, ");
+                stbSql.AppendLine("     @Enum_Status_ID, ");
+                stbSql.AppendLine("     @Condicao_Pagamento_CT_ID,  ");
+                stbSql.AppendLine("     @Usuario_Geracao_ID, ");
+                stbSql.AppendLine("     @Usuario_Comprador_ID, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Saldo_Origem_ID, ");
+                stbSql.AppendLine("     702, ");
+                stbSql.AppendLine("     @Enum_Tipo_Origem_ID, ");
+                stbSql.AppendLine("     @Objeto_Origem_ID, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("     @Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("     @Pedido_Compra_CT_Data_Ultima_Alteracao ");
+                stbSql.AppendLine(") ");
+                stbSql.AppendLine("SELECT SCOPE_IDENTITY()");
+
+                SqlParameter[] objParametros = this.Preencher_Parametros(dtoIncluir);
+
+                dtoIncluir.ID = Convert.ToInt32(SqlHelper.ExecuteScalar(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), objParametros));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Alterar(Pedido_Compra_CTDO dtoNovo, ref Pedido_Compra_CTDO dtoAntigo, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                this.Validar_Geral_Alterar(dtoNovo, objErro, ref objTransaction);
+                if (objErro.TemErro())
+                    return;
+
+                System.Text.StringBuilder stbSql = new System.Text.StringBuilder();
+
+                stbSql.AppendLine("UPDATE ");
+                stbSql.AppendLine("     Pedido_Compra_CT ");
+                stbSql.AppendLine("SET ");
+                stbSql.AppendLine("     Loja_Origem_ID                          = @Loja_Origem_ID, ");
+                stbSql.AppendLine("     Loja_Destino_ID                         = @Loja_Destino_ID, ");
+                stbSql.AppendLine("     Fornecedor_ID                           = @Fornecedor_ID, ");
+                stbSql.AppendLine("     Enum_Status_ID                          = @Enum_Status_ID, ");
+                stbSql.AppendLine("     Condicao_Pagamento_CT_ID                = @Condicao_Pagamento_CT_ID, ");
+                stbSql.AppendLine("     Usuario_Geracao_ID                      = @Usuario_Geracao_ID, ");
+                stbSql.AppendLine("     Usuario_Comprador_ID                    = @Usuario_Comprador_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_ID                            = @Enum_Tipo_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Vendedor               = @Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Geracao           = @Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Prevista          = @Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Desconto               = @Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_IPI                    = @Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Obs                    = @Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Cobranca_Fornecedor    = @Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Considerar_IPI         = @Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Substituicao           = @Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Envio_Email            = @Pedido_Compra_CT_Envio_Email, ");
+                stbSql.AppendLine("     Usuario_Ultima_Alteracao_ID             = @Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Ultima_Alteracao  = @Pedido_Compra_CT_Data_Ultima_Alteracao ");
+                stbSql.AppendLine("WHERE ");
+                stbSql.AppendLine("     Pedido_Compra_CT_ID            = @Pedido_Compra_CT_ID ");
+
+                SqlHelper.ExecuteNonQuery(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), this.Preencher_Parametros(dtoNovo));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Excluir(Int32 intPedidoCompraID, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                System.Text.StringBuilder stbSql = new System.Text.StringBuilder();
+                stbSql.AppendLine("DELETE FROM Pedido_Compra_CT ");
+                stbSql.AppendLine("WHERE Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID ");
+                stbSql.Append("; SELECT ");
+                stbSql.Append(Root.Funcionalidades.UsuarioDO_Ativo.ID.ToString());
+
+                SqlParameter[] colParametros = new SqlParameter[1];
+                colParametros[0] = new SqlParameter("@Pedido_Compra_CT_ID", SqlDbType.Int);
+                colParametros[0].Value = intPedidoCompraID;
+
+                SqlHelper.ExecuteNonQuery(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), colParametros);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public Pedido_Compra_CTDO Selecionar(Int32 intPedidoCompraID, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                System.Text.StringBuilder stbSql = new System.Text.StringBuilder();
+                stbSql.AppendLine("WHERE Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID");
+
+                SqlParameter[] colParametros = new SqlParameter[1];
+                colParametros[0] = new SqlParameter("@Pedido_Compra_CT_ID", SqlDbType.Int);
+                colParametros[0].Value = intPedidoCompraID;
+
+                using (SqlDataReader result = this.Consultar(colParametros, stbSql.ToString(), string.Empty, ref objTransaction))
+                {
+                    List<Pedido_Compra_CTDO> lstConsulta = this.Preencher_Colecao_DataObject(result);
+
+                    if (lstConsulta.Count > 0)
+                    {
+                        return lstConsulta[0];
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///     Criado sobrecarga do método incluindo status do pedido como parametro
+        /// </summary>
+        /// <history>
+        /// 	[emenezes] 	2012-07-02	Created
+        /// </history>
+        ///-----------------------------------------------------------------------------        
+        public List<Pedido_Compra_CTDO> Consultar_DataObject(ref TransactionManager objTransaction, int intFornecedorID, List<Status_Pedido_Compra> colStatus = null)
+        {
+            try
+            {
+
+                StringBuilder stbFiltro = new StringBuilder();
+                SqlParameter[] objParam = null;
+                DBUtil objDBUtil = new DBUtil();
+
+                if (intFornecedorID != 0)
+                {
+                    stbFiltro.AppendLine("(Fornecedor_ID = @Fornecedor_ID) ");
+                    objParam = objDBUtil.Preencher_Parametro_EmUmArray(objParam, "@Fornecedor_ID", SqlDbType.Int, intFornecedorID);
+                }
+
+                 if (colStatus != null && colStatus.Count > 0)
+                {
+                    if (stbFiltro.ToString() != string.Empty)
+                        stbFiltro.Append(" AND ");
+
+                    stbFiltro.Append("( ");
+
+                    foreach (Status_Pedido_Compra objStatus in colStatus)
+                    {
+                        stbFiltro.Append("Enum_Status_ID = @Enum_Status_ID" + colStatus.IndexOf(objStatus) + " ");
+                        objParam = objDBUtil.Preencher_Parametro_EmUmArray(objParam, "@Enum_Status_ID" + colStatus.IndexOf(objStatus), SqlDbType.Int, Convert.ToInt32(objStatus));
+
+                        if (colStatus.IndexOf(objStatus) < (colStatus.Count - 1))
+                            stbFiltro.Append(" OR ");
+                    }
+
+                    stbFiltro.Append(")");
+                }
+
+                if (stbFiltro.Length > 0)
+                    stbFiltro.Insert(0, " WHERE ");
+
+                using (SqlDataReader objReader = this.Consultar(objParam, stbFiltro.ToString(), string.Empty, ref objTransaction))
+                {
+
+                    return this.Preencher_Colecao_DataObject(objReader);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        
+        private SqlDataReader Consultar(SqlParameter[] colParametros, string strSqlWhere, string strSqlOrder, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                System.Text.StringBuilder stbSql = new System.Text.StringBuilder();
+
+                stbSql.AppendLine("SELECT ");
+                stbSql.AppendLine("     Pedido_Compra_CT_ID, ");
+                stbSql.AppendLine("     Loja_Origem_ID, ");
+                stbSql.AppendLine("     Loja_Destino_ID, ");
+                stbSql.AppendLine("     Loja_Faturamento_ID, ");
+                stbSql.AppendLine("     Fornecedor_ID, ");
+                stbSql.AppendLine("     Enum_Status_ID, ");
+                stbSql.AppendLine("     Condicao_Pagamento_CT_ID, ");
+                stbSql.AppendLine("     Usuario_Geracao_ID, ");
+                stbSql.AppendLine("     Usuario_Comprador_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Saldo_Origem_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_Origem_ID, ");
+                stbSql.AppendLine("     Objeto_Origem_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Envio_Email, ");
+                stbSql.AppendLine("     Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Ultima_Alteracao ");
+                stbSql.AppendLine("FROM ");
+                stbSql.AppendLine("     Pedido_Compra_CT ");
+
+                stbSql.AppendLine(strSqlWhere);
+
+                stbSql.AppendLine(strSqlOrder);
+
+                return SqlHelper.ExecuteReader(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), colParametros);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public DataTable Consultar_DataTable_Pedido_Compra_Gerado_Pelo_Mapa_Cotacao(int intAnaliseCotacaoID, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                StringBuilder stbSql = new StringBuilder();
+
+                stbSql.AppendLine("SELECT");
+                stbSql.AppendLine("    Pedido_Compra_CT_ID,");
+                stbSql.AppendLine("    Fornecedor_ID");
+                stbSql.AppendLine("FROM");
+                stbSql.AppendLine("    Pedido_Compra_CT (NOLOCK)");
+                stbSql.AppendLine("WHERE");
+                stbSql.AppendLine("    Enum_Tipo_Origem_ID = @OrigemPedidoCompras_Mapa_De_Cotacao_Novo");
+                stbSql.AppendLine("AND");
+                stbSql.AppendLine("    Objeto_Origem_ID = @Analise_Cotacao_ID");
+
+                SqlParameter[] colParameters = new SqlParameter[2];
+
+                DBUtil objUtil = new DBUtil();
+
+                colParameters[0] = objUtil.Preencher_Parametro_Para_Procedure("@Analise_Cotacao_ID", SqlDbType.Int, ParameterDirection.Input, intAnaliseCotacaoID);
+                colParameters[1] = objUtil.Preencher_Parametro_Para_Procedure("@OrigemPedidoCompras_Mapa_De_Cotacao_Novo", SqlDbType.Int, ParameterDirection.Input, Convert.ToInt32(Origem_Pedido_Compras.Mapa_de_Cotacao_Novo));
+
+                return SqlHelper.ExecuteDataTable(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), colParameters);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private List<Pedido_Compra_CTDO> Preencher_Colecao_DataObject_Pedido_Compra(SqlDataReader objReader)
+        {
+            try
+            {
+                DBUtil objDBUtil = new DBUtil();
+                List<Pedido_Compra_CTDO> colTemp = new List<Pedido_Compra_CTDO>();
+
+                while (objReader.Read())
+                {
+                    Pedido_Compra_CTDO dtoPedidoCompra = new Pedido_Compra_CTDO();
+
+                    dtoPedidoCompra.ID = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Fornecedor = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Fornecedor_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Loja_Origem = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Loja_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Loja_Destino = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Loja_Destino_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Status = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Enum_Status_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Condicao_Pagamento = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Condicao_Pagamento_CT_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Usuario_Geracao = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Usuario_Geracao_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Usuario_Comprador = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Usuario_Comprador_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Pedido_Compra_CT_Saldo_Origem = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Saldo_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Enum_Tipo = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Enum_Tipo_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.ID_Enum_Tipo_Origem = (Origem_Pedido_Compras)Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Enum_Tipo_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.Objeto_Origem_ID = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Objeto_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.Nome_Vendedor = Convert.ToString(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Vendedor", DBUtil.TipoDeDado.t_String));
+                    dtoPedidoCompra.Data_Geracao = Convert.ToDateTime(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Data_Geracao", DBUtil.TipoDeDado.t_Date));
+                    dtoPedidoCompra.Data_Prevista = Convert.ToDateTime(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Data_Prevista", DBUtil.TipoDeDado.t_Date));
+                    dtoPedidoCompra.Desconto = Convert.ToDecimal(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Desconto", DBUtil.TipoDeDado.t_Decimal));
+                    dtoPedidoCompra.Imposto = Convert.ToDecimal(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_IPI", DBUtil.TipoDeDado.t_Decimal));
+                    dtoPedidoCompra.Substituicao = Convert.ToDecimal(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Substituicao", DBUtil.TipoDeDado.t_Decimal));
+                    dtoPedidoCompra.Observacao = Convert.ToString(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Obs", DBUtil.TipoDeDado.t_String));
+                    dtoPedidoCompra.Cobranca_Fornecedor = Convert.ToString(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Cobranca_Fornecedor", DBUtil.TipoDeDado.t_String));
+                    dtoPedidoCompra.Considerar_IPI = Convert.ToBoolean(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Considerar_IPI", DBUtil.TipoDeDado.t_Boolean));
+                    dtoPedidoCompra.Envio_Email = Convert.ToBoolean(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Envio_Email", DBUtil.TipoDeDado.t_Boolean));
+                    dtoPedidoCompra.ID_Loja_Faturamento = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Loja_Faturamento_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.Usuario_Ultima_Alteracao_ID = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Usuario_Ultima_Alteracao_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoPedidoCompra.Data_Ultima_Alteracao = Convert.ToDateTime(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Data_Ultima_Alteracao", DBUtil.TipoDeDado.t_Date));
+                    colTemp.Add(dtoPedidoCompra);
+                }
+
+                return colTemp;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (!objReader.IsClosed)
+                {
+                    objReader.Close();
+                }
+            }
+        }
+        
+        public Pedido_Compra_CTDO Selecionar_Com_DW(Int32 intPedidoCompraID, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                System.Text.StringBuilder stbSql = new System.Text.StringBuilder();
+        
+                stbSql.AppendLine("SELECT ");
+                stbSql.AppendLine("     Pedido_Compra_CT_ID, ");
+                stbSql.AppendLine("     Loja_Origem_ID, ");
+                stbSql.AppendLine("     Loja_Destino_ID, ");
+                stbSql.AppendLine("     Loja_Faturamento_ID, ");
+                stbSql.AppendLine("     Fornecedor_ID, ");
+                stbSql.AppendLine("     Enum_Status_ID, ");
+                stbSql.AppendLine("     Condicao_Pagamento_CT_ID, ");
+                stbSql.AppendLine("     Usuario_Geracao_ID, ");
+                stbSql.AppendLine("     Usuario_Comprador_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Saldo_Origem_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_ID, ");
+                stbSql.AppendLine("     Enum_Tipo_Origem_ID, ");
+                stbSql.AppendLine("     Objeto_Origem_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Envio_Email, ");
+                stbSql.AppendLine("     Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("     Pedido_Compra_CT_Data_Ultima_Alteracao ");
+                stbSql.AppendLine("FROM ");
+                stbSql.AppendLine("     vw_Pedido_Compra_CT ");
+                stbSql.AppendLine("WHERE Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID");
+
+                SqlParameter[] objParametros = new SqlParameter[1];
+                objParametros[0] = new SqlParameter("@Pedido_Compra_CT_ID", SqlDbType.Int);
+                objParametros[0].Value = intPedidoCompraID;
+
+                using (SqlDataReader result = SqlHelper.ExecuteReader(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), objParametros))
+                {
+                    List<Pedido_Compra_CTDO> colConsulta = this.Preencher_Colecao_DataObject_Pedido_Compra(result);
+
+                    if (colConsulta.Count > 0)
+                    {
+                        return colConsulta[0];
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        
+        #endregion
+
+        #region "   Atribuições        "
+
+        public void Atribuir(Pre_Recebimento_ITDO dtoDataObject, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                if (dtoDataObject == null)
+                    return;
+
+                dtoDataObject.Pedido = this.Selecionar(dtoDataObject.ID_Pedido, ref objTransaction);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region "   Métodos Privados   "
+
+        private SqlParameter[] Preencher_Parametros(Pedido_Compra_CTDO dtoDataObject)
+        {
+            try
+            {
+                SqlParameter[] colParametros = new SqlParameter[24];
+
+                colParametros[0] = new SqlParameter("@Pedido_Compra_CT_ID", SqlDbType.Int);
+                colParametros[0].Value = dtoDataObject.ID;
+
+                colParametros[1] = new SqlParameter("@Fornecedor_ID", SqlDbType.Int);
+                colParametros[1].Value = dtoDataObject.ID_Fornecedor;
+
+                colParametros[2] = new SqlParameter("@Loja_Origem_ID", SqlDbType.Int);
+                colParametros[2].Value = dtoDataObject.ID_Loja_Origem;
+
+                colParametros[3] = new SqlParameter("@Loja_Destino_ID", SqlDbType.Int);
+                colParametros[3].Value = dtoDataObject.ID_Loja_Destino;
+
+                colParametros[4] = new SqlParameter("@Enum_Status_ID", SqlDbType.Int);
+                colParametros[4].Value = Convert.ToInt32(dtoDataObject.ID_Status);
+
+                colParametros[5] = new SqlParameter("@Condicao_Pagamento_CT_ID", SqlDbType.Int);
+                colParametros[5].Value = dtoDataObject.ID_Condicao_Pagamento;
+
+                colParametros[6] = new SqlParameter("@Usuario_Geracao_ID", SqlDbType.Int);
+                colParametros[6].Value = dtoDataObject.ID_Usuario_Geracao;
+
+                colParametros[7] = new SqlParameter("@Usuario_Comprador_ID", SqlDbType.Int);
+                colParametros[7].Value = dtoDataObject.ID_Usuario_Comprador;
+
+                colParametros[8] = new SqlParameter("@Pedido_Compra_CT_Saldo_Origem_ID", SqlDbType.Int);
+                colParametros[8].Value = dtoDataObject.ID_Pedido_Compra_CT_Saldo_Origem;
+
+                colParametros[9] = new SqlParameter("@Enum_Tipo_ID", SqlDbType.Int);
+                colParametros[9].Value = dtoDataObject.ID_Enum_Tipo;
+
+                colParametros[10] = new SqlParameter("@Enum_Tipo_Origem_ID", SqlDbType.Int);
+                colParametros[10].Value = Convert.ToInt32(dtoDataObject.ID_Enum_Tipo_Origem);
+
+                colParametros[11] = new SqlParameter("@Objeto_Origem_ID", SqlDbType.Int);
+                colParametros[11].Value = dtoDataObject.Objeto_Origem_ID;
+
+                colParametros[12] = new SqlParameter("@Pedido_Compra_CT_Vendedor", SqlDbType.VarChar);
+                colParametros[12].Value = dtoDataObject.Nome_Vendedor;
+
+                colParametros[13] = new SqlParameter("@Pedido_Compra_CT_Data_Geracao", SqlDbType.DateTime);
+                colParametros[13].Value = dtoDataObject.Data_Geracao;
+
+                colParametros[14] = new SqlParameter("@Pedido_Compra_CT_Data_Prevista", SqlDbType.DateTime);
+                colParametros[14].Value = dtoDataObject.Data_Prevista;
+
+                colParametros[15] = new SqlParameter("@Pedido_Compra_CT_Desconto", SqlDbType.Decimal);
+                colParametros[15].Value = dtoDataObject.Desconto;
+
+                colParametros[16] = new SqlParameter("@Pedido_Compra_CT_IPI", SqlDbType.Decimal);
+                colParametros[16].Value = dtoDataObject.Imposto;
+
+                colParametros[17] = new SqlParameter("@Pedido_Compra_CT_Obs", SqlDbType.VarChar);
+                colParametros[17].Value = dtoDataObject.Observacao;
+
+                colParametros[18] = new SqlParameter("@Pedido_Compra_CT_Cobranca_Fornecedor", SqlDbType.VarChar);
+                colParametros[18].Value = dtoDataObject.Cobranca_Fornecedor;
+
+                colParametros[19] = new SqlParameter("@Pedido_Compra_CT_Considerar_IPI", SqlDbType.Bit);
+                colParametros[19].Value = dtoDataObject.Considerar_IPI;
+
+                colParametros[20] = new SqlParameter("@Pedido_Compra_CT_Substituicao", SqlDbType.Decimal);
+                colParametros[20].Value = dtoDataObject.Substituicao;
+
+                colParametros[21] = new SqlParameter("@Pedido_Compra_CT_Envio_Email", SqlDbType.Bit);
+                colParametros[21].Value = dtoDataObject.Envio_Email;
+
+                colParametros[22] = new SqlParameter("@Usuario_Ultima_Alteracao_ID", SqlDbType.Int);
+                colParametros[22].Value = dtoDataObject.Usuario_Ultima_Alteracao_ID;
+
+                colParametros[23] = new SqlParameter("@Pedido_Compra_CT_Data_Ultima_Alteracao", SqlDbType.DateTime);
+                colParametros[23].Value = dtoDataObject.Data_Ultima_Alteracao;
+
+                return colParametros;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private List<Pedido_Compra_CTDO> Preencher_Colecao_DataObject(SqlDataReader objReader)
+        {
+            try
+            {
+                DBUtil objDBUtil = new DBUtil();
+                List<Pedido_Compra_CTDO> lstTemp = new List<Pedido_Compra_CTDO>();
+
+                while (objReader.Read())
+                {
+                    Pedido_Compra_CTDO dtoDataObject = new Pedido_Compra_CTDO();
+
+                    dtoDataObject.ID = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Fornecedor = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Fornecedor_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Loja_Origem = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Loja_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Loja_Destino = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Loja_Destino_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Status = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Enum_Status_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Condicao_Pagamento = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Condicao_Pagamento_CT_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Usuario_Geracao = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Usuario_Geracao_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Usuario_Comprador = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Usuario_Comprador_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Pedido_Compra_CT_Saldo_Origem = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Saldo_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Enum_Tipo = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Enum_Tipo_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.ID_Enum_Tipo_Origem = (Origem_Pedido_Compras)Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Enum_Tipo_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.Objeto_Origem_ID = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Objeto_Origem_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.Nome_Vendedor = Convert.ToString(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Vendedor", DBUtil.TipoDeDado.t_String));
+                    dtoDataObject.Data_Geracao = Convert.ToDateTime(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Data_Geracao", DBUtil.TipoDeDado.t_Date));
+                    dtoDataObject.Data_Prevista = Convert.ToDateTime(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Data_Prevista", DBUtil.TipoDeDado.t_Date));
+                    dtoDataObject.Desconto = Convert.ToDecimal(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Desconto", DBUtil.TipoDeDado.t_Decimal));
+                    dtoDataObject.Imposto = Convert.ToDecimal(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_IPI", DBUtil.TipoDeDado.t_Decimal));
+                    dtoDataObject.Substituicao = Convert.ToDecimal(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Substituicao", DBUtil.TipoDeDado.t_Decimal));
+                    dtoDataObject.Observacao = Convert.ToString(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Obs", DBUtil.TipoDeDado.t_String));
+                    dtoDataObject.Cobranca_Fornecedor = Convert.ToString(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Cobranca_Fornecedor", DBUtil.TipoDeDado.t_String));
+                    dtoDataObject.Considerar_IPI = Convert.ToBoolean(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Considerar_IPI", DBUtil.TipoDeDado.t_Boolean));
+                    dtoDataObject.Envio_Email = Convert.ToBoolean(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Envio_Email", DBUtil.TipoDeDado.t_Boolean));
+                    dtoDataObject.ID_Loja_Faturamento = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Loja_Faturamento_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.Usuario_Ultima_Alteracao_ID = Convert.ToInt32(objDBUtil.Validar_DataReader(objReader, "Usuario_Ultima_Alteracao_ID", DBUtil.TipoDeDado.t_Int32));
+                    dtoDataObject.Data_Ultima_Alteracao = Convert.ToDateTime(objDBUtil.Validar_DataReader(objReader, "Pedido_Compra_CT_Data_Ultima_Alteracao", DBUtil.TipoDeDado.t_Date));
+                    lstTemp.Add(dtoDataObject);
+                }
+
+                return lstTemp;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (!objReader.IsClosed)
+                {
+                    objReader.Close();
+                }
+            }
+        }
+
+        #endregion
+
+        #region "   Validações         "
+
+        private void Validar_Geral_Incluir(Pedido_Compra_CTDO dtoValidar, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+
+            try
+            {
+                this.Validar_ID_Fornecedor(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Fornecedor), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Loja_Origem(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Loja_Origem), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Loja_Destino(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Loja_Destino), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Status_Pedido(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Status), TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_ID_Condicao_Pagamento(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Condicao_Pagamento), TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_ID_Usuario_Criador(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Usuario_Geracao), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Usuario_Comprador(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Usuario_Comprador), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_Data_Geracao(dtoValidar.ID, Convert.ToString(dtoValidar.Data_Geracao), TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_Nome_Vendedor(dtoValidar.ID, dtoValidar.Nome_Vendedor, TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_Observacao(dtoValidar.ID, dtoValidar.Observacao, TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_Cobranca_Fornecedor(dtoValidar.ID, dtoValidar.Cobranca_Fornecedor, TipoValidacao.Campo_e_Banco, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Validar_Geral_Alterar(Pedido_Compra_CTDO dtoValidar, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+
+            try
+            {
+                this.Validar_ID_Fornecedor(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Fornecedor), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Loja_Origem(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Loja_Origem), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Loja_Destino(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Loja_Destino), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_ID_Status_Pedido(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Status), TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_ID_Condicao_Pagamento(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Condicao_Pagamento), TipoValidacao.Campo_e_Banco, objErro);               
+                this.Validar_ID_Usuario_Comprador(dtoValidar.ID, Convert.ToString(dtoValidar.ID_Usuario_Comprador), TipoValidacao.Campo_e_Banco, objErro, ref objTransaction);
+                this.Validar_Data_Geracao(dtoValidar.ID, Convert.ToString(dtoValidar.Data_Geracao), TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_Nome_Vendedor(dtoValidar.ID, dtoValidar.Nome_Vendedor, TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_Observacao(dtoValidar.ID, dtoValidar.Observacao, TipoValidacao.Campo_e_Banco, objErro);
+                this.Validar_Cobranca_Fornecedor(dtoValidar.ID, dtoValidar.Cobranca_Fornecedor, TipoValidacao.Campo_e_Banco, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Fornecedor(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Banco | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaBanco objValidaBanco = new ValidaBanco();
+
+                    objValidaBanco.Valida_Chave_Extrangeira("Forn_ID", "Fornecedor_ID", strValorCampo, string.Empty, "Fornecedor", "Fornecedor", "Pedido_CompraDATA.Validar_ID_Fornecedor", objErro, ref objTransaction);
+
+                    if (objErro.ObterErro("Fornecedor_ID") != null)
+                        return;
+                }
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("ID_Fornecedor", strValorCampo, "ID_Fornecedor", true, "Pedido_CompraDATA.Validar_ID_Fornecedor", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Loja_Origem(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Banco | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaBanco objValidaBanco = new ValidaBanco();
+
+                    objValidaBanco.Valida_Chave_Extrangeira("Lojas_ID", "Loja_Origem_ID", strValorCampo, "Lojas_IsAtivo", "Loja", "Lojas", "Pedido_CompraDATA.Validar_ID_Loja_Origem", objErro, ref objTransaction);
+
+                    if (objErro.ObterErro("Loja_Origem_ID") != null)
+                        return;
+                }
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("Loja_Origem_ID", strValorCampo, "ID_Loja", true, "Pedido_CompraDATA.Validar_ID_Loja_Origem", objErro);
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Loja_Destino(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Banco | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaBanco objValidaBanco = new ValidaBanco();
+
+                    objValidaBanco.Valida_Chave_Extrangeira("Lojas_ID", "Loja_Destino_ID", strValorCampo, "Lojas_IsAtivo", "Loja", "Lojas", "Pedido_CompraDATA.Validar_ID_Loja_Destino", objErro, ref objTransaction);
+
+                    if (objErro.ObterErro("Loja_Destino_ID") != null)
+                        return;
+                }
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("Loja_Destino_ID", strValorCampo, "ID_Loja", true, "Pedido_CompraDATA.Validar_ID_Loja_Destino", objErro);
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Status_Pedido(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("ID_Status_Pedido", strValorCampo, "ID_Status_Pedido", true, "Pedido_CompraDATA.Validar_ID_Status_Pedido", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Condicao_Pagamento(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro)
+        {
+            try
+            {
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("ID_Condicao_Pagamento_CT", strValorCampo, "ID_Condicao_Pagamento_CT", true, "Pedido_CompraDATA.Validar_ID_Condicao_Pagamento_CT", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Usuario_Criador(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Banco | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaBanco objValidaBanco = new ValidaBanco();
+
+                    objValidaBanco.Valida_Chave_Extrangeira("Usuario_ID", "Usuario_Geracao_ID", strValorCampo, string.Empty, "Usuario Criador do Pedido de Compra", "Usuario", "Pedido_CompraDATA.Validar_ID_Usuario_Criador", objErro, ref objTransaction);
+                }
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("Usuario_Geracao_ID", strValorCampo, "Usuario Criador do Pedido de Compra", true, "Pedido_CompraDATA.Validar_ID_Usuario_Criador", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Usuario_Comprador(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Banco | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaBanco objValidaBanco = new ValidaBanco();
+
+                    objValidaBanco.Valida_Chave_Extrangeira("Usuario_ID", "Usuario_Comprador_ID", strValorCampo, string.Empty, "Usuario Comprador do Pedido de Compra", "Usuario", "Pedido_CompraDATA.Validar_ID_Usuario_Comprador", objErro, ref objTransaction);
+                }
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("Usuario_Comprador_ID", strValorCampo, "Usuario Comprador do Pedido de Compra", true, "Pedido_CompraDATA.Validar_ID_Usuario_Comprador", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Data_Geracao(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro)
+        {
+            try
+            {
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaCampoObrigatorio("Data_Geracao", strValorCampo, "Data_Geracao", true, "Pedido_CompraDATA.Validar_Data_Geracao", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Nome_Vendedor(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro)
+        {
+            try
+            {
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaTamanhoMaximo("Nome_Vendedor", strValorCampo, "Nome_Vendedor", 50, "Pedido_CompraDATA.Validar_Nome_Vendedor", objErro);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Observacao(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro)
+        {
+            try
+            {
+
+                if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                {
+                    ValidaCampo objValidaCampo = new ValidaCampo();
+
+                    objValidaCampo.ValidaTamanhoMaximo("Observacao", strValorCampo, "Observacao", 250, "Pedido_CompraDATA.Validar_Observacao", objErro);
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Cobranca_Fornecedor(Int32 intID, string strValorCampo, TipoValidacao enuTipoValidacao, Mercadocar.InfraEstrutura.Erro.Erro objErro)
+        {
+            try
+            {
+
+                if (strValorCampo != null)
+                {
+                    if (enuTipoValidacao == TipoValidacao.Campo | enuTipoValidacao == TipoValidacao.Campo_e_Banco)
+                    {
+                        ValidaCampo objValidaCampo = new ValidaCampo();
+
+                        objValidaCampo.ValidaTamanhoMaximo("Cobranca_Fornecedor", strValorCampo, "Cobranca_Fornecedor", 500, "Pedido_CompraDATA.Validar_Cobranca_Fornecedor", objErro);
+                    }
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region "Pedido Novo"
+
+        #region "   CRUDE              "
+
+        public void Incluir(DataRow dtrPedidoCompraCT, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                this.Validar_Geral_Incluir(dtrPedidoCompraCT, objErro, ref objTransaction);
+                if (objErro.TemErro())
+                    return;
+
+                string strSql = @"INSERT INTO Pedido_Compra_CT 
+                                  (
+                                    Fornecedor_ID, 
+                                    Loja_Origem_ID, 
+                                    Loja_Destino_ID, 
+                                    Enum_Status_ID, 
+                                    Condicao_Pagamento_CT_ID, 
+                                    Usuario_Geracao_ID, 
+                                    Usuario_Comprador_ID, 
+                                    Pedido_Compra_CT_Saldo_Origem_ID, 
+                                    Enum_Tipo_ID, 
+                                    Enum_Tipo_Origem_ID, 
+                                    Objeto_Origem_ID, 
+                                    Pedido_Compra_CT_Data_Geracao, 
+                                    Pedido_Compra_CT_Data_Prevista, 
+                                    Pedido_Compra_CT_Data_Entrega, 
+                                    Pedido_Compra_CT_Desconto, 
+                                    Pedido_Compra_CT_IPI, 
+                                    Pedido_Compra_CT_Vendedor, 
+                                    Pedido_Compra_CT_Obs, 
+                                    Pedido_Compra_CT_Cobranca_Fornecedor, 
+                                    Pedido_Compra_CT_Considerar_IPI, 
+                                    Pedido_Compra_CT_Substituicao, 
+                                    Pedido_Compra_CT_Envio_Email, 
+                                    Pedido_Compra_CT_Remover_Impostos, 
+                                    Loja_Faturamento_ID, 
+                                    Usuario_Ultima_Alteracao_ID, 
+                                    Encomenda_Venda_CT_ID, 
+                                    Encomenda_Venda_CT_Lojas_ID, 
+                                    Pedido_Compra_CT_Data_Ultima_Alteracao
+                                   ) 
+                                   VALUES 
+                                   (
+                                    @Fornecedor_ID, 
+                                    @Loja_Origem_ID, 
+                                    @Loja_Destino_ID, 
+                                    @Enum_Status_ID, 
+                                    @Condicao_Pagamento_CT_ID, 
+                                    @Usuario_Geracao_ID, 
+                                    @Usuario_Comprador_ID, 
+                                    @Pedido_Compra_CT_Saldo_Origem_ID, 
+                                    @Enum_Tipo_ID, 
+                                    @Enum_Tipo_Origem_ID, 
+                                    @Objeto_Origem_ID, 
+                                    @Pedido_Compra_CT_Data_Geracao, 
+                                    @Pedido_Compra_CT_Data_Prevista, 
+                                    @Pedido_Compra_CT_Data_Entrega, 
+                                    @Pedido_Compra_CT_Desconto, 
+                                    @Pedido_Compra_CT_IPI, 
+                                    @Pedido_Compra_CT_Vendedor, 
+                                    @Pedido_Compra_CT_Obs, 
+                                    @Pedido_Compra_CT_Cobranca_Fornecedor, 
+                                    @Pedido_Compra_CT_Considerar_IPI, 
+                                    @Pedido_Compra_CT_Substituicao, 
+                                    @Pedido_Compra_CT_Envio_Email, 
+                                    @Pedido_Compra_CT_Remover_Impostos, 
+                                    @Loja_Faturamento_ID, 
+                                    @Usuario_Ultima_Alteracao_ID, 
+                                    @Encomenda_Venda_CT_ID, 
+                                    @Encomenda_Venda_CT_Lojas_ID, 
+                                    GETDATE()
+                                   ) 
+
+                                   SELECT SCOPE_IDENTITY()";
+
+                dtrPedidoCompraCT["Pedido_Compra_CT_ID"] = Convert.ToInt32(SqlHelper.ExecuteScalar(objTransaction.ObjetoDeAcessoDados, 
+                                                                                                   CommandType.Text, 
+                                                                                                   strSql, 
+                                                                                                   this.Preencher_Parametros(dtrPedidoCompraCT)));
+
+            }
+            catch (Exception) 
+            {
+                throw;
+            }
+        }
+
+        public void Alterar(DataRow dtrPedidoCompraCT, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                this.Validar_Geral_Alterar(dtrPedidoCompraCT, objErro, ref objTransaction);
+                if (objErro.TemErro())
+                    return;
+
+                StringBuilder stbSql = new StringBuilder();
+                stbSql.AppendLine("UPDATE Pedido_Compra_CT ");
+                stbSql.AppendLine("SET ");
+                stbSql.AppendLine("Fornecedor_ID = @Fornecedor_ID, ");
+                stbSql.AppendLine("Loja_Origem_ID = @Loja_Origem_ID, ");
+                stbSql.AppendLine("Loja_Destino_ID = @Loja_Destino_ID, ");
+                stbSql.AppendLine("Enum_Status_ID = @Enum_Status_ID, ");
+                stbSql.AppendLine("Condicao_Pagamento_CT_ID = @Condicao_Pagamento_CT_ID, ");
+                stbSql.AppendLine("Usuario_Geracao_ID = @Usuario_Geracao_ID, ");
+                stbSql.AppendLine("Usuario_Comprador_ID = @Usuario_Comprador_ID, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Saldo_Origem_ID = @Pedido_Compra_CT_Saldo_Origem_ID, ");
+                stbSql.AppendLine("Enum_Tipo_ID = @Enum_Tipo_ID, "); 
+                stbSql.AppendLine("Enum_Tipo_Origem_ID = @Enum_Tipo_Origem_ID, ");
+                stbSql.AppendLine("Objeto_Origem_ID = @Objeto_Origem_ID, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Geracao = @Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Prevista = @Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Entrega = @Pedido_Compra_CT_Data_Entrega, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Desconto = @Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("Pedido_Compra_CT_IPI = @Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Vendedor = @Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Obs = @Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Cobranca_Fornecedor = @Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Considerar_IPI = @Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Substituicao = @Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Envio_Email = @Pedido_Compra_CT_Envio_Email, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Remover_Impostos = @Pedido_Compra_CT_Remover_Impostos, ");
+                stbSql.AppendLine("Loja_Faturamento_ID = @Loja_Faturamento_ID, ");
+                stbSql.AppendLine("Usuario_Ultima_Alteracao_ID = @Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Ultima_Alteracao = GETDATE(), ");
+                stbSql.AppendLine("Encomenda_Venda_CT_ID = @Encomenda_Venda_CT_ID, ");
+                stbSql.AppendLine("Encomenda_Venda_CT_Lojas_ID = @Encomenda_Venda_CT_Lojas_ID ");
+                stbSql.AppendLine("WHERE Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID ");
+
+                SqlHelper.ExecuteNonQuery(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), this.Preencher_Parametros(dtrPedidoCompraCT));
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public DataRow Selecionar_Pela_Origem(Origem_Pedido_Compras enuTipoOrigemPedidoCompras, Int32 intObjetoOrigemID, Int32 intLojaOrigemID, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                StringBuilder stbSql = new StringBuilder();
+                stbSql.AppendLine("SELECT ");
+                stbSql.AppendLine("Pedido_Compra_CT_ID, ");
+                stbSql.AppendLine("Fornecedor_ID, ");
+                stbSql.AppendLine("Loja_Origem_ID, ");
+                stbSql.AppendLine("Loja_Destino_ID, ");
+                stbSql.AppendLine("Enum_Status_ID, ");
+                stbSql.AppendLine("Condicao_Pagamento_CT_ID, ");
+                stbSql.AppendLine("Usuario_Geracao_ID, ");
+                stbSql.AppendLine("Usuario_Comprador_ID, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Saldo_Origem_ID, ");
+                stbSql.AppendLine("Enum_Tipo_ID, ");
+                stbSql.AppendLine("ISNULL(Enum_Tipo_Origem_ID, 0) AS Enum_Tipo_Origem_ID, ");
+                stbSql.AppendLine("ISNULL(Objeto_Origem_ID, 0) AS Objeto_Origem_ID, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Geracao, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Prevista, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Entrega, ");
+                stbSql.AppendLine("ISNULL(Pedido_Compra_CT_Desconto, 0.0) AS Pedido_Compra_CT_Desconto, ");
+                stbSql.AppendLine("ISNULL(Pedido_Compra_CT_IPI, 0.0) AS Pedido_Compra_CT_IPI, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Vendedor, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Obs, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Cobranca_Fornecedor, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Considerar_IPI, ");
+                stbSql.AppendLine("ISNULL(Pedido_Compra_CT_Substituicao, 0.0) AS Pedido_Compra_CT_Substituicao, ");
+                stbSql.AppendLine("ISNULL(Pedido_Compra_CT_Envio_Email, 0) AS Pedido_Compra_CT_Envio_Email, ");
+                stbSql.AppendLine("ISNULL(Loja_Faturamento_ID, 0) AS Loja_Faturamento_ID, ");
+                stbSql.AppendLine("ISNULL(Usuario_Ultima_Alteracao_ID, 0) AS Usuario_Ultima_Alteracao_ID, ");
+                stbSql.AppendLine("Pedido_Compra_CT_Data_Ultima_Alteracao, ");
+                stbSql.AppendLine("ISNULL(Pedido_Compra_CT_Remover_Impostos, 0) AS Pedido_Compra_CT_Remover_Impostos, ");
+                stbSql.AppendLine("ISNULL(Encomenda_Venda_CT_ID, 0) AS Encomenda_Venda_CT_ID, ");
+                stbSql.AppendLine("ISNULL(Encomenda_Venda_CT_Lojas_ID, 0) AS Encomenda_Venda_CT_Lojas_ID ");
+                stbSql.AppendLine("FROM Pedido_Compra_CT ");
+                stbSql.AppendLine("WHERE Enum_Tipo_Origem_ID = @Enum_Tipo_Origem_ID  ");
+                stbSql.AppendLine("AND Objeto_Origem_ID = @Objeto_Origem_ID  ");
+                stbSql.AppendLine("AND Loja_Origem_ID = @Loja_Origem_ID  ");
+
+                SqlParameter[] objParametro = new SqlParameter[3];
+
+                objParametro[0] = new SqlParameter("@Enum_Tipo_Origem_ID", SqlDbType.Int);
+                objParametro[0].Value = Convert.ToInt32(enuTipoOrigemPedidoCompras);
+
+                objParametro[1] = new SqlParameter("@Objeto_Origem_ID", SqlDbType.Int);
+                objParametro[1].Value = intObjetoOrigemID;
+
+                objParametro[2] = new SqlParameter("@Loja_Origem_ID", SqlDbType.Int);
+                objParametro[2].Value = intLojaOrigemID;
+
+
+                DataTable dttResultado = SqlHelper.ExecuteDataTable(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), objParametro);
+
+                if (dttResultado.Rows.Count > 0)
+                {
+                    return dttResultado.Rows[0];
+                }
+                else
+                {
+                    DataRow dtrRetorno = null;
+                    dtrRetorno = dttResultado.NewRow();
+
+                    return dtrRetorno;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public bool Verificar_Existencia_Pedido_Compra_Pela_Origem(Int32 intObjetoOrigemID, Origem_Pedido_Compras enuTipoOrigemPedidoCompras, Int32 intLojaOrigemID, Int32 intLojaDestinoID, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                StringBuilder stbSql = new StringBuilder();
+                stbSql.AppendLine("SELECT ");
+                stbSql.AppendLine("     COUNT(*) ");
+                stbSql.AppendLine("FROM ");
+                stbSql.AppendLine("     Pedido_Compra_CT ");
+                stbSql.AppendLine("WHERE ");
+                stbSql.AppendLine("     Objeto_Origem_ID = @Objeto_Origem_ID ");
+                stbSql.AppendLine("AND ");
+                stbSql.AppendLine("     Enum_Tipo_Origem_ID = @Enum_Tipo_Origem_ID ");
+                stbSql.AppendLine("AND ");
+                stbSql.AppendLine("     Loja_Origem_ID = @Loja_Origem_ID ");
+                stbSql.AppendLine("AND ");
+                stbSql.AppendLine("     (Loja_Destino_ID = @Loja_Destino_ID OR @Loja_Destino_ID IS NULL) ");
+
+                SqlParameter[] objParametro = new SqlParameter[4];
+
+                objParametro[0] = new SqlParameter("@Objeto_Origem_ID", SqlDbType.Int);
+                objParametro[0].Value = intObjetoOrigemID;
+
+                objParametro[1] = new SqlParameter("@Enum_Tipo_Origem_ID", SqlDbType.Int);
+                objParametro[1].Value = Convert.ToInt32(enuTipoOrigemPedidoCompras);
+
+                objParametro[2] = new SqlParameter("@Loja_Origem_ID", SqlDbType.Int);
+                objParametro[2].Value = intLojaOrigemID;
+
+                objParametro[3] = new SqlParameter("@Loja_Destino_ID", SqlDbType.Int);
+                objParametro[3].Value = (intLojaDestinoID != 0 ? (object)intLojaDestinoID : DBNull.Value);
+
+                int intQtdePedidos = Convert.ToInt32(SqlHelper.ExecuteScalar(objTransaction.ObjetoDeAcessoDados, CommandType.Text, stbSql.ToString(), objParametro));
+
+                return (intQtdePedidos > 0);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public DataTable Retornar_Estrutura_Tabela()
+        {
+            try
+            {
+                DataTable dttEstrutura = new DataTable("Pedido_Compra_CT");
+
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Fornecedor_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Loja_Origem_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Loja_Destino_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Enum_Status_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Condicao_Pagamento_CT_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Usuario_Geracao_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Usuario_Comprador_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Saldo_Origem_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Enum_Tipo_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Enum_Tipo_Origem_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Objeto_Origem_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Data_Geracao", typeof(DateTime));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Data_Prevista", typeof(DateTime));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Data_Entrega", typeof(DateTime));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Desconto", typeof(Decimal));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_IPI", typeof(Decimal));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Vendedor", typeof(String));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Obs", typeof(String));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Cobranca_Fornecedor", typeof(String));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Considerar_IPI", typeof(Boolean));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Substituicao", typeof(Object));
+                dttEstrutura.Columns.Add("Pedido_Compra_CT_Envio_Email", typeof(Boolean));
+                dttEstrutura.Columns.Add("Encomenda_Venda_CT_ID", typeof(Int32));
+                dttEstrutura.Columns.Add("Encomenda_Venda_CT_Lojas_ID", typeof(Int32));
+
+                return dttEstrutura;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region "   Métodos Privados   "
+
+        private SqlParameter[] Preencher_Parametros(DataRow dtrPedidoCompraCT)
+        {
+             try
+             {
+                 SqlParameter[] objParametro = new SqlParameter[28];
+
+                 objParametro[0] = new SqlParameter("@Pedido_Compra_CT_ID", SqlDbType.Int);
+                 objParametro[0].Value = dtrPedidoCompraCT["Pedido_Compra_CT_ID"];
+
+                 objParametro[1] = new SqlParameter("@Fornecedor_ID", SqlDbType.Int);
+                 objParametro[1].Value = dtrPedidoCompraCT["Fornecedor_ID"];
+
+                 objParametro[2] = new SqlParameter("@Loja_Origem_ID", SqlDbType.Int);
+                 objParametro[2].Value = dtrPedidoCompraCT["Loja_Origem_ID"];
+
+                 objParametro[3] = new SqlParameter("@Loja_Destino_ID", SqlDbType.Int);
+                 objParametro[3].Value = dtrPedidoCompraCT["Loja_Destino_ID"];
+
+                 objParametro[4] = new SqlParameter("@Enum_Status_ID", SqlDbType.Int);
+                 objParametro[4].Value = dtrPedidoCompraCT["Enum_Status_ID"];
+
+                 objParametro[5] = new SqlParameter("@Condicao_Pagamento_CT_ID", SqlDbType.Int);
+                 objParametro[5].Value = dtrPedidoCompraCT["Condicao_Pagamento_CT_ID"];
+
+                 objParametro[6] = new SqlParameter("@Usuario_Geracao_ID", SqlDbType.Int);
+                 objParametro[6].Value = dtrPedidoCompraCT["Usuario_Geracao_ID"];
+
+                 objParametro[7] = new SqlParameter("@Usuario_Comprador_ID", SqlDbType.Int);
+                 objParametro[7].Value = dtrPedidoCompraCT["Usuario_Comprador_ID"];
+
+                 objParametro[8] = new SqlParameter("@Pedido_Compra_CT_Saldo_Origem_ID", SqlDbType.Int);
+                 objParametro[8].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Saldo_Origem_ID"];
+
+                 objParametro[9] = new SqlParameter("@Enum_Tipo_ID", SqlDbType.Int);
+                 objParametro[9].Value = dtrPedidoCompraCT["Enum_Tipo_ID"];
+
+                 objParametro[10] = new SqlParameter("@Enum_Tipo_Origem_ID", SqlDbType.Int);
+                 objParametro[10].Value = dtrPedidoCompraCT["Enum_Tipo_Origem_ID"];
+
+                 objParametro[11] = new SqlParameter("@Objeto_Origem_ID", SqlDbType.Int);
+                 objParametro[11].Value = dtrPedidoCompraCT["Objeto_Origem_ID"];
+
+                 objParametro[12] = new SqlParameter("@Pedido_Compra_CT_Data_Geracao", SqlDbType.DateTime);
+                 objParametro[12].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Data_Geracao"];
+
+                 objParametro[13] = new SqlParameter("@Pedido_Compra_CT_Data_Prevista", SqlDbType.DateTime);
+                 objParametro[13].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Data_Prevista"];
+
+                 objParametro[14] = new SqlParameter("@Pedido_Compra_CT_Data_Entrega", SqlDbType.DateTime);
+                 objParametro[14].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Data_Entrega"];
+
+                 objParametro[15] = new SqlParameter("@Pedido_Compra_CT_Desconto", SqlDbType.Decimal);
+                 objParametro[15].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Desconto"];
+
+                 objParametro[16] = new SqlParameter("@Pedido_Compra_CT_IPI", SqlDbType.Decimal);
+                 objParametro[16].Value = dtrPedidoCompraCT["Pedido_Compra_CT_IPI"];
+
+                 objParametro[17] = new SqlParameter("@Pedido_Compra_CT_Vendedor", SqlDbType.VarChar, 50);
+                 objParametro[17].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Vendedor"];
+
+                 objParametro[18] = new SqlParameter("@Pedido_Compra_CT_Obs", SqlDbType.VarChar, 250);
+                 objParametro[18].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Obs"];
+
+                 objParametro[19] = new SqlParameter("@Pedido_Compra_CT_Cobranca_Fornecedor", SqlDbType.VarChar, 500);
+                 objParametro[19].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Cobranca_Fornecedor"];
+
+                 objParametro[20] = new SqlParameter("@Pedido_Compra_CT_Considerar_IPI", SqlDbType.Bit);
+                 objParametro[20].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Considerar_IPI"];
+
+                 objParametro[21] = new SqlParameter("@Pedido_Compra_CT_Substituicao", SqlDbType.Float);
+                 objParametro[21].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Substituicao"];
+
+                 objParametro[22] = new SqlParameter("@Pedido_Compra_CT_Envio_Email", SqlDbType.Bit);
+                 objParametro[22].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Envio_Email"];
+
+                 objParametro[23] = new SqlParameter("@Pedido_Compra_CT_Remover_Impostos", SqlDbType.Bit);
+                 objParametro[23].Value = dtrPedidoCompraCT["Pedido_Compra_CT_Remover_Impostos"];
+
+                 objParametro[24] = new SqlParameter("@Loja_Faturamento_ID", SqlDbType.Int);
+                 objParametro[24].Value = dtrPedidoCompraCT["Loja_Faturamento_ID"];
+
+                 objParametro[25] = new SqlParameter("@Usuario_Ultima_Alteracao_ID", SqlDbType.Int);
+                 objParametro[25].Value = dtrPedidoCompraCT["Usuario_Ultima_Alteracao_ID"];
+
+                 objParametro[26] = new SqlParameter("@Encomenda_Venda_CT_ID", SqlDbType.Int);
+                 objParametro[26].Value = dtrPedidoCompraCT["Encomenda_Venda_CT_ID"];
+
+                 objParametro[27] = new SqlParameter("@Encomenda_Venda_CT_Lojas_ID", SqlDbType.Int);
+                 objParametro[27].Value = dtrPedidoCompraCT["Encomenda_Venda_CT_Lojas_ID"];
+
+                 return objParametro;
+             }
+
+             catch (Exception)
+             {
+                 throw;
+             }
+      }
+
+        #endregion
+
+        #region "   Validações         "
+
+        private void Validar_Geral_Incluir(DataRow dtrPedidoCompraCT, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+
+                this.Validar_ID_Fornecedor(Convert.ToString(dtrPedidoCompraCT["Fornecedor_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Loja_Origem(Convert.ToString(dtrPedidoCompraCT["Loja_Origem_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Loja_Destino(Convert.ToString(dtrPedidoCompraCT["Loja_Destino_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Enum_Status(Convert.ToString(dtrPedidoCompraCT["Enum_Status_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Condicao_Pagamento_CT(Convert.ToString(dtrPedidoCompraCT["Condicao_Pagamento_CT_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Usuario_Geracao(Convert.ToString(dtrPedidoCompraCT["Usuario_Geracao_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Usuario_Comprador(Convert.ToString(dtrPedidoCompraCT["Usuario_Comprador_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Enum_Tipo(Convert.ToString(dtrPedidoCompraCT["Enum_Tipo_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Enum_Tipo_Origem(Convert.ToString(dtrPedidoCompraCT["Enum_Tipo_Origem_ID"]), objErro, ref objTransaction);
+                this.Validar_Pedido_Compra_CT_Vendedor(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Vendedor"]), objErro);
+                this.Validar_Pedido_Compra_CT_Obs(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Obs"]), objErro);
+                this.Validar_Pedido_Compra_CT_Cobranca_Fornecedor(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Cobranca_Fornecedor"]), objErro);
+                this.Validar_Pedido_Compra_CT_Substituicao(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Substituicao"]), objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        private void Validar_Geral_Alterar(DataRow dtrPedidoCompraCT, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+
+                this.Validar_ID_Fornecedor(Convert.ToString(dtrPedidoCompraCT["Fornecedor_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Loja_Origem(Convert.ToString(dtrPedidoCompraCT["Loja_Origem_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Loja_Destino(Convert.ToString(dtrPedidoCompraCT["Loja_Destino_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Enum_Status(Convert.ToString(dtrPedidoCompraCT["Enum_Status_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Condicao_Pagamento_CT(Convert.ToString(dtrPedidoCompraCT["Condicao_Pagamento_CT_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Enum_Tipo(Convert.ToString(dtrPedidoCompraCT["Enum_Tipo_ID"]), objErro, ref objTransaction);
+                this.Validar_ID_Enum_Tipo_Origem(Convert.ToString(dtrPedidoCompraCT["Enum_Tipo_Origem_ID"]), objErro, ref objTransaction);
+                this.Validar_Pedido_Compra_CT_Vendedor(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Vendedor"]), objErro);
+                this.Validar_Pedido_Compra_CT_Obs(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Obs"]), objErro);
+                this.Validar_Pedido_Compra_CT_Cobranca_Fornecedor(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Cobranca_Fornecedor"]), objErro);
+                this.Validar_Pedido_Compra_CT_Substituicao(Convert.ToString(dtrPedidoCompraCT["Pedido_Compra_CT_Substituicao"]), objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Fornecedor(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Forn_ID", "Fornecedor_ID", strValorCampo, "Forn_IsAtivo", "Identificação do Fornecedor", "Fornecedor", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Fornecedor_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Fornecedor_ID", strValorCampo, "Identificação do Fornecedor", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Fornecedor_ID", strValorCampo, "Identificação do Fornecedor", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Fornecedor_ID", strValorCampo, "Identificação do Fornecedor", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Loja_Origem(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Lojas_Id", "Loja_Origem_ID", strValorCampo, "Lojas_IsAtivo", "Identificação da Loja Origem", "Lojas", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Loja_Origem_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Loja_Origem_ID", strValorCampo, "Identificação da Loja Origem", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Loja_Origem_ID", strValorCampo, "Identificação da Loja Origem", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Loja_Origem_ID", strValorCampo, "Identificação da Loja Origem", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Loja_Destino(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Lojas_Id", "Loja_Destino_ID", strValorCampo, "Lojas_IsAtivo", "Identificação da Loja Destino", "Lojas", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Loja_Destino_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Loja_Destino_ID", strValorCampo, "Identificação da Loja Destino", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Loja_Destino_ID", strValorCampo, "Identificação da Loja Destino", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Loja_Destino_ID", strValorCampo, "Identificação da Loja Destino", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Enum_Status(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Enum_ID", "Enum_Status_ID", strValorCampo, "Enum_IsAtivo", "Identificação do Status", "Enumerado", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Enum_Status_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Enum_Status_ID", strValorCampo, "Identificação do Status", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Enum_Status_ID", strValorCampo, "Identificação do Status", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Enum_Status_ID", strValorCampo, "Identificação do Status", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Condicao_Pagamento_CT(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Condicao_Pagamento_CT_ID", "Condicao_Pagamento_CT_ID", strValorCampo, "Condicao_Pagamento_CT_IsAtivo", "Identificação da Condição de Pagamento", "Condicao_Pagamento_CT", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Condicao_Pagamento_CT_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Condicao_Pagamento_CT_ID", strValorCampo, "Identificação da Condição de Pagamento", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Condicao_Pagamento_CT_ID", strValorCampo, "Identificação da Condição de Pagamento", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Condicao_Pagamento_CT_ID", strValorCampo, "Identificação da Condição de Pagamento", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Usuario_Geracao(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Usuario_ID", "Usuario_Geracao_ID", strValorCampo, "Usuario_IsAtivo", "Identificação do Usuário Geração", "Usuario", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Usuario_Geracao_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Usuario_Geracao_ID", strValorCampo, "Identificação do Usuário Geração", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Usuario_Geracao_ID", strValorCampo, "Identificação do Usuário Geração", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Usuario_Geracao_ID", strValorCampo, "Identificação do Usuário Geração", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Usuario_Comprador(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Usuario_ID", "Usuario_Comprador_ID", strValorCampo, "Usuario_IsAtivo", "Identificação do Usuário Comprador", "Usuario", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Usuario_Comprador_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Usuario_Comprador_ID", strValorCampo, "Identificação do Usuário Comprador", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Usuario_Comprador_ID", strValorCampo, "Identificação do Usuário Comprador", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Usuario_Comprador_ID", strValorCampo, "Identificação do Usuário Comprador", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Enum_Tipo(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Enum_ID", "Enum_Tipo_ID", strValorCampo, "Enum_IsAtivo", "Identificação do Tipo de Pedido", "Enumerado", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Enum_Tipo_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaCampoObrigatorio("Enum_Tipo_ID", strValorCampo, "Identificação do Tipo de Pedido", true, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaSoNumeros("Enum_Tipo_ID", strValorCampo, "Identificação do Tipo de Pedido", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Enum_Tipo_ID", strValorCampo, "Identificação do Tipo de Pedido", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_ID_Enum_Tipo_Origem(String strValorCampo, Erro objErro, ref TransactionManager objTransaction)
+        {
+            try
+            {
+                ValidaBanco objValidaBanco = new ValidaBanco();
+
+                // TODO - Adaptar parâmetros do validador
+                objValidaBanco.Valida_Chave_Extrangeira("Enum_ID", "Enum_Tipo_Origem_ID", strValorCampo, "Enum_IsAtivo", "Identificação do Tipo Origem", "Enumerado", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro, ref objTransaction);
+
+                if ((objErro.ObterErro("Enum_Tipo_Origem_ID") != null))
+                    return;
+
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaSoNumeros("Enum_Tipo_Origem_ID", strValorCampo, "Identificação do Tipo Origem", this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+                objValidaCampo.ValidaCapacidadeDeVariavelSemCasaDecimal("Enum_Tipo_Origem_ID", strValorCampo, "Identificação do Tipo Origem", SqlDbType.Int, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Pedido_Compra_CT_Vendedor(String strValorCampo, Erro objErro)
+        {
+            try
+            {
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaTamanhoMaximo("Pedido_Compra_CT_Vendedor", strValorCampo, "Nome do Vendedor", 50, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Pedido_Compra_CT_Obs(String strValorCampo, Erro objErro)
+        {
+            try
+            {
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaTamanhoMaximo("Pedido_Compra_CT_Obs", strValorCampo, "Observação", 250, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Pedido_Compra_CT_Cobranca_Fornecedor(String strValorCampo, Erro objErro)
+        {
+            try
+            {
+                ValidaCampo objValidaCampo = new ValidaCampo();
+
+                objValidaCampo.ValidaTamanhoMaximo("Pedido_Compra_CT_Cobranca_Fornecedor", strValorCampo, "Descrição de Cobrança Fornecedor", 500, this.GetType().Name + "." + MethodBase.GetCurrentMethod().Name, objErro);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Validar_Pedido_Compra_CT_Substituicao(String strValorCampo, Erro objErro)
+        {
+            try
+            {
+                ValidaCampo objValidaCampo = new ValidaCampo();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+    }
+
+}
+

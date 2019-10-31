@@ -1,0 +1,21 @@
+SELECT Parametros_Sistema_ID, 
+       Lojas_ID, 
+       Parametros_Sistema_Tipo, 
+       ISNULL(Parametros_Sistema_Valor, '') AS Parametros_Sistema_Valor, 
+       ISNULL(Parametros_Sistema_Observacao, '') AS Parametros_Sistema_Observacao
+FROM Parametros_Sistema
+WHERE Parametros_Sistema_Tipo = 'TAMANHO_MINIMO_CODIGO_DE_BARRAS'
+
+--UPDATE Parametros_Sistema 
+--SET Parametros_Sistema_Valor = 4, 
+--Parametros_Sistema_Observacao = 4
+
+--SP p_Venda_Tecnica_Consultar_Servico_Venda
+
+SELECT * FROM Servico WHERE Servico_CD = '0335' ORDER BY Servico_ID DESC -- No CX Novo o serv~ço é consultado pelo Servico_CD com 4 digitos
+
+--SP p_Venda_Tecnica_Consultar_Servico_Venda --consulta do CX NOVO para serviços
+--SP p_CD_Organizacao_Enderecos_Coletor_Consultar_Dados_Por_Cod_Barras
+--SP p_Cad_Consultar_Peca_Etiqueta_Preco
+--SP p_EL_Consultar_Dados_Peca_Etiqueta_Preco_Detalhe
+--SP p_CD_Organizacao_Enderecos_Coletor_Consultar_Dados_Por_Cod_Barras

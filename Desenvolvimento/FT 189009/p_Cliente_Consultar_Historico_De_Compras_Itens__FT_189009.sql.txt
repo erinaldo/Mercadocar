@@ -1,0 +1,155 @@
+---------------------------------------------------------------------------------
+-- <summary>
+--		Procedure de Consulta do histórico de compras do Cliente.
+-- </summary>
+-- <history>
+-- 	[fneves]		04/07/2007	- Created
+--	[econforti]		31/07/2007	- Modified
+--		Adaptado procedure para exibir a forma faturada de venda, de acordo
+--	com o novo parâmetro "@Vendas_Faturadas"
+--	[econforti]		17/08/2007	- Modified
+--		Separado em 2 procedures: capa e ítens
+--	[econforti]		05/09/2007	- Modified
+--		Removido campos relacionados a fatura
+--	[econforti]		05/11/2007	- Modified
+--		Alterado a consulta para utilizar a tabela Romaneio_CT no lugar da 
+--	Cliente_Credito, pois a segunda não contém informações de venda quando 
+--	os romaneios são passados no caixa antigo (VIP).
+--	[econforti]		08/12/2007	- Modified
+--		Incluído na subquery do valor do romaneio e do grupo a loja_id da
+--	query de fora.
+--	[econforti]		28/08/2009	- Modified
+--		Alterado o valor do romaneio que sumarizava os ítens e agora passa
+--	a ler do valor armazenado na capa do romaneio.
+--	[moshiro]		29/10/2014	- Modified
+--		Busca da forma de pagamento do grupo de romaneio ao invés do romaneio
+--	[wpinheiro]		05/08/2015	- Modified
+--		Nao retornar historico do consumidor final
+--	[vrici]		10/01/2019	- Modified
+--		Ignorar pagamentos de créditos do quadro complementar
+--	[mmukuno]		- 10/12/2018	Modifed		
+--		Retornar as colunas novas de romaneio.	
+-- </history>
+---------------------------------------------------------------------------------
+--CREATE PROCEDURE [dbo].[p_Cliente_Consultar_Historico_De_Compras_Itens_FT_189009]
+--(
+--  @Cliente_ID			VARCHAR(50),
+--  @Lojas_ID				INT,
+--  @Data_Inicial 		DATETIME,
+--  @Data_Final 			DATETIME,
+--  @Vendas_Faturadas		BIT
+--)
+--AS
+---------------------------------------------------------------------------------
+DECLARE @Cliente_ID				UNIQUEIDENTIFIER,
+		@Lojas_ID				INT,
+		@Data_Inicial			DATETIME,
+		@Data_Final				DATETIME,	
+		@Vendas_Faturadas		BIT
+
+SET		@Cliente_ID				= 'd623731a-6156-477f-8df1-441ceeff3a4b'
+SET		@Lojas_ID				= 1
+SET		@Data_Inicial 			= '2018-06-13'
+SET		@Data_Final 			= '2018-12-13'
+SET		@Vendas_Faturadas		= null
+---------------------------------------------------------------------------------
+
+SET NOCOUNT ON
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+
+-------------------------------------------------------------------------------
+
+	SELECT
+		RCT.Romaneio_Pre_Venda_CT_ID							        AS Romaneio_Ct_ID,
+		Romaneio_Venda_Grupo.Romaneio_Grupo_ID					        AS Romaneio_Grupo_ID,
+		Romaneio_Venda_Grupo.Romaneio_Venda_Grupo_ID			        AS Romaneio_Venda_Grupo_ID,
+		CONVERT(VARCHAR, RCT.Romaneio_Venda_CT_Data_Geracao, 103)		AS Romaneio_Ct_Data_Geracao,
+        vw.Nome_Completo										        AS Nome_Completo,
+		LJ.Lojas_NM												        AS Lojas_NM,
+		Forma_Pagamento.Forma_Pagamento_DS						        AS Forma_Pagamento_DS,
+		ISNULL(RCT.Romaneio_Venda_CT_Valor_Pago, 0)				        AS Valor_Romaneio,
+		Valor_Grupo = (
+						SELECT 
+							SUM(ISNULL(Romaneio_Venda_CT_Valor_Pago, 0))
+						FROM
+							Romaneio_Venda_CT Sub_RCT 
+						WHERE
+							Sub_RCT.Romaneio_Venda_Grupo_ID = RCT.Romaneio_Venda_Grupo_ID
+						AND 
+							Sub_RCT.Lojas_ID = RCT.Lojas_ID
+						GROUP BY
+							Sub_RCT.Romaneio_Venda_Grupo_ID
+					),
+		RCT.Lojas_ID											        AS Lojas_ID
+	FROM
+		Romaneio_Venda_CT RCT
+	LEFT JOIN Romaneio_Venda_Grupo ON
+		Romaneio_Venda_Grupo.Lojas_ID = RCT.Lojas_ID
+	AND
+		Romaneio_Venda_Grupo.Romaneio_Venda_Grupo_ID = RCT.Romaneio_Venda_Grupo_ID
+	LEFT OUTER JOIN Lojas LJ ON
+		LJ.Lojas_ID = RCT.Lojas_ID
+	LEFT OUTER JOIN vw_Usuario vw ON
+		vw.USUARIO_ID = RCT.Usuario_Vendedor_ID
+	LEFT JOIN Romaneio_Venda_Pagamento ON
+		Romaneio_Venda_Pagamento.Lojas_ID = Romaneio_Venda_Grupo.Lojas_ID
+	AND
+		Romaneio_Venda_Pagamento.Romaneio_Venda_Grupo_ID = Romaneio_Venda_Grupo.Romaneio_Venda_Grupo_ID
+	LEFT OUTER JOIN Condicao_Pagamento ON
+		Condicao_Pagamento.Condicao_Pagamento_ID = Romaneio_Venda_Pagamento.Condicao_Pagamento_ID
+	AND
+		Condicao_Pagamento.Loja_ID = Romaneio_Venda_Pagamento.Lojas_ID
+	LEFT OUTER JOIN Forma_Pagamento ON
+		Forma_Pagamento.Forma_Pagamento_ID = Condicao_Pagamento.Forma_Pagamento_ID
+	WHERE
+	   (RCT.Cliente_ID = @Cliente_ID)
+	AND
+	   (RCT.Lojas_ID = @Lojas_ID OR @Lojas_ID IS NULL)
+	AND
+		(	(CONVERT(DATETIME, CONVERT(VARCHAR, RCT.Romaneio_Venda_CT_Data_Geracao, 111), 120)
+		BETWEEN
+			CONVERT(DATETIME, CONVERT(VARCHAR, @Data_Inicial, 111), 120)
+		AND
+			CONVERT(DATETIME, CONVERT(VARCHAR, @Data_Final, 111), 120)	)
+		OR
+			(@Data_Inicial IS NULL AND @Data_Final IS NULL)	)
+	AND
+		(
+			(@Vendas_Faturadas = 1 AND Forma_Pagamento.Forma_Pagamento_Emissao_Fatura = 1)
+		OR
+			(@Vendas_Faturadas = 0 AND Forma_Pagamento.Forma_Pagamento_Emissao_Fatura = 0)
+		OR
+			(@Vendas_Faturadas = 1 AND Forma_Pagamento.Forma_Pagamento_Emissao_Fatura = 1)
+		OR
+			(@Vendas_Faturadas = 0 AND Forma_Pagamento.Forma_Pagamento_Emissao_Fatura = 0)
+		OR
+			(@Vendas_Faturadas IS NULL)
+		)
+	AND
+		@Cliente_ID <> 'f03889df-b23c-422f-bd26-1485b9a26f69'--não retornar historico do consumidor final
+	AND NOT EXISTS
+	(
+		SELECT 
+			*
+		FROM 
+			Quadro_Complementar_It
+		WHERE
+			  Quadro_Complementar_It.Romaneio_Pre_Venda_Ct_Id = Rct.Romaneio_Pre_Venda_Ct_Id
+			  AND Quadro_Complementar_It.Lojas_Id = Rct.Lojas_Id
+	)
+	GROUP BY
+		RCT.Romaneio_Pre_Venda_CT_ID, 
+		RCT.Romaneio_Venda_Grupo_ID,
+		Romaneio_Venda_Grupo.Romaneio_Venda_Grupo_ID,
+		Romaneio_Venda_Grupo.Romaneio_Grupo_ID, 
+		RCT.Romaneio_Venda_CT_Data_Geracao,
+        vw.Nome_Completo, 
+		LJ.Lojas_NM, 
+		Forma_Pagamento.Forma_Pagamento_DS,
+		RCT.Lojas_ID, 
+		ISNULL(Romaneio_Venda_CT_Valor_Pago, 0)
+	ORDER BY
+		RCT.Romaneio_Venda_CT_Data_Geracao DESC
+
+
+	SET NOCOUNT OFF

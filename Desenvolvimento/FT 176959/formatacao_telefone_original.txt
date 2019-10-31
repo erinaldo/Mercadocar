@@ -1,0 +1,12 @@
+ public static string Formatar_Telefone_Numero(string strTelefone_Numero)
+        {
+            try
+            {
+                strTelefone_Numero = strTelefone_Numero.Replace("-", string.Empty).Trim();
+                return string.Format("{0}-{1}", strTelefone_Numero.Substring(0, 4), strTelefone_Numero.Substring(4, 4));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }

@@ -1,0 +1,56 @@
+this.objCodMercadocar.Text_Produto;
+
+
+if (this.chkVisualizarGrupoAlternativo.Checked && this.dtsResumo.Tables["Fabricante_Numero_Originais"].Rows.Count > 0)
+{
+
+    new frmPecaPropriedades_NEW(Convert.ToInt32(this.dgvFabricanteAlternativo.CurrentRow.Cells[0].Value)).Show(this);
+}
+else
+{
+
+    new frmPecaPropriedades_NEW(Convert.ToInt32(this.objCodMercadocar.Peca_ID)).Show(this);
+}
+
+
+if (this.dgvFabricanteAlternativo.Rows.Count > 0)
+{
+
+    if (this.dgvFabricanteAlternativo.CurrentRow == null)
+    {
+
+        this.tbcInformacoesPeca.SelectedTab = this.tbpPecasAlternativas;
+    }
+
+    string strFabricanteCD = this.dgvFabricanteAlternativo.CurrentRow.Cells[1].Value.DefaultString();
+
+    FabricanteBUS busFabricante = new FabricanteBUS();
+    FabricanteDO dtoFabricante = new FabricanteDO();
+
+    dtoFabricante = busFabricante.Selecionar_Por_Codigo(strFabricanteCD);
+
+    new frmFabricante_Alternativo_Propriedades(dtoFabricante.ID).Show(this);
+
+    return;
+}
+
+
+if (this.dgvFabricanteAlternativo.Rows.Count > 0)
+{
+    if (this.dgvFabricanteAlternativo.CurrentRow == null)
+    {
+
+        this.tbcInformacoesPeca.SelectedTab = this.tbpPecasAlternativas;
+    }
+
+    string strProdutoCD = this.dgvFabricanteAlternativo.CurrentRow.Cells[2].Value.DefaultString();
+
+    ProdutoBUS busProduto = new ProdutoBUS();
+    ProdutoDO dtoProduto = new ProdutoDO();
+
+    dtoProduto = busProduto.Selecionar_Por_Codigo(strProdutoCD);
+
+    new frmProdutoPropriedades(dtoProduto.ID).Show(this);
+
+    return;
+}

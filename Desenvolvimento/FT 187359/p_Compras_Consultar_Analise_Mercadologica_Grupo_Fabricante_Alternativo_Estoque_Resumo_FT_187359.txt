@@ -1,0 +1,403 @@
+-------------------------------------------------------------------------------
+-- <summary>
+--			Consulta de preenchimento da tela principal da Análise Mercadológica 
+--			por Grupo de Fabricante Alternativo.
+-- </summary>
+-- <remarks></remarks>
+-- <history>
+-- 		[mmukuno]	- 02/02/2017	Created
+-- 		[bmune]		- 21/02/2018	Modified
+--		Adicionado o distinct no select de endereços
+--		[rnoliveira]	11/09/2018
+--			Trazer dados de reserva do item
+--		[fmoraes]	05/08/2019	Modified
+--			Adicionado o Fabricante_Alternativo_CT_ID
+-- </history>
+-------------------------------------------------------------------------------
+ALTER PROCEDURE p_Compras_Consultar_Analise_Mercadologica_Grupo_Fabricante_Alternativo_Estoque_Resumo_FT_187359
+(
+	@Loja_ID INT,
+    @Peca_ID INT
+)
+AS
+-------------------------------------------------------------------------------
+--DECLARE
+--@Loja_ID											INT,
+--@Peca_ID											INT
+
+--SET @Loja_ID										= 1
+--SET @Peca_ID										= 83628 
+-------------------------------------------------------------------------------
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+SET NOCOUNT ON
+
+DECLARE 
+	@Enum_Status_Item_Pendente_Contagem_Finalizado_ID INT = 1719,
+	@Enum_Status_Item_Pendente_Contagem_Descartado_ID INT = 1718,
+	@Enum_Status_Item_Vitrine_Removido_Vitrine_ID     INT = 2086,
+	@Enum_Status_Item_Vitrine_Cancelado_ID			  INT = 2087,
+	@Enum_Status_Fabricante_Alternativo_Liberado_ID	  INT = 1043,
+	@Loja_Ecommerce_ID								  INT = 17,
+	@Tipo_Reserva_Pre_Venda							  INT = 563 
+
+DECLARE @Fabricante_Alternativo_CT_ID INT
+SELECT
+	@Fabricante_Alternativo_CT_ID = Fabricante_Alternativo_CT.Fabricante_Alternativo_CT_ID
+FROM 
+	Fabricante_Alternativo_CT 
+JOIN Fabricante_Alternativo_IT ON
+	Fabricante_Alternativo_CT.Fabricante_Alternativo_CT_ID = Fabricante_Alternativo_IT.Fabricante_Alternativo_CT_ID
+AND 
+	Fabricante_Alternativo_CT.Fabricante_Alternativo_CT_Ativo = 1
+AND 
+	Fabricante_Alternativo_IT.Fabricante_Alternativo_IT_Ativo = 1
+WHERE
+	Fabricante_Alternativo_CT.Enum_Status_ID = @Enum_Status_Fabricante_Alternativo_Liberado_ID
+AND
+	Peca_ID = @Peca_ID
+
+CREATE TABLE #tmp_peca_grupo_alternativo
+(
+	Peca_ID INT
+)
+INSERT INTO #tmp_peca_grupo_alternativo
+(
+	Peca_ID
+)
+SELECT
+	Peca_ID
+FROM
+	Fabricante_Alternativo_IT
+WHERE
+	Fabricante_Alternativo_CT_ID = @Fabricante_Alternativo_CT_ID
+AND
+	Fabricante_Alternativo_IT.Fabricante_Alternativo_IT_Ativo = 1
+
+	------------------------------------------------------------------
+	--							G E R A L 							--
+	------------------------------------------------------------------
+	SELECT
+		Estoque.Loja_ID													AS Loja_ID,
+		CONVERT(INT,SUM(ISNULL(dbo.fun_Retorna_Zero_Para_Valores_Negativos(Estoque.Estoque_Qtde),0)))								AS Estoque_Qtde,
+		dbo.fun_Retorna_Maior_Data(MAX(Estoque.Estoque_Data_Ultima_Venda), MAX(Estoque.Estoque_Data_Ultima_Saida))	AS Estoque_Data_Ultima_Venda,
+		MAX(Estoque.Estoque_Data_Ultimo_Ajuste)							AS Estoque_Data_Ultimo_Ajuste,
+		MAX(Estoque.Estoque_Data_Ultima_Entrada)						AS Estoque_Data_Ultima_Entrada,
+		MAX(Estoque_Inventario_Coletor_Ultima_Data)						AS Estoque_Inventario_Coletor_Ultima_Data,
+		''																AS Peca_Qtde_Multipla,
+		''																AS Peca_QtMinimaVenda,
+		''																AS Estoque_Calculo_Seguranca_Dias,
+		''																AS Estoque_Calculo_Maximo_Dias,		
+		ISNULL(Peca_Resumo_Loja.Peca_Resumo_Loja_Minimo_Qtde_FA,0)		AS Estoque_Calculo_Minimo_Qtde,
+		ISNULL((
+			SELECT DISTINCT
+				1
+			FROM
+				Peca
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Peca.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE
+				Peca.Peca_Linha = 1
+			),0)														AS Peca_Linha,
+		ISNULL((
+			SELECT DISTINCT
+				1
+			FROM
+				Peca
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Peca.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE
+				Peca.Peca_Comprar = 1
+			),0)														AS Peca_Comprar,
+		ISNULL(Peca_Resumo_Loja.Peca_Resumo_Loja_Seguranca_Qtde_FA,0)	AS Estoque_Calculo_Seguranca_Qtde,
+		ISNULL(Peca_Resumo_Loja.Peca_Resumo_Loja_Maximo_Qtde_FA, 0)		AS Estoque_Calculo_Maximo_Qtde,
+		ISNULL(Peca_Resumo_Loja.Peca_Resumo_Loja_VM_FA, 0)				AS Estoque_Calculo_Venda_Media,
+		ISNULL(Peca_Resumo_Loja.Produto_Curva_Rentabilidade, 'E') 		AS Curva_Produto,
+		ISNULL(MIN(Peca_Resumo_Loja.Estoque_Calculo_Curva_Rentabilidade), 'E') 		AS Curva_Rentabilidade,
+		ISNULL(MIN(Peca_Resumo_Loja.Estoque_Curva_Frequencia), 'E') 		AS Curva_Frequencia,
+		(	
+			SELECT 
+				ISNULL(CONVERT(VARCHAR, SUM(Peca_Endereco.Peca_Endereco_Estoque_Atual_Locacao)),'0') 
+			FROM 
+				Peca_Endereco
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Peca_Endereco.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE 
+				Peca_Endereco.Peca_Endereco_Exposicao_Venda = 1
+			AND 
+				Peca_Endereco.Loja_ID = @Loja_ID
+		) + ' máximo ' +
+		(	
+			SELECT 
+				 ISNULL(CONVERT(VARCHAR,SUM(Peca_Endereco.Peca_Endereco_Estoque_Maximo_Locacao)),'0')
+			FROM 
+				Peca_Endereco  
+			WHERE 
+				Peca_Endereco.Peca_ID = @Peca_ID
+				AND Peca_Endereco.Peca_Endereco_Exposicao_Venda = 1
+				AND Peca_Endereco.Loja_ID = @Loja_ID
+		)																AS Estoque_Exposicao,
+		(	
+			SELECT 
+				SUM(e.Estoque_Qtde) 
+			FROM 
+				Estoque e 
+			JOIN Lojas ON 
+				Lojas.Lojas_ID = e.Loja_ID 
+			AND 
+				Lojas.Lojas_Tipo IN ('Loja', 'CD')
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				e.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE 
+				e.Estoque_Qtde > 0
+		) -
+		(
+			SELECT 
+				ISNULL(SUM(Estoque_Divergencia_Qtde), 0)    
+			FROM 
+				Estoque_Divergencia    
+			JOIN Lojas ON 
+				Lojas.Lojas_Tipo IN ('Loja', 'CD')
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Estoque_Divergencia.Objeto_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE 
+				Estoque_Divergencia.Lojas_ID = Lojas.Lojas_ID
+			AND 
+				Estoque_Divergencia.Enum_Status_ID NOT IN (@Enum_Status_Item_Pendente_Contagem_Finalizado_ID,@Enum_Status_Item_Pendente_Contagem_Descartado_ID)
+
+		)																AS Estoque_Qtde_Total,
+		ISNULL((
+			SELECT DISTINCT
+				1
+			FROM
+				Peca
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Peca.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE
+				Peca.Peca_Estoque_Totalmente_Lojas = 1
+			),0)														AS Peca_Nao_Fica_CD,
+		ISNULL((
+			SELECT 
+				SUM(ISNULL(Peca_Vitrine_Quantidade,0))
+			FROM
+				Peca_Vitrine
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Peca_Vitrine.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE
+				Peca_Vitrine.Lojas_ID = Estoque.Loja_ID
+			AND 
+				Peca_Vitrine.Enum_Status_ID NOT IN (@Enum_Status_Item_Vitrine_Removido_Vitrine_ID, @Enum_Status_Item_Vitrine_Cancelado_ID)
+
+			),0)														AS Peca_Qtde_Vitrine,
+
+		ISNULL((
+			SELECT 
+				ISNULL(SUM(Estoque_Divergencia_Qtde), 0)    
+			FROM 
+				Estoque_Divergencia    
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Estoque_Divergencia.Objeto_ID = #tmp_peca_grupo_alternativo.Peca_ID 
+			WHERE 
+				Estoque_Divergencia.Lojas_ID = Estoque.Loja_ID
+			AND 
+				Estoque_Divergencia.Enum_Status_ID NOT IN (@Enum_Status_Item_Pendente_Contagem_Finalizado_ID,@Enum_Status_Item_Pendente_Contagem_Descartado_ID)
+
+				),0)													AS Peca_Qtde_Divergencia
+	FROM
+		Estoque
+	INNER JOIN Peca ON	
+		Peca.Peca_ID = Estoque.Peca_ID
+	INNER JOIN Peca_Resumo_Loja ON	
+		Peca_Resumo_Loja.Peca_ID = Estoque.Peca_ID
+	AND
+		Peca_Resumo_Loja.Lojas_ID = Estoque.Loja_ID
+	INNER JOIN #tmp_peca_grupo_alternativo ON
+		Estoque.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID
+	LEFT OUTER JOIN Estoque_Inventario_Coletor ON
+		Estoque_Inventario_Coletor.Lojas_ID = Estoque.Loja_ID
+	AND
+		Estoque_Inventario_Coletor.Peca_ID = Estoque.Peca_ID
+	WHERE
+		Estoque.Loja_ID = @Loja_ID
+	AND
+		Peca.Peca_IsAtivo = 1	
+	GROUP BY
+		Estoque.Loja_ID												,
+		Peca_Resumo_Loja.Peca_Resumo_Loja_Minimo_Qtde_FA			,
+		Peca_Resumo_Loja.Peca_Resumo_Loja_Seguranca_Qtde_FA			,
+		Peca_Resumo_Loja.Peca_Resumo_Loja_Maximo_Qtde_FA			,
+		Peca_Resumo_Loja.Peca_Resumo_Loja_VM_FA						,
+		Peca_Resumo_Loja.Produto_Curva_Rentabilidade					
+
+	------------------------------------------------------------------
+	--						E N D E R E Ç O S	 					--
+	------------------------------------------------------------------
+	SELECT DISTINCT
+		Peca_Endereco.Peca_Endereco_Andar				AS Peca_Endereco_Andar,
+		Peca_Endereco.Peca_Endereco_Rua					AS Peca_Endereco_Rua,
+		Peca_Endereco.Peca_Endereco_Prateleira			AS Peca_Endereco_Prateleira,
+		Peca_Endereco.Peca_Endereco_Locacao				AS Peca_Endereco_Locacao
+	FROM
+		Peca_Endereco
+		INNER JOIN #tmp_peca_grupo_alternativo ON
+		Peca_Endereco.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID
+	WHERE
+		Peca_Endereco.Loja_ID = @Loja_ID		
+
+	------------------------------------------------------------------
+	--		E s t o q u e   d a s   o u t r a s   L o j a s			-- 
+	------------------------------------------------------------------
+	SELECT 
+		Lojas.Lojas_NM					AS Lojas_NM,
+		CONVERT(INT,SUM(dbo.fun_Retorna_Zero_Para_Valores_Negativos(Estoque.Estoque_Qtde)))		AS Estoque_Qtde,
+
+		CASE 
+			WHEN LOJAS.Lojas_Id = @Loja_Ecommerce_ID THEN 
+				(SELECT 
+					ISNULL(SUM(MCC_ESR_ESTOQUE_RESERVA.ESR_N_QUANTIDADE),0) 
+				FROM 
+					MCC_ESR_ESTOQUE_RESERVA 
+				INNER JOIN #tmp_peca_grupo_alternativo ON 
+					#tmp_peca_grupo_alternativo.Peca_ID = MCC_ESR_ESTOQUE_RESERVA.ESR_PECA_ID)
+			ELSE
+				(SELECT 
+					ISNULL(SUM(Estoque_Reserva.Estoque_Reserva_Qtde),0) 
+				FROM 
+					Estoque_Reserva 
+				INNER JOIN #tmp_peca_grupo_alternativo ON 
+					#tmp_peca_grupo_alternativo.Peca_ID = Estoque_Reserva.Objeto_ID
+				WHERE 
+					Estoque_Reserva.Enum_Tipo_Reserva_ID = @Tipo_Reserva_Pre_Venda)
+		END																		AS Reservado,
+
+
+		(	
+			SELECT 
+				ISNULL((SUM(ISNULL(Estoque_Transito_Qtde_Transito, 0))), 0)
+			FROM 
+				Estoque_Transito
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Estoque_Transito.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID	
+
+			WHERE	
+				Estoque_Transito.Loja_Origem_ID = Estoque.Loja_ID	
+			AND
+				(Estoque_Transito_Qtde_Transito > 0 OR Estoque_Transito_Qtde_Processamento > 0)
+			AND
+				(Estoque_Transito.Loja_Origem_ID NOT IN (6, 13))
+			AND
+				(Estoque_Transito.Loja_Destino_ID NOT IN (6, 13))
+			AND
+				(Estoque_Transito.Loja_Origem_ID <> Estoque_Transito.Loja_Destino_ID)
+			AND
+				(Enum_Tipo_ID NOT IN (441,439,440,416,1458,1465)) --Não considerar Separação, pois ainda não abateu do estoque
+
+		)																		AS Transito_Saida,	
+		(	
+			SELECT 
+				ISNULL((SUM(ISNULL(Estoque_Transito_Qtde_Transito, 0))), 0)
+			FROM 
+				Estoque_Transito
+			INNER JOIN #tmp_peca_grupo_alternativo ON
+				Estoque_Transito.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID	
+			WHERE	
+				Estoque_Transito.Loja_Destino_ID = Estoque.Loja_ID	
+			AND
+				(Estoque_Transito_Qtde_Transito > 0 OR Estoque_Transito_Qtde_Processamento > 0)
+			AND
+				(Estoque_Transito.Loja_Origem_ID NOT IN (6, 13))
+			AND
+				(Estoque_Transito.Loja_Destino_ID NOT IN (6, 13))
+			AND
+				(Estoque_Transito.Loja_Origem_ID <> Estoque_Transito.Loja_Destino_ID)
+			AND
+				(Enum_Tipo_ID NOT IN (441,439,440,416,1458,1465)) --Não considerar Separação, pois ainda não abateu do estoque
+
+		)																		AS Transito_Entrada	,	
+
+		(
+						SELECT 
+							ISNULL(SUM(Estoque_Divergencia_Qtde),0)
+						FROM 
+							Estoque_Divergencia  
+						INNER JOIN #tmp_peca_grupo_alternativo ON
+							Estoque_Divergencia.Objeto_ID = #tmp_peca_grupo_alternativo.Peca_ID	 
+						WHERE 
+							Estoque_Divergencia.Lojas_ID = Estoque.Loja_ID
+						AND 
+							Estoque_Divergencia.Enum_Status_ID NOT IN (@Enum_Status_Item_Pendente_Contagem_Finalizado_ID,@Enum_Status_Item_Pendente_Contagem_Descartado_ID)
+		)																		AS Estoque_Reserva_Qtde_Divergencia_Estoque,
+		ISNULL((
+					SELECT DISTINCT
+						1
+					FROM
+						Peca_Loja
+					INNER JOIN #tmp_peca_grupo_alternativo ON
+						Peca_Loja.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID	  
+					WHERE
+						Peca_Loja.Lojas_ID = Estoque.Loja_ID 
+					AND
+						Peca_Loja_IsAtivo = 1  
+					),0)													AS Abastecido
+	FROM
+		Estoque
+	INNER JOIN Lojas ON
+		Lojas.Lojas_ID = Estoque.Loja_ID
+	INNER JOIN #tmp_peca_grupo_alternativo ON
+		Estoque.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID			
+	WHERE
+		Lojas.Lojas_Tipo IN ('Loja', 'CD', 'Garantia')
+	AND
+		Lojas.Lojas_Id NOT IN (6, 10)
+	GROUP BY
+		Lojas.Lojas_Id,
+		Estoque.Loja_ID,	
+		Lojas.Lojas_NM
+	ORDER BY
+		Lojas_NM
+
+	------------------------------------------------------------------
+	--		Cód Fabricante e Numeros Originais						-- 
+	------------------------------------------------------------------
+	SELECT 
+		Peca.Peca_ID										AS Peca_ID,
+		'Fabricante'									    AS Tipo_Codigo,
+		Fabricante.Fabricante_NmFantasia					AS Fabricante_NmFantasia,
+		ISNULL(Peca.Peca_CDFabricante, '') 					AS Codigo,
+		@Fabricante_Alternativo_CT_ID                       AS Fabricante_Alternativo_CT_ID
+	FROM
+		Peca
+		INNER JOIN #tmp_peca_grupo_alternativo ON
+		Peca.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID	
+		INNER JOIN Fabricante WITH (NOLOCK) ON 
+		Fabricante.Fabricante_ID = Peca.Fabricante_ID
+	UNION
+	SELECT DISTINCT
+		Peca.Peca_ID										AS Peca_ID, 
+		'Numero Original'									AS Tipo_Codigo,
+		Fabricante_Numero_Original.Fabricante_NmFantasia	AS Fabricante_NmFantasia, 
+		Peca_NrOriginal.Peca_NrOriginal_NrOriginal			AS Codigo,
+		@Fabricante_Alternativo_CT_ID                       AS Fabricante_Alternativo_CT_ID
+	FROM  
+		Peca 
+	INNER JOIN #tmp_peca_grupo_alternativo ON
+		Peca.Peca_ID = #tmp_peca_grupo_alternativo.Peca_ID		
+	INNER JOIN Fabricante ON
+		Fabricante.Fabricante_ID = Peca.Fabricante_ID 
+	INNER JOIN Peca_NrOriginal ON
+		Peca_NrOriginal.Peca_ID = Peca.Peca_ID
+	LEFT JOIN Fabricante Fabricante_Numero_Original ON 
+		Fabricante_Numero_Original.Fabricante_ID = Peca_NrOriginal.Fabricante_ID 
+	WHERE 
+		Peca.Peca_IsAtivo = 1
+
+--================================================
+--	DELETA A TABELA TEMPORARIA
+--================================================
+
+IF OBJECT_ID('tempdb..#tmp_peca_grupo_alternativo') IS NOT NULL
+BEGIN
+	DROP TABLE #tmp_peca_grupo_alternativo
+END
+
+SET NOCOUNT OFF

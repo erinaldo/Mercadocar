@@ -1,0 +1,336 @@
+
+-------------------------------------------------------------------------------  
+-- <summary>  
+--  Consulta as separações pendentes e em andamento para exibição na tela   
+-- de acompanhamento de separações de vendas, relacionando o tempo de espera   
+-- e os separadores em atendimento / disponíveis.  
+-- </summary>  
+-- <history>  
+--  [econforti] - 30/12/2010 - Created  
+--  [tnovelli] - 01/02/2011 - Modified  
+--   Acentuação da palavra "Indisponível".  
+--  [bmune]  - 21/05/2014    Modified  
+--   Alterado as tabelas de Separacao_Venda_Endereco_CT para Endereco_Separador_CT.  
+--  [svcosta] - 27/08/2014    Modified  
+--   Incluso os joins (Funcionario,Funcionario_Funcao e Funcao)  
+--  [bmune]  - 23/11/2016    Modified  
+--   Adicionado o parâmetro para limitar a quantidade de dados buscado pelo tempo de execução  
+--  [bmune]  - 31/01/2017    Modified  
+--   Adicionado a coluna com a quantidade de negativas feitas no coletor  
+--  [bmune]  - 17/02/2017    Modified  
+--   Reformulação de todo o tratamento dos separadores  
+--  [bmune]  - 21/02/2017    Modified  
+--   Adicionado as colunas de tempo médio de espera e de separação  
+--  [mmukuno] - 26/09/2017    Modified  
+--   No paramentro de tempo de busca, considerar apenas paramentros do tipo  
+--   inteiro, para não gerar o erro no convert. Na coluna Qtde_Itens_Separados  
+--   retornar apenas inteiro.   
+--  [vrici] - 26/04/2018    Modified  
+--   Os itens devem ser contabilizados por SKU foi alterado a soma de quantidades  
+--   dos itens pela contagem dos itens separados.  
+--  [vrici] - 16/05/2018    Modified  
+--   Ocultar a quantidade de itens quando a separação ainda esta pendente  
+-- </history>  
+-------------------------------------------------------------------------------  
+--CREATE PROCEDURE [dbo].[p_Venda_Tecnica_Consultar_Separacao_E_Separadores]  
+--(  
+ --@Lojas_ID              INT,  
+ --@Exibir_Separadores    BIT  
+--)  
+--AS  
+-------------------------------------------------------------------------------  
+DECLARE @Lojas_ID            INT,
+        @Exibir_Separadores  BIT
+SET @Lojas_ID = 1
+SET @Exibir_Separadores = 1
+-------------------------------------------------------------------------------  
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+SET NOCOUNT ON
+
+DECLARE @Processo_Parametros_Tempo_Busca_Separacao_Venda varchar(100) = 'TEMPO_BUSCA_SEPARACAO_VENDA',
+        @Processo_Parametros_Valores_Valor int,
+        @Processo_Log_Separacao_Venda int = 2196,
+        @Operacao_Log_Recusou_Separacao int = 2200
+
+SELECT
+  @Processo_Parametros_Valores_Valor = CONVERT(int, ISNULL(Processo_Parametros_Valores_Valor, 0))
+FROM Processo_Parametros
+JOIN Processo_Parametros_Valores
+  ON Processo_Parametros.Processo_Parametros_ID = Processo_Parametros_Valores.Processo_Parametros_ID
+WHERE Processo_Parametros_Valores.Lojas_ID = @Lojas_ID
+AND Processo_Parametros.Processo_Parametros_Nome = @Processo_Parametros_Tempo_Busca_Separacao_Venda
+AND dbo.fun_IsInteger(Processo_Parametros_Valores_Valor) = 1
+
+
+--------------------------SEPARAÇÕES---------------------------  
+SELECT
+  Separacao_Venda_CT.Separacao_Venda_CT_ID AS Separacao_Venda_CT_ID,
+  dbo.fun_Retorna_Dois_Nomes(Vendedor.Usuario_Nome_Completo) AS Vendedor,
+
+  CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+  Separacao_Venda_CT_Data_Criacao,
+  GETDATE()), 0), 14) AS Tempo_Espera,
+
+  CASE
+    WHEN Separacao_Venda_CT_Data_Inicio_Separacao IS NULL THEN NULL
+    ELSE (SELECT
+        COUNT(Separacao_Venda_IT.Separacao_Venda_IT_ID)
+      FROM Separacao_Venda_IT
+      WHERE Separacao_Venda_IT.Separacao_Venda_CT_ID = Separacao_Venda_CT.Separacao_Venda_CT_ID
+      AND Separacao_Venda_IT.Lojas_ID = Separacao_Venda_CT.Lojas_ID
+      AND Separacao_Venda_IT_Utiliza_Perdigueiro = 1)
+  END AS Qtde_Itens_Pedidos,
+
+  CASE
+    WHEN (dbo.fun_Retorna_Situacao_Separacao_Venda(Separacao_Venda_CT.Separacao_Venda_CT_ID, @Lojas_ID) = 1) 
+	THEN 'END. SEM SEPARADOR'
+    ELSE dbo.fun_Retorna_Dois_Nomes((ISNULL(
+	 (SELECT TOP 1 Usuario.Usuario_Nome_Completo
+      FROM Separacao_Venda_IT
+      INNER JOIN Usuario
+        ON Separacao_Venda_IT.Usuario_Separacao_ID = Usuario.Usuario_ID
+      WHERE Separacao_Venda_IT.Separacao_Venda_CT_ID = Separacao_Venda_CT.Separacao_Venda_CT_ID
+      AND Separacao_Venda_IT.Lojas_ID = Separacao_Venda_CT.Lojas_ID
+      AND Separacao_Venda_IT_Utiliza_Perdigueiro = 1
+      ORDER BY Usuario.Usuario_Nome_Completo DESC), '')))
+  END AS Separador,
+
+  CASE
+    WHEN (dbo.fun_Retorna_Situacao_Separacao_Venda(Separacao_Venda_CT.Separacao_Venda_CT_ID, @Lojas_ID) = 1) THEN 0
+    ELSE 
+	 (SELECT
+        COUNT(Separacao_Venda_IT.Separacao_Venda_IT_ID)
+      FROM Separacao_Venda_IT
+      WHERE Separacao_Venda_IT.Separacao_Venda_CT_ID = Separacao_Venda_CT.Separacao_Venda_CT_ID
+      AND Separacao_Venda_IT.Lojas_ID = Separacao_Venda_CT.Lojas_ID
+      AND Separacao_Venda_IT_Quantidade_Separada > 0
+      AND Separacao_Venda_IT_Utiliza_Perdigueiro = 1)
+  END AS Qtde_Itens_Separados,
+
+  (CASE
+    WHEN Separacao_Venda_CT_Data_Inicio_Separacao IS NULL 
+	THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+  END) AS Pendente_Atendimento,
+
+  dbo.fun_Retorna_Situacao_Separacao_Venda(
+  Separacao_Venda_CT.Separacao_Venda_CT_ID,
+  @Lojas_ID) AS Separacao_Com_Problema,
+
+  (CASE
+    WHEN (Orcamento_CT_ID IS NULL AND
+      Romaneio_Pre_Venda_CT_ID IS NOT NULL) 
+	THEN CAST(1 AS bit)
+    ELSE CAST(0 AS bit)
+  END) AS Cliente_Nao_Aguarda_Separacao,
+  Separacao_Venda_CT.Lojas_ID AS Lojas_ID,
+  (SELECT
+    SUBSTRING(
+    CONVERT(varchar(8), DATEADD(SECOND, AVG(DATEDIFF(SECOND,
+    Separacao_Venda_CT_Data_Criacao,
+    GETDATE())), 0), 14), 4, 5)
+
+  FROM Separacao_Venda_CT
+  WHERE Separacao_Venda_CT_Data_Termino_Separacao IS NULL
+  AND Separacao_Venda_CT.Lojas_ID = @Lojas_ID)
+  AS Tempo_Medio_Espera
+FROM Separacao_Venda_CT
+INNER JOIN Usuario Vendedor
+  ON Separacao_Venda_CT.Usuario_Vendedor_ID = Vendedor.Usuario_ID
+WHERE Separacao_Venda_CT_Data_Termino_Separacao IS NULL
+AND Separacao_Venda_CT.Lojas_ID = @Lojas_ID
+ORDER BY Pendente_Atendimento, Separacao_Venda_CT_Data_Criacao
+
+
+
+IF @Exibir_Separadores = 1
+BEGIN
+
+
+  --------------------------SEPARADORES--------------------------  
+
+  SELECT
+    Usuario_Separacao_ID AS Usuario_Separacao_ID,
+    Endereco_Separador_CT_Usuario_isDisponivel AS Endereco_Separador_CT_Usuario_isDisponivel,
+    Endereco_Separador_CT_Data_IsOffline AS Endereco_Separador_CT_Data_IsOffline,
+    Endereco_Separador_CT_Data_IsOnline AS Endereco_Separador_CT_Data_IsOnline,
+
+    dbo.fun_Retorna_Dois_Nomes(Usuario_Nome_Completo) AS Separador,
+    Endereco_Separador_CT_Usuario_isDisponivel AS Ordenacao,
+    CONVERT(varchar(50), 'Indisponível') AS Status_Separador,
+    0 AS Qtde_Romaneios,
+    0 AS Qtde_Itens,
+    0 AS Tempo_Status_Horas,
+
+    CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+    Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline,
+    GETDATE()), 0), 14) AS Tempo_Status,
+    0 AS Qtde_Negado_Separacao,
+    0 AS Tempo_Medio_Separacao_Segundos INTO #Temp_Separadores
+  FROM Endereco_Separador_CT
+  JOIN Usuario
+    ON Usuario.Usuario_ID = Endereco_Separador_CT.Usuario_Separacao_ID
+  WHERE Lojas_ID = @Lojas_ID
+  AND (
+  CONVERT(date, Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline) = CONVERT(date, GETDATE())
+  OR CONVERT(date, Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline) = CONVERT(date, GETDATE())
+  )
+
+
+
+  --------------------AJUSTA OS DADOS DAS SEPARAÇÕES--------------------
+
+  UPDATE Temp
+  SET Qtde_Romaneios = ISNULL(SubQuery.Qtde_Romaneios, Temp.Qtde_Romaneios),
+      Qtde_Itens = ISNULL(SubQuery.Qtde_Itens, Temp.Qtde_Itens),
+      Tempo_Status = ISNULL(SubQuery.Tempo_Status, Temp.Tempo_Status),
+      Tempo_Status_Horas = ISNULL(SubQuery.Tempo_Status_Horas, Temp.Tempo_Status_Horas),
+      Tempo_Medio_Separacao_Segundos = ISNULL(SubQuery.Tempo_Medio_Separacao_Segundos, Temp.Tempo_Medio_Separacao_Segundos)
+  FROM (SELECT
+    Separacao_Venda_IT.Usuario_Separacao_ID,
+    Qtde_Romaneios = COUNT(DISTINCT Separacao_Venda_CT.Orcamento_CT_ID),
+    Qtde_Itens = COUNT(Separacao_Venda_IT.Separacao_Venda_IT_ID),
+    Tempo_Status =
+                  CASE
+                    -- Em atendimento  
+                    WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 1 AND
+                      MAX(Separacao_Venda_IT_Data_Ultima_Separacao) IS NULL THEN CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+                      MAX(Separacao_Venda_CT_Data_Inicio_Separacao),
+                      GETDATE()), 0), 14)
+
+                    -- Disponível após não ter nenhuma separação pendente  
+                    WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 1 AND
+                      Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline > MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+                      Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline,
+                      GETDATE()), 0), 14)
+
+                    -- Disponível, porém a data de término da separação é após ele ter ficado online  
+                    WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 1 AND
+                      Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline < MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+                      MAX(Separacao_Venda_IT_Data_Ultima_Separacao),
+                      GETDATE()), 0), 14)
+
+                    -- Indisponível, porém finalizou a separação após ter ficado Offline  
+                    WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 0 AND
+                      Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline < MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+                      MAX(Separacao_Venda_IT_Data_Ultima_Separacao),
+                      GETDATE()), 0), 14)
+
+                    -- Indisponível com a data de Offline após ter finalizado a separação  
+                    WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 0 AND
+                      Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline > MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN CONVERT(varchar(8), DATEADD(SECOND, DATEDIFF(SECOND,
+                      Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline,
+                      GETDATE()), 0), 14)
+
+                  END,
+
+    Tempo_Status_Horas =
+                        CASE
+                          -- Indisponível com a data de Offline após ter finalizado a separação  
+                          WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 0 AND
+                            Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline > MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN DATEDIFF(HOUR, GETDATE(), Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline)
+
+                          -- Indisponível, porém finalizou a separação após ter ficado Offline  
+                          WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 0 AND
+                            Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline < MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN DATEDIFF(HOUR, GETDATE(), MAX(Separacao_Venda_IT_Data_Ultima_Separacao))
+
+                          -- Em atendimento  
+                          WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 1 AND
+                            MAX(Separacao_Venda_IT_Data_Ultima_Separacao) IS NULL THEN DATEDIFF(HOUR, GETDATE(), MAX(Separacao_Venda_CT_Data_Inicio_Separacao))
+
+                          -- Disponível após não ter nenhuma separação pendente  
+                          WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 1 AND
+                            Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline > MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN DATEDIFF(HOUR, GETDATE(), Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline)
+
+                          -- Disponível, porém a data de término da separação é após ele ter ficado online  
+                          WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 1 AND
+                            Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline < MAX(Separacao_Venda_IT_Data_Ultima_Separacao) THEN DATEDIFF(HOUR, GETDATE(), MAX(Separacao_Venda_IT_Data_Ultima_Separacao))
+
+                        END,
+    Tempo_Medio_Separacao_Segundos = AVG(DATEDIFF(SECOND,
+    Separacao_Venda_CT.Separacao_Venda_CT_Data_Inicio_Separacao,
+    Separacao_Venda_CT.Separacao_Venda_CT_Data_Termino_Separacao))
+
+  FROM Separacao_Venda_CT
+  JOIN Separacao_Venda_IT
+    ON Separacao_Venda_CT.Separacao_Venda_CT_ID = Separacao_Venda_IT.Separacao_Venda_CT_ID
+    AND Separacao_Venda_CT.Lojas_ID = Separacao_Venda_IT.Lojas_ID
+  LEFT OUTER JOIN Endereco_Separador_CT
+    ON Separacao_Venda_IT.Usuario_Separacao_ID = Endereco_Separador_CT.Usuario_Separacao_ID
+  WHERE Separacao_Venda_IT.Separacao_Venda_IT_Utiliza_Perdigueiro = 1
+  AND CONVERT(date, Separacao_Venda_CT.Separacao_Venda_CT_Data_Criacao) = CONVERT(date, GETDATE())
+  AND Separacao_Venda_CT.Lojas_ID = @Lojas_ID
+  --AND  
+  -- Separacao_Venda_IT.Usuario_Separacao_ID = 10052  
+  GROUP BY Separacao_Venda_IT.Usuario_Separacao_ID,
+           Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel,
+           Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOffline,
+           Endereco_Separador_CT.Endereco_Separador_CT_Data_IsOnline) SubQuery
+  LEFT OUTER JOIN #Temp_Separadores temp
+    ON SubQuery.Usuario_Separacao_ID = temp.Usuario_Separacao_ID
+
+
+  UPDATE temp
+  SET Status_Separador = (CASE
+        WHEN (SELECT
+            COUNT(*)
+          FROM Separacao_Venda_CT
+          INNER JOIN Separacao_Venda_IT
+            ON Separacao_Venda_CT.Separacao_Venda_CT_ID = Separacao_Venda_IT.Separacao_Venda_CT_ID
+            AND Separacao_Venda_CT.Lojas_ID = Separacao_Venda_IT.Lojas_ID
+          WHERE Separacao_Venda_CT.Lojas_ID = @Lojas_ID
+          AND Separacao_Venda_IT.Usuario_Separacao_ID = temp.Usuario_Separacao_ID
+          AND Separacao_Venda_IT_Utiliza_Perdigueiro = 1
+          AND Separacao_Venda_CT_Data_Termino_Separacao IS NULL
+          AND Separacao_Venda_IT.Enum_Status_Separacao_ID <> 1221)
+          > 0 THEN 'Em Atendimento'
+
+        WHEN (SELECT
+            COUNT(*)
+          FROM Separacao_Venda_CT
+          INNER JOIN Separacao_Venda_IT
+            ON Separacao_Venda_CT.Separacao_Venda_CT_ID = Separacao_Venda_IT.Separacao_Venda_CT_ID
+            AND Separacao_Venda_CT.Lojas_ID = Separacao_Venda_IT.Lojas_ID
+          WHERE Separacao_Venda_CT.Lojas_ID = @Lojas_ID
+          AND Separacao_Venda_IT.Usuario_Separacao_ID = temp.Usuario_Separacao_ID
+          AND Separacao_Venda_IT_Utiliza_Perdigueiro = 1
+          AND Separacao_Venda_CT_Data_Termino_Separacao IS NULL
+          AND Separacao_Venda_IT.Enum_Status_Separacao_ID = 1221)
+          > 0 THEN 'Aguardando Aceite'
+
+        WHEN ISNULL(Endereco_Separador_CT.Endereco_Separador_CT_Usuario_isDisponivel, 0) = 0 THEN 'Indisponível'
+        ELSE 'Livre'
+      END),
+      Qtde_Negado_Separacao = (SELECT
+        COUNT(*)
+      FROM Coletor_Log
+      WHERE Coletor_Log.Usuario_ID = temp.Usuario_Separacao_ID
+      AND Coletor_Log.Coletor_Log_Data > DATEADD(HOUR, (-1) * @Processo_Parametros_Valores_Valor, GETDATE())
+      AND Coletor_Log.Processo_ID = @Processo_Log_Separacao_Venda
+      AND Coletor_Log.Operacao_ID = @Operacao_Log_Recusou_Separacao)
+  FROM #Temp_Separadores temp
+  JOIN Endereco_Separador_CT
+    ON temp.Usuario_Separacao_ID = Endereco_Separador_CT.Usuario_Separacao_ID
+    AND Endereco_Separador_CT.Lojas_ID = @Lojas_ID
+
+
+  SELECT
+    Usuario_Separacao_ID,
+    Separador,
+    Ordenacao,
+    Status_Separador,
+    Qtde_Romaneios,
+    Qtde_Itens,
+    Tempo_Status_Horas,
+    Tempo_Status,
+    Qtde_Negado_Separacao,
+    CONVERT(varchar(8), DATEADD(SECOND, Tempo_Medio_Separacao_Segundos, 0), 14) AS Tempo_Medio_Separacao
+  FROM #Temp_Separadores
+  ORDER BY Ordenacao DESC,
+  Status_Separador,
+  Tempo_Status
+
+  DROP TABLE #Temp_Separadores
+
+END

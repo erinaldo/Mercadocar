@@ -1,0 +1,228 @@
+﻿<nfeProc xmlns="" versao="4.00">
+  <NFe xmlns="">
+    <infNFe Id="NFe35191008897417002316550010000912961002294189" versao="4.00">
+      <ide>
+        <cUF>35</cUF>
+        <cNF>00229418</cNF>
+        <natOp>VENDA</natOp>
+        <mod>55</mod>
+        <serie>1</serie>
+        <nNF>91296</nNF>
+        <dhEmi>2019-10-16T12:17:31-02:00</dhEmi>
+        <dhSaiEnt>2019-10-16T12:17:31-02:00</dhSaiEnt>
+        <tpNF>1</tpNF>
+        <idDest>1</idDest>
+        <cMunFG>3534401</cMunFG>
+        <tpImp>1</tpImp>
+        <tpEmis>1</tpEmis>
+        <cDV>9</cDV>
+        <tpAmb>1</tpAmb>
+        <finNFe>1</finNFe>
+        <indFinal>0</indFinal>
+        <indPres>3</indPres>
+        <procEmi>0</procEmi>
+        <verProc>3.71.2</verProc>
+      </ide>
+      <emit>
+        <CNPJ>08897417002316</CNPJ>
+        <xNome>FW DISTRIBUIDORA LTDA</xNome>
+        <xFant>FW DISTRIBUIDORA</xFant>
+        <enderEmit>
+          <xLgr>Rua Anhanguera</xLgr>
+          <nro>164</nro>
+          <xBairro>Piratininga</xBairro>
+          <cMun>3534401</cMun>
+          <xMun>Osasco</xMun>
+          <UF>SP</UF>
+          <CEP>06230110</CEP>
+          <cPais>1058</cPais>
+          <xPais>BRASIL</xPais>
+          <fone>03007888115</fone>
+        </enderEmit>
+        <IE>492832154113</IE>
+        <CRT>3</CRT>
+      </emit>
+      <dest>
+        <CNPJ>43158302000790</CNPJ>
+        <xNome>MERCADOCAR MERCANTIL DE PECAS LTDA</xNome>
+        <enderDest>
+          <xLgr>AV MIGUEL DE CASTRO</xLgr>
+          <nro>944</nro>
+          <xBairro>VL PEREIRA BARRETO</xBairro>
+          <cMun>3550308</cMun>
+          <xMun>SAO PAULO</xMun>
+          <UF>SP</UF>
+          <CEP>02950000</CEP>
+          <cPais>1058</cPais>
+          <xPais>BRASIL</xPais>
+          <fone>1129973550</fone>
+        </enderDest>
+        <indIEDest>1</indIEDest>
+        <IE>145377888110</IE>
+        <email>recepcaonfe@mercadocar.com.br</email>
+      </dest>
+      <autXML>
+        <CNPJ>08897417002316</CNPJ>
+      </autXML>
+      <det nItem="1">
+        <prod>
+          <cProd>K10002867</cProd>
+          <cEAN>SEM GTIN</cEAN>
+          <xProd>MOD.RELES GOL/VOYAGE G5 2008&gt;</xProd>
+          <NCM>85364100</NCM>
+          <CEST>0106800</CEST>
+          <CFOP>5405</CFOP>
+          <uCom>PC</uCom>
+          <qCom>6</qCom>
+          <vUnCom>165.00</vUnCom>
+          <vProd>990.00</vProd>
+          <cEANTrib>SEM GTIN</cEANTrib>
+          <uTrib>PC</uTrib>
+          <qTrib>6</qTrib>
+          <vUnTrib>165.00</vUnTrib>
+          <indTot>1</indTot>
+          <xPed>478721478729</xPed>
+        </prod>
+        <imposto>
+          <ICMS>
+            <ICMS60>
+              <orig>0</orig>
+              <CST>60</CST>
+              <vBCSTRet>0.00</vBCSTRet>
+              <pST>0.00</pST>
+              <vICMSSubstituto>0.00</vICMSSubstituto>
+              <vICMSSTRet>0.00</vICMSSTRet>
+            </ICMS60>
+          </ICMS>
+          <PIS>
+            <PISAliq>
+              <CST>01</CST>
+              <vBC>990.00</vBC>
+              <pPIS>1.65</pPIS>
+              <vPIS>16.34</vPIS>
+            </PISAliq>
+          </PIS>
+          <COFINS>
+            <COFINSAliq>
+              <CST>01</CST>
+              <vBC>990.00</vBC>
+              <pCOFINS>7.60</pCOFINS>
+              <vCOFINS>75.24</vCOFINS>
+            </COFINSAliq>
+          </COFINS>
+        </imposto>
+      </det>
+      <total>
+        <ICMSTot>
+          <vBC>0.00</vBC>
+          <vICMS>0.00</vICMS>
+          <vICMSDeson>0.00</vICMSDeson>
+          <vFCPUFDest>0.00</vFCPUFDest>
+          <vICMSUFDest>0.00</vICMSUFDest>
+          <vICMSUFRemet>0.00</vICMSUFRemet>
+          <vFCP>0.00</vFCP>
+          <vBCST>0.00</vBCST>
+          <vST>0.00</vST>
+          <vFCPST>0.00</vFCPST>
+          <vFCPSTRet>0.00</vFCPSTRet>
+          <vProd>990.00</vProd>
+          <vFrete>0.00</vFrete>
+          <vSeg>0.00</vSeg>
+          <vDesc>0.00</vDesc>
+          <vII>0.00</vII>
+          <vIPI>0.00</vIPI>
+          <vIPIDevol>0.00</vIPIDevol>
+          <vPIS>16.34</vPIS>
+          <vCOFINS>75.24</vCOFINS>
+          <vOutro>0.00</vOutro>
+          <vNF>990.00</vNF>
+          <vTotTrib>0.00</vTotTrib>
+        </ICMSTot>
+      </total>
+      <transp>
+        <modFrete>0</modFrete>
+        <transporta>
+          <CNPJ>07290287000261</CNPJ>
+          <xNome>DIA ENTREGUE -MOTOBOY</xNome>
+          <IE>141559769117</IE>
+          <xEnder>CORONEL BENTO BICUDO</xEnder>
+          <xMun>SAO PAULO</xMun>
+          <UF>SP</UF>
+        </transporta>
+        <vol>
+          <qVol>1</qVol>
+          <esp>Caixas</esp>
+          <nVol>1</nVol>
+          <pesoL>1.000</pesoL>
+          <pesoB>2.000</pesoB>
+        </vol>
+      </transp>
+      <cobr>
+        <fat>
+          <nFat>58584</nFat>
+          <vOrig>990.00</vOrig>
+          <vDesc>0.00</vDesc>
+          <vLiq>990.00</vLiq>
+        </fat>
+        <dup>
+          <nDup>001</nDup>
+          <dVenc>2019-10-16</dVenc>
+          <vDup>393.07</vDup>
+        </dup>
+        <dup>
+          <nDup>002</nDup>
+          <dVenc>2019-10-31</dVenc>
+          <vDup>596.93</vDup>
+        </dup>
+      </cobr>
+      <pag>
+        <detPag>
+          <indPag>1</indPag>
+          <tPag>15</tPag>
+          <vPag>990.00</vPag>
+        </detPag>
+      </pag>
+      <infAdic>
+        <infCpl>Ped. Nro : K811DW / TL1094 Cod.Pgto:  A VISTA  Bol: 2 TD: 15 TP: 1 / 6 CV: 1001 Codigo Transportadora : 30 Tel.Transportadora : 1932133111 Codigo Cliente: 38786 ICMS SIT: 060 -           0,00 -           0,00||Duplicata de Numero: 58584 Com 2 Parcela(s) ||Duplicata Quitada: 58584 / 001  -  R$ 393.07||ENDERECO DE ENTREGA: AV MIGUEL DE CASTRO Numero: 944 Bairro: VILA PEREIRA BARRETO Complemento:  Cidade: SAO PAULO UF: SP CEP: 02950000 Ordem de Compra: 478721/478729                  Centena do Pedido: 8663 ATENCAO: O prazo para reclamacoes e de 48 horas a partir do recebimento da sua mercadoria e para devolucoes o prazo e de 15 dias a contar da emissao desta NFe.  Fique Atento: Caso ainda nao recebeu seu Boleto via Correio, basta acessar: vendas.furacao.com.br, digitar seus dados de acesso e clicar na opcao 2a. via do Boleto localizada no menu superior do Site. ID OPERACAO: 0000000001</infCpl>
+      </infAdic>
+      <infRespTec>
+        <CNPJ>00910509000171</CNPJ>
+        <xContato>Rogerio Franzoni</xContato>
+        <email>rogerio.franzoni@tr.com</email>
+        <fone>1121590621</fone>
+      </infRespTec>
+    </infNFe>
+    <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+      <SignedInfo>
+        <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+        <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
+        <Reference URI="#NFe35191008897417002316550010000912961002294189">
+          <Transforms>
+            <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+            <Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+          </Transforms>
+          <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+          <DigestValue>2qhuIg0yMYS+qkswpLAc/ioV8/I=</DigestValue>
+        </Reference>
+      </SignedInfo>
+      <SignatureValue>cz3vSLkp/1ZYfBiasMdb/z7qDpkT4+5Pjf7dJxuC8f+4N3+fOFHu919PKSfPCQkX9QBOAwVRavFZvizdEMoyhTad26R0npD2aL1x/OKMR7fblhX8HNjAwQfe/ve4QOdvb9LrUWHmDcHiVvlViSNa/Nc6/mEvI56JFcdGHsyEf34RUWUkAe3ovs6cUbAN47LRQOLGpZ8yMN38yEbb+JTvbwBcNdQwIxw5T7EBSDDDtQz+XqhxyHNpJ6UMWdJIDPlh40JEmNFqhhySHIhIzoQJpszbt3F0iYmIiQohyAnlxj8jzC5rsjjxm5/IifKpEBAg9eVdPK+6p3YKIS2s5oPFWw==</SignatureValue>
+      <KeyInfo>
+        <X509Data>
+          <X509Certificate>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</X509Certificate>
+        </X509Data>
+      </KeyInfo>
+    </Signature>
+  </NFe>
+  <protNFe versao="4.00">
+    <infProt Id="Id135190766365682">
+      <tpAmb>1</tpAmb>
+      <verAplic>SP_NFE_PL009_V4</verAplic>
+      <chNFe>35191008897417002316550010000912961002294189</chNFe>
+      <dhRecbto>2019-10-16T12:30:25-03:00</dhRecbto>
+      <nProt>135190766365682</nProt>
+      <digVal>2qhuIg0yMYS+qkswpLAc/ioV8/I=</digVal>
+      <cStat>100</cStat>
+      <xMotivo>Autorizado o uso da NF-e</xMotivo>
+    </infProt>
+  </protNFe>
+</nfeProc>

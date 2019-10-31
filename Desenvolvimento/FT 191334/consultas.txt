@@ -1,0 +1,7 @@
+SELECT TOP 5 * FROM Pedido_Compra_CT WHERE Pedido_Compra_CT_ID = 219740;
+--SELECT TOP 5 * FROM Pedido_Compra_IT;
+
+-- ALTER TABLE Pedido_Compra_CT ADD Pedido_Compra_CT_Faturamento_Antecipado bit NOT NULL DEFAULT 0
+
+SELECT * FROM Usuario WHERE Usuario_ID = 7533
+

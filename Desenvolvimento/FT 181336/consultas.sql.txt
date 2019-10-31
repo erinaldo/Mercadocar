@@ -1,0 +1,68 @@
+SELECT 
+Transferencia_CT_ID,
+Enum_Tipo_Transferencia_ID
+FROM Transferencia_CT
+WHERE 
+Objeto_Origem_ID = 11155
+AND 
+Enum_Tipo_Transferencia_ID = 424
+--AND
+ --Transferencia_CT_ID = 11155
+
+
+SELECT DISTINCT
+CT.Transferencia_CT_ID,
+Enum_Tipo_Transferencia_ID,
+CT.Objeto_Origem_ID,
+Enum_Status_ID,
+IT.Peca_ID,
+P.Fabricante_CD,
+P.Produto_CD,
+P.Peca_CD
+--MV.Movimentacao_Peca_IT_Data
+FROM Transferencia_CT CT
+INNER JOIN Transferencia_IT IT
+ON CT.Transferencia_CT_ID = IT.Transferencia_CT_ID
+INNER JOIN Peca_Resumo_Loja P
+ON IT.Peca_ID = P.Peca_ID
+INNER JOIN Movimentacao_Peca_IT MV
+ON CT.Objeto_Origem_ID = MV.Objeto_Origem_ID
+WHERE CT.Enum_Tipo_Transferencia_ID = 424 --IN (424, 798)
+--AND CT.Transferencia_CT_ID IN (5109636,5110730,5112184)
+AND P.Peca_ID IN (83513, 83477, 83628);
+
+
+SELECT 
+Transferencia_CT_ID, 
+CT.Objeto_Origem_ID, 
+Movimentacao_Peca_CT_ID,
+Enum_Tipo_Movimentacao_ID,
+Enum_Tipo_Transferencia_ID
+FROM Transferencia_CT CT
+INNER JOIN Movimentacao_Peca_IT M
+ON CT.Objeto_Origem_ID = M.Objeto_Origem_ID
+WHERE 
+CT.Enum_Tipo_Transferencia_ID IN (424)--, 798)
+AND
+Enum_Tipo_Movimentacao_ID = 78
+--AND
+--CT.Objeto_Origem_ID = 11155
+--AND
+--Movimentacao_Peca_CT_ID = 37794688
+AND
+Transferencia_CT_ID = 31828
+
+
+-- FABRICANTE ALTERNATIVO
+
+SELECT Fabricante_Alternativo_CT.Fabricante_Alternativo_CT_ID, Peca_ID
+FROM Fabricante_Alternativo_CT
+    JOIN Fabricante_Alternativo_IT
+    ON Fabricante_Alternativo_CT.Fabricante_Alternativo_CT_ID = Fabricante_Alternativo_IT.Fabricante_Alternativo_CT_ID
+        AND Fabricante_Alternativo_CT.Fabricante_Alternativo_CT_Ativo = 1
+        AND Fabricante_Alternativo_IT.Fabricante_Alternativo_IT_Ativo = 1
+WHERE Fabricante_Alternativo_CT.Enum_Status_ID = 1043 AND Peca_ID > 83542
+
+--PECA_ID FAB ALTERNATIVO
+--83513
+--83477

@@ -1,0 +1,610 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <OutputPath>..\Compilacao\</OutputPath>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8CBFB240-0E47-4167-83EB-9D03C335B74A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Mercadocar.Formularios.Wpf</RootNamespace>
+    <AssemblyName>MC_Formularios_Wpf</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <Utf8Output>true</Utf8Output>
+    <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '[Debug]|AnyCPU' ">
+    <OutputPath>..\Compilacao\</OutputPath>
+    <DocumentationFile />
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile />
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn />
+    <DebugType>full</DebugType>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == '[Release]|AnyCPU' ">
+    <OutputPath>..\..\..\..\BIN\</OutputPath>
+    <DocumentationFile />
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile />
+    <DefineConstants>TRACE</DefineConstants>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn />
+    <DebugType>pdbonly</DebugType>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <WarningsAsErrors>
+    </WarningsAsErrors>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '[Debug]|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>..\..\Compilacao\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <BaseAddress>285212672</BaseAddress>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>..\SIM.ruleset</CodeAnalysisRuleSet>
+    <WarningLevel>3</WarningLevel>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == '[Release]|x86'">
+    <DebugSymbols>false</DebugSymbols>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>..\..\..\..\..\BIN\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <BaseAddress>285212672</BaseAddress>
+    <DebugType>none</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>..\SIM.ruleset</CodeAnalysisRuleSet>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\Application.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Microsoft.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="PresentationCore">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\PresentationCore.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\PresentationFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Drawing">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Drawing.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Windows.Forms">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Windows.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Xml.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Data.DataSetExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xaml">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Xaml.dll</HintPath>
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="WindowsBase">
+      <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\WindowsBase.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="WPFVisifire.Charts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\WPFVisifire.Charts.dll</HintPath>
+    </Reference>
+    <Reference Include="WPFVisifire.Gauges, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\WPFVisifire.Gauges.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Caixa\frmCaixa_Listagem_Operadora_Cartao.xaml.cs">
+      <DependentUpon>frmCaixa_Listagem_Operadora_Cartao.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\frmCaixa_Prototipo_Listagem_Servico.xaml.cs">
+      <DependentUpon>frmCaixa_Prototipo_Listagem_Servico.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Garantia\frmAnalisePosicaoEstoqueGarantia.xaml.cs">
+      <DependentUpon>frmAnalisePosicaoEstoqueGarantia.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Garantia\frmAnalisePosicaoEstoqueGarantiaDetalhe.xaml.cs">
+      <DependentUpon>frmAnalisePosicaoEstoqueGarantiaDetalhe.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Gerencia\frmVariacoesVendaMedia.xaml.cs">
+      <DependentUpon>frmVariacoesVendaMedia.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Gerencia\Produtividade\frmProdutividade_CD.xaml.cs">
+      <DependentUpon>frmProdutividade_CD.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Gerencia\Analise de Trocas\frmConsultaVendasTrocasRomaneiosPorPeca.xaml.cs">
+      <DependentUpon>frmConsultaVendasTrocasRomaneiosPorPeca.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Gerencia\Analise de Trocas\frmConsultaVendasTrocas.xaml.cs">
+      <DependentUpon>frmConsultaVendasTrocas.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Gerencia\Analise de Trocas\frmConsultaVendasTrocasDetalhe.xaml.cs">
+      <DependentUpon>frmConsultaVendasTrocasDetalhe.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Gerencia\Separação de Abastecimento\frmConsulta_Separacao_Abastecimento_Grid.xaml.cs">
+      <DependentUpon>frmConsulta_Separacao_Abastecimento_Grid.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\CI\frmCI_Configuracao_Notificacao.xaml.cs">
+      <DependentUpon>frmCI_Configuracao_Notificacao.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\CI\frmCI_Configuracao_Notificacao_Usuarios_Grupos.xaml.cs">
+      <DependentUpon>frmCI_Configuracao_Notificacao_Usuarios_Grupos.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\CI\frmCI_Notificacoes.xaml.cs">
+      <DependentUpon>frmCI_Notificacoes.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Caixa\frmCaixa_Novo.xaml.cs">
+      <DependentUpon>frmCaixa_Novo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\frmErro_Mobile.xaml.cs">
+      <DependentUpon>frmErro_Mobile.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\frmParametrosProcesso.xaml.cs">
+      <DependentUpon>frmParametrosProcesso.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\CI\frmCI_Prestar_Contas.xaml.cs">
+      <DependentUpon>frmCI_Prestar_Contas.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\frmErro.xaml.cs">
+      <DependentUpon>frmErro.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmMDINew.xaml.cs">
+      <DependentUpon>frmMDINew.xaml</DependentUpon>
+      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmMDI_Menu_Configuracoes.xaml.cs">
+      <DependentUpon>frmMDI_Menu_Configuracoes.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmMDI_Menu_Opcoes_Usuario.xaml.cs">
+      <DependentUpon>frmMDI_Menu_Opcoes_Usuario.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmListaAtalhos.xaml.cs">
+      <DependentUpon>frmListaAtalhos.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmMDI.xaml.cs">
+      <DependentUpon>frmMDI.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmMDI_Selecao_Tela.xaml.cs">
+      <DependentUpon>frmMDI_Selecao_Tela.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\MDI_Form_Helper.cs" />
+    <Compile Include="Pacote\frmPainel_Senha.xaml.cs">
+      <DependentUpon>frmPainel_Senha.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Telepreco\frmLigacaoRecebida.xaml.cs">
+      <DependentUpon>frmLigacaoRecebida.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\MDI\frmMDI_Selecao_Loja.xaml.cs">
+      <DependentUpon>frmMDI_Selecao_Loja.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Venda Tecnica\Encomenda\frmEncomenda_Venda_Grid.xaml.cs">
+      <DependentUpon>frmEncomenda_Venda_Grid.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Venda Tecnica\frmInformacao_Numero_Guiche.xaml.cs">
+      <DependentUpon>frmInformacao_Numero_Guiche.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Venda Tecnica\frmSelecao_Calotas.xaml.cs">
+      <DependentUpon>frmSelecao_Calotas.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Caixa\frmCaixa_Listagem_Operadora_Cartao.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Garantia\frmAnalisePosicaoEstoqueGarantia.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Garantia\frmAnalisePosicaoEstoqueGarantiaDetalhe.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Caixa\frmCaixa_Prototipo_Listagem_Servico.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Gerencia\frmVariacoesVendaMedia.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Gerencia\Produtividade\frmProdutividade_CD.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Gerencia\Analise de Trocas\frmConsultaVendasTrocasRomaneiosPorPeca.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Gerencia\Analise de Trocas\frmConsultaVendasTrocas.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Gerencia\Analise de Trocas\frmConsultaVendasTrocasDetalhe.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Gerencia\Separação de Abastecimento\frmConsulta_Separacao_Abastecimento_Grid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\CI\frmCI_Configuracao_Notificacao.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\CI\frmCI_Configuracao_Notificacao_Usuarios_Grupos.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\CI\frmCI_Notificacoes.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="App.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Caixa\frmCaixa_Novo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\CI\frmCI_Prestar_Contas.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\frmContasAtualizacao.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\frmErro.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\frmErro_Mobile.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\frmParametrosProcesso.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmMDINew.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmMDI_Menu_Configuracoes.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmMDI_Menu_Opcoes_Usuario.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmListaAtalhos.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmMDI.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmMDI_Selecao_Tela.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="InfraEstrutura\MDI\frmMDI_Selecao_Loja.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pacote\frmPainel_Senha.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+    <Page Include="InfraEstrutura\frmLogin.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\frmContasAtualizacao.xaml.cs">
+      <DependentUpon>frmContasAtualizacao.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfraEstrutura\frmLogin.xaml.cs">
+      <DependentUpon>frmLogin.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="Telepreco\frmLigacaoRecebida.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Venda Tecnica\Encomenda\frmEncomenda_Venda_Grid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Venda Tecnica\frmInformacao_Numero_Guiche.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Venda Tecnica\frmSelecao_Calotas.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Application.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MC_Business\MC_Business.csproj">
+      <Project>{720FCC63-F168-4EAA-A646-26968DFECEAA}</Project>
+      <Name>MC_Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Componentes\MC_Componentes.csproj">
+      <Project>{9fb6adf5-0fb8-46c9-9ece-6ade0530e47a}</Project>
+      <Name>MC_Componentes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Data\MC_Data.csproj">
+      <Project>{8D115158-F8E0-4D58-B077-C104109D52E1}</Project>
+      <Name>MC_Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Data_Object\MC_Data_Object.csproj">
+      <Project>{475FC671-FC33-4B27-9EF1-C022A420C9E0}</Project>
+      <Name>MC_Data_Object</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Herancas\MC_Herancas.csproj">
+      <Project>{61338D4C-46AF-43A0-8343-3D77EAC72FF3}</Project>
+      <Name>MC_Herancas</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Herancas_Wpf\MC_Herancas_Wpf.csproj">
+      <Project>{be8c887f-a80b-4e23-87ef-9ca7690edace}</Project>
+      <Name>MC_Herancas_Wpf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Infra_Estrutura_Net\MC_InfraEstrutura.csproj">
+      <Project>{2261F48A-7960-45FB-AF29-F074B893673B}</Project>
+      <Name>MC_InfraEstrutura</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Interfaces\MC_Interfaces.csproj">
+      <Project>{21BBF440-8622-4EB7-A029-E929DAA8B70C}</Project>
+      <Name>MC_Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Resources\MC_Resources.csproj">
+      <Project>{3763a28f-7907-48fd-bff4-ba6c23042475}</Project>
+      <Name>MC_Resources</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Sat_Caixa\MC_Sat_Caixa.csproj">
+      <Project>{cbaf7730-717a-4a15-9562-27926a4a483f}</Project>
+      <Name>MC_Sat_Caixa</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MC_Sitef\MC_Sitef.csproj">
+      <Project>{b3caf26f-1c70-4914-9f1a-176e040cb51d}</Project>
+      <Name>MC_Sitef</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WebInterfaces\MC_WebInterfaces.csproj">
+      <Project>{CFF6E684-F7FD-4CB3-9613-7EA5F4C59154}</Project>
+      <Name>MC_WebInterfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\NotifyIcon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\motor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Listagem\Icone_Lista.png" />
+    <Resource Include="Images\img_Caixa_Fundo.jpg" />
+    <Resource Include="Images\img_Caixa_Fundo_Visualizacao.jpg" />
+    <Resource Include="Images\img_Caixa_Estacao.png" />
+    <Resource Include="Images\img_Caixa_Loja.png" />
+    <Resource Include="Images\img_Caixa_Relogio.png" />
+    <Resource Include="Images\img_Caixa_Versao.png" />
+    <Resource Include="Images\img_Caixa_Logo.png" />
+    <Resource Include="Images\img_Caixa_Logo_Menor.png" />
+    <Resource Include="Images\img_Caixa_Logo_Maior.png" />
+    <Resource Include="Images\img_Caixa_Usuario_Online.png" />
+    <Resource Include="Images\img_Caixa_Usuario_Offline.png" />
+    <Resource Include="Images\img_Caixa_Fundo_Filete.jpg" />
+    <Resource Include="Images\img_Caixa_Fundo_Filete_Branco.jpg" />
+    <Resource Include="Images\img_Caixa_Fundo_Filete_Preto.png" />
+    <Resource Include="Images\img_Caixa_Fundo_Preto.png" />
+    <Resource Include="Images\img_Painel_Senha_Background.png" />
+    <Resource Include="Images\img_Painel_Senha_Background_Preto.png" />
+    <Resource Include="Images\MDI\icon_Changelog.png" />
+    <Resource Include="Images\MDI\icon_Changelog_Azul.png" />
+    <Resource Include="Images\logo.png" />
+    <Resource Include="Images\MDI\close1.png" />
+    <Resource Include="Images\MDI\close2.png" />
+    <Resource Include="Images\MDI\search.png" />
+    <Resource Include="Images\MDI\tool1.png" />
+    <Resource Include="Images\MDI\tool2.png" />
+    <Resource Include="Images\MDI\tree4.png" />
+    <Resource Include="Images\MDI\user.png" />
+    <Resource Include="Images\MDI\eye.png" />
+    <Resource Include="Images\MDI\icon_Changelog_New.png" />
+    <Resource Include="Images\MDI\Icone_Administração do Sistema.png" />
+    <Resource Include="Images\MDI\Icone_Cadastro.png" />
+    <Resource Include="Images\MDI\Icone_Caixa.png" />
+    <Resource Include="Images\MDI\Icone_Compras.png" />
+    <Resource Include="Images\MDI\Icone_Entreposto.png" />
+    <Resource Include="Images\img_noticia_aricanduva.png" />
+    <Resource Include="Images\img_noticia_ecommerce.png" />
+    <Resource Include="Images\img_noticia_santo_andre.png" />
+    <Content Include="WPFVisifire.Gauges.dll" />
+    <Resource Include="Images\Listagem\Icone_Filtro.png" />
+    <Resource Include="Images\Listagem\Icone_Grafico.png" />
+    <Resource Include="Images\Mercadocar_350.png" />
+    <Resource Include="Images\Listagem\Icone_Pesquisa.png" />
+    <Resource Include="Images\Adicionar.png" />
+    <Resource Include="Images\Grupo.png" />
+    <Resource Include="Images\Remover.png" />
+    <Resource Include="Images\Usuario.png" />
+    <Resource Include="Images\Icone-Fechar.png" />
+    <Resource Include="Images\imgCI_Info_Notificacao.png" />
+    <Resource Include="Images\img_noticia_barra_funda.png" />
+    <Resource Include="Images\img_noticia_bf_caminhoes.png" />
+    <Resource Include="Images\img_noticia_guarulhos.png" />
+    <Resource Include="Images\img_noticia_santo_amaro.png" />
+    <Resource Include="Images\img_noticia_tucuruvi.png" />
+    <Resource Include="Images\MDI\Icone_Usuario_Offline.png" />
+    <Resource Include="Images\img_relogio.png" />
+    <Resource Include="Images\img_nf_paulista.png" />
+    <Resource Include="Images\img_logo_mercadocar.png" />
+    <Content Include="WPFVisifire.Charts.dll" />
+    <Resource Include="Images\imgFundoSelecaoCalotas.png" />
+    <Resource Include="Images\imgEtiquetaPrecoCalota.png" />
+    <Resource Include="Images\imgTexturaVerticalCalotas.png" />
+    <Resource Include="Images\imgTexturaHorizontalCalotas.png" />
+    <Resource Include="Images\notas.png" />
+    <Resource Include="Images\CabecalhoMercadocar.png" />
+    <Resource Include="Images\seta_direita.png" />
+    <Resource Include="Images\seta_esquerda.png" />
+    <Resource Include="Images\Mercadocar.png" />
+    <Resource Include="Images\banner_telepreco_1.png" />
+    <Resource Include="Images\Info.png" />
+    <Resource Include="Images\Critical.png" />
+    <Resource Include="Images\Error.png" />
+    <Resource Include="Images\MDI\Icone_Configuracao.png" />
+    <Resource Include="Images\MDI\Icone_Engrenagem.png" />
+    <Resource Include="Images\MDI\Icone_Estacao.png" />
+    <Resource Include="Images\MDI\Icone_Loja.png" />
+    <Resource Include="Images\MDI\Icone_Mensagem.png" />
+    <Resource Include="Images\MDI\Icone_Offline.png" />
+    <Resource Include="Images\MDI\Icone_Online.png" />
+    <Resource Include="Images\MDI\Icone_Usuario.png" />
+    <Resource Include="Images\MDI\Icone_Versao.png" />
+    <Resource Include="Images\MDI\Icone_Versao_Desatualizada.png" />
+    <Resource Include="Images\MDI\Icone_Tela_Inicial.png" />
+    <Resource Include="Images\MDI\Icone_Fechar_Tela.png" />
+    <Resource Include="Images\MDI\Icone_Formulario.png" />
+    <Resource Include="Images\MDI\Icone_Favorito.png" />
+    <Resource Include="Images\phone.2.png" />
+    <Resource Include="Images\Icone-Salvar.png" />
+    <Resource Include="Images\Desfazer.png" />
+    <Resource Include="Images\Error-Validation.png" />
+    <Resource Include="Images\IsMobile.png" />
+    <Resource Include="Images\IsWeb.png" />
+    <Resource Include="Images\Processo-Cadastro.png" />
+    <Resource Include="Images\Processo-Editado.png" />
+    <Resource Include="Images\Processo-IconePadrao.png" />
+    <Resource Include="Images\Processo-RecursosHumanos.png" />
+    <Resource Include="Images\Processo-Web.png" />
+    <Resource Include="Images\Icone-Ajuda.png" />
+    <Resource Include="Images\Icone-Alerta.png" />
+    <Resource Include="Images\Now-Loading.gif" />
+    <Resource Include="Images\Processo-Caixa.png" />
+    <Resource Include="Images\MDI\Icone_Ajuda.png" />
+    <Resource Include="Images\MDI\imgAjuda_Menu_Abertos.png" />
+    <Resource Include="Images\MDI\imgAjuda_Menu_Modulos.png" />
+    <Resource Include="Images\MDI\imgAjuda_Barra_Menus.png" />
+    <Resource Include="Images\MDI\Icone_Calculadora.png" />
+    <Resource Include="Images\MDI\Icone_Notepad.png" />
+    <Content Include="motor360.wmv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Administracao Sistema\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

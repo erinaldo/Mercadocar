@@ -1,0 +1,227 @@
+SET ANSI_NULLS ON 
+GO 
+SET QUOTED_IDENTIFIER ON 
+GO
+ 
+-------------------------------------------------------------------------------
+-- <summary>
+--			Consulta da Conferência Reserva por Loja
+-- </summary>
+-- <Acesso>
+--		Central
+-- </Acesso>
+-- <history>
+-- 		[moshiro]	- 18/11/2015	Created
+--		[bmune]		- 26/11/2015	Modifed
+--		Modificado a descrição que é apresentada de "Romaneio de Transferência"
+--		para "Romaneio"
+--		[bmune]		- 22/12/2015	Modifed
+--		Adicionado a descrição do pré-recebimento
+--		[bmune]		- 30/10/2018	Modifed
+--		Tratado a exibição do número do pré-recebimento
+--		[bmune]		- 06/02/2019	Modifed
+--		Tratado a exibição do número do pré-recebimento para exibir o número do volume
+--		[mmukuno]	- 14/04/2019	Modifed
+--		Retornar o tipo de etiqueta
+--		[fmoraes]	- 21/08/2019	Modifed
+--		Retornar a Curva de Frequência
+--		[wpinheiro]	- 19/09/2019	Modifed
+--		corrigido left join com peca_resumo, estava pegando o peca_id do peca_endereco
+-- </history>
+---------------------------------------------------------------------------------
+ALTER PROCEDURE [dbo].[p_Estoque_Consultar_Conferencia_Separacao_Por_Loja]
+(
+	@Conferencia_IT_ID					INT,
+	@Conferencia_Separacao_ID			INT,
+	@Divergencia_Separacao				BIT
+)
+AS
+--	---------------------------------------------------------------------------------
+	--DECLARE	@Conferencia_IT_ID									INT = 0
+	--DECLARE	@Conferencia_Separacao_ID							INT = 2439345
+	--DECLARE	@Divergencia_Separacao								BIT = 0
+	-------------------------------------------------------------------------------
+ 
+	SET NOCOUNT ON
+ 
+	DECLARE
+		@Enum_Conferencia_Pre_Recebimento			INT,
+		@Enum_Conferencia_Abastecimento				INT,
+		@Enum_Conferencia_Romaneio_Transferencia	INT
+ 
+	SELECT
+		@Enum_Conferencia_Pre_Recebimento = 2007,
+		@Enum_Conferencia_Abastecimento = 2008,
+		@Enum_Conferencia_Romaneio_Transferencia = 2009
+ 
+ 
+	IF (ISNULL(@Conferencia_Separacao_ID, 0) > 0)
+	BEGIN
+		SELECT 
+			DISTINCT
+			CASE Conferencia_CT.Enum_Origem_ID
+				WHEN @Enum_Conferencia_Abastecimento THEN 'Abastecimento'
+				WHEN @Enum_Conferencia_Romaneio_Transferencia THEN 'Romaneio'
+				WHEN @Enum_Conferencia_Pre_Recebimento THEN 'Grupo.Volume'
+				ELSE ''
+			END															AS Descricao_Origem,
+			CASE Conferencia_CT.Enum_Origem_ID
+				WHEN @Enum_Conferencia_Pre_Recebimento THEN CONVERT(VARCHAR, ISNULL(Pre_Recebimento_Volume_CT.Pre_Recebimento_Grupo_ID, Conferencia_CT.Objeto_Origem_ID)) 
+															+ '.' 
+															+ CONVERT(VARCHAR, ISNULL(Pre_Recebimento_Volume_CT.Pre_Recebimento_Volume_CT_Numero, 1))
+				ELSE CONVERT(VARCHAR, Conferencia_CT.Objeto_Origem_ID)
+			END															AS Valor_Origem,
+			Conferencia_Separacao.Conferencia_Separacao_ID				AS Conferencia_Separacao_ID,
+			Conferencia_Separacao.Conferencia_IT_ID						AS Conferencia_IT_ID,
+			Conferencia_CT.Conferencia_CT_ID							AS Conferencia_CT_ID,
+			Conferencia_Separacao.Loja_Destino_ID						AS Loja_Destino_ID,
+			ISNULL(Conferencia_Separacao.Conferencia_Separacao_Data_Separacao,
+				Conferencia_IT.Conferencia_IT_Data_Conferencia)			AS Conferencia_Separacao_Data_Separacao,
+			Lojas_NM													AS Lojas_NM,
+			Lojas.Lojas_Sigla											AS Lojas_Sigla,
+			CASE WHEN (Conferencia_Separacao.Loja_Destino_ID = Conferencia_CT.Loja_Origem_ID) THEN
+					'CD'
+				ELSE
+					Lojas_Tipo										
+			END															AS Lojas_Tipo,
+			Lojas_Ordenacao												AS Lojas_Ordenacao,
+			vw_Peca.Peca_DSTecnica										AS Peca_DSTecnica,
+			vw_Peca.Produto_DS											AS Produto_DS,
+			vw_Peca.Fabricante_CD										AS Fabricante_CD,
+			vw_Peca.Produto_CD											AS Produto_CD,
+			vw_Peca.Peca_CD												AS Peca_CD,
+			vw_Peca.Peca_CDFabricante									AS Peca_CDFabricante,
+			Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviada	AS Conferencia_Separacao_Qtde_Enviada,
+			Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviar		AS Conferencia_Separacao_Qtde_Enviar,
+			CASE WHEN @Divergencia_Separacao = 0 THEN 
+				Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviar
+			ELSE 
+				Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviada
+			END															AS Quantidade,
+			Conferencia_Separacao.Conferencia_Separacao_Destino_Configurado		AS Conferencia_Separacao_Destino_Configurado,
+ 
+			ISNULL(Peca_Endereco_Andar,'')								AS Peca_Endereco_Andar,
+			ISNULL(Peca_Endereco_Rua,'')								AS Peca_Endereco_Rua,
+			ISNULL(Peca_Endereco_Prateleira,'')							AS Peca_Endereco_Prateleira,
+			ISNULL(Peca_Endereco_Locacao,'')							AS Peca_Endereco_Locacao,
+			dbo.fun_Retorna_Peca_Pertencente_Produto_Alto_Risco(vw_Peca.Fabricante_ID,
+																vw_Peca.Produto_ID,
+																vw_Peca.Peca_ID,
+																Conferencia_Separacao.Loja_Destino_ID)
+																		AS Produto_Alto_Risco,
+			ISNULL(Conferencia_IT.Enum_Opcao_Etiqueta_ID,2554)			AS Enum_Opcao_Etiqueta_ID,
+			ISNULL(Peca_Resumo_loja.Estoque_Curva_Frequencia, 'E')      AS DW_Curva_Vendas
+		FROM
+			Conferencia_Separacao WITH (NOLOCK)
+		JOIN Conferencia_IT WITH (NOLOCK) ON
+			Conferencia_IT.Conferencia_CT_ID = Conferencia_Separacao.Conferencia_CT_ID
+		AND
+			Conferencia_IT.Peca_ID = Conferencia_Separacao.Peca_ID
+		JOIN Conferencia_CT WITH (NOLOCK) ON
+			Conferencia_CT.Conferencia_CT_ID = Conferencia_Separacao.Conferencia_CT_ID
+		JOIN Lojas WITH (NOLOCK) ON
+			Lojas.Lojas_ID = Conferencia_Separacao.Loja_Destino_ID
+		JOIN vw_Peca WITH (NOLOCK) ON
+			Conferencia_Separacao.Peca_ID = vw_Peca.Peca_ID
+		LEFT JOIN Peca_Endereco WITH (NOLOCK) ON
+			Conferencia_Separacao.Peca_ID = Peca_Endereco.Peca_ID
+		AND
+			Conferencia_Separacao.Loja_Destino_ID = Peca_Endereco.Loja_ID
+		AND
+			Peca_Endereco.Peca_Endereco_isPrincipal = 1
+		LEFT JOIN Pre_Recebimento_Volume_CT ON
+			Conferencia_CT.Objeto_Origem_ID = Pre_Recebimento_Volume_CT.Pre_Recebimento_Volume_CT_ID
+		LEFT JOIN Peca_Resumo_loja WITH (NOLOCK) ON
+			Conferencia_Separacao.Loja_Destino_ID = Peca_Resumo_loja.Lojas_ID
+		AND
+			Conferencia_Separacao.Peca_ID = Peca_Resumo_loja.Peca_ID
+		WHERE
+			Conferencia_Separacao.Conferencia_Separacao_ID = @Conferencia_Separacao_ID
+	END
+ 
+	IF (ISNULL(@Conferencia_IT_ID, 0) > 0)
+	BEGIN
+		SELECT
+			DISTINCT
+			CASE Conferencia_CT.Enum_Origem_ID
+				WHEN @Enum_Conferencia_Abastecimento THEN 'Abastecimento'
+				WHEN @Enum_Conferencia_Romaneio_Transferencia THEN 'Romaneio'
+				WHEN @Enum_Conferencia_Pre_Recebimento THEN 'Grupo.Volume'
+				ELSE ''
+			END															AS Descricao_Origem,
+			CASE Conferencia_CT.Enum_Origem_ID
+				WHEN @Enum_Conferencia_Pre_Recebimento THEN CONVERT(VARCHAR, ISNULL(Pre_Recebimento_Volume_CT.Pre_Recebimento_Grupo_ID, Conferencia_CT.Objeto_Origem_ID)) 
+															+ '.' 
+															+ CONVERT(VARCHAR, ISNULL(Pre_Recebimento_Volume_CT.Pre_Recebimento_Volume_CT_Numero, 1))
+				ELSE CONVERT(VARCHAR, Conferencia_CT.Objeto_Origem_ID)
+			END															AS Valor_Origem,
+			Conferencia_Separacao.Conferencia_Separacao_ID				AS Conferencia_Separacao_ID,
+			Conferencia_Separacao.Conferencia_IT_ID						AS Conferencia_IT_ID,
+			Conferencia_CT.Conferencia_CT_ID							AS Conferencia_CT_ID,
+			Conferencia_Separacao.Loja_Destino_ID						AS Loja_Destino_ID,
+			ISNULL(Conferencia_Separacao.Conferencia_Separacao_Data_Separacao,
+				Conferencia_IT.Conferencia_IT_Data_Conferencia)			AS Conferencia_Separacao_Data_Separacao,
+			Lojas_NM													AS Lojas_NM,
+			Lojas.Lojas_Sigla											AS Lojas_Sigla,
+			CASE WHEN (Conferencia_Separacao.Loja_Destino_ID = Conferencia_CT.Loja_Origem_ID) THEN
+					'CD'
+				ELSE
+					Lojas_Tipo										
+			END															AS Lojas_Tipo,
+			Lojas_Ordenacao												AS Lojas_Ordenacao,
+			vw_Peca.Peca_DSTecnica										AS Peca_DSTecnica,
+			vw_Peca.Produto_DS											AS Produto_DS,
+			vw_Peca.Fabricante_CD										AS Fabricante_CD,
+			vw_Peca.Produto_CD											AS Produto_CD,
+			vw_Peca.Peca_CD												AS Peca_CD,
+			vw_Peca.Peca_CDFabricante									AS Peca_CDFabricante,
+			Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviada	AS Conferencia_Separacao_Qtde_Enviada,
+			Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviar		AS Conferencia_Separacao_Qtde_Enviar,
+			CASE WHEN @Divergencia_Separacao = 0 THEN 
+				Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviar
+			ELSE 
+				Conferencia_Separacao.Conferencia_Separacao_Qtde_Enviada
+			END															AS Quantidade,
+			1															AS Conferido,
+			Conferencia_Separacao.Conferencia_Separacao_Destino_Configurado		AS Conferencia_Separacao_Destino_Configurado,
+ 
+			ISNULL(Peca_Endereco_Andar,'')								AS Peca_Endereco_Andar,
+			ISNULL(Peca_Endereco_Rua,'')								AS Peca_Endereco_Rua,
+			ISNULL(Peca_Endereco_Prateleira,'')							AS Peca_Endereco_Prateleira,
+			ISNULL(Peca_Endereco_Locacao,'')							AS Peca_Endereco_Locacao,
+			dbo.fun_Retorna_Peca_Pertencente_Produto_Alto_Risco(vw_Peca.Fabricante_ID,
+																vw_Peca.Produto_ID,
+																vw_Peca.Peca_ID,
+																Conferencia_Separacao.Loja_Destino_ID)
+																		AS Produto_Alto_Risco,
+			ISNULL(Conferencia_IT.Enum_Opcao_Etiqueta_ID,2554)		    AS Enum_Opcao_Etiqueta_ID, 
+			ISNULL(Peca_Resumo_loja.Estoque_Curva_Frequencia, 'E')      AS DW_Curva_Vendas
+		FROM
+			Conferencia_Separacao WITH (NOLOCK)
+		JOIN Conferencia_IT WITH (NOLOCK) ON
+			Conferencia_IT.Conferencia_CT_ID = Conferencia_Separacao.Conferencia_CT_ID
+		AND
+			Conferencia_IT.Peca_ID = Conferencia_Separacao.Peca_ID
+		JOIN Conferencia_CT WITH (NOLOCK) ON
+			Conferencia_CT.Conferencia_CT_ID = Conferencia_Separacao.Conferencia_CT_ID
+		JOIN Lojas WITH (NOLOCK) ON
+			Lojas.Lojas_ID = Conferencia_Separacao.Loja_Destino_ID
+		JOIN vw_Peca WITH (NOLOCK) ON
+			Conferencia_Separacao.Peca_ID = vw_Peca.Peca_ID
+		LEFT JOIN Peca_Endereco WITH (NOLOCK) ON
+			Conferencia_Separacao.Peca_ID = Peca_Endereco.Peca_ID
+		AND
+			Conferencia_Separacao.Loja_Destino_ID = Peca_Endereco.Loja_ID
+		AND
+			Peca_Endereco.Peca_Endereco_isPrincipal = 1
+		LEFT JOIN Pre_Recebimento_Volume_CT WITH (NOLOCK) ON
+			Pre_Recebimento_Volume_CT.Pre_Recebimento_Volume_CT_ID = Conferencia_CT.Objeto_Origem_ID
+		LEFT JOIN Peca_Resumo_loja ON
+			Conferencia_Separacao.Loja_Destino_ID = Peca_Resumo_loja.Lojas_ID
+		AND
+			Conferencia_Separacao.Peca_ID = Peca_Resumo_loja.Peca_ID
+		WHERE
+			Conferencia_IT.Conferencia_IT_ID = @Conferencia_IT_ID
+		ORDER BY
+			Lojas_Ordenacao
+	END

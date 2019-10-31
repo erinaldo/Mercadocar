@@ -1,0 +1,27 @@
+ALT + C - Abrir caixa
+ALT + P - CPF
+ALT + Q - Quantidade
+ALT + D - Comanda
+ALT + J - Romaneio
+ALT + K - Desconto do item
+ALT + V - Sangria
+ALT + M - Fechamento
+Back - Limpa
+ALT + U - Suspender
+ALT + Y - Voltar
+ALT + S - SIM
+ALT + N - Não
+ALT + L - Liberar venda
+ALT + R - Forma de pgamento Crédito
+ALT + H - Forma de pgamento Dinheiro
+ALT + B - Forma de pgamento Debito
+ALT + E - Excluir pagamento
+ALT + F - Finalizar venda
+ALT + I - Cancelar Item
+ALT + A - Cancelar Cupom
+ALT + Z - Redução Z
+ALT + X - Leitura X
+ALT + T - Ticket Estacionamento
+ALT + G - Proximo Cliente
+ESC + 8 + ENTER - Desligar Maquina
+ESC + 0 + ENTER - Reiniciar SIM

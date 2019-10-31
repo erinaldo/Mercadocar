@@ -1,0 +1,1087 @@
+
+-- <summary>
+--		Job Central que lê as tabelas da nova encomenda (replicadas da loja) e
+--	efetua o cadastro da peça, juntamente com as demais tabelas relacionadas e
+--	que são obrigatórias.
+-- </summary>
+-- <history>
+--		[econforti]		- 24/03/2014	Created
+--		[econforti]		- 27/06/2014	Modified
+--			Implementado geração das pendências da peça
+--		[econforti]		- 30/06/2014	Modified
+--			Implementado geração da CI de pendência de revisão da peça 
+--		cadastrada via encomenda.
+--		[econforti]		- 07/07/2014	Modified
+--			Projeto P0063 renomeou os campos de usuario e data da 
+--		Peca_Pendencia. Atualizado.
+--		[econforti]		- 31/07/2014	Modified
+--			Colocado para gravar o usuário de alteração na encomenda no 
+--		momento em que se atualiza o ID da peça recém cadastrada, por causa
+--		do usuário de alteração exibido na auditoria.
+--		[msisiliani]	- 04/08/2014	Modified
+--			Substituição da coluna "Peca_ISValidada" por "Peca_Validada"
+--		[ehmontero]		- 20/04/2015
+--			Adição do filtro "#Temp_Encomenda.Sequencial = @Contador" em 
+--		algumas ações dentro do WHILE, que não existiam.
+--		[gfpinheiro]	- 29/10/2015
+--			Adicionado Lojas_ID no JOIN com Encomenda_IT_ID
+--		[ehoracio]	- 14/11/2016
+--			Troca de funções @@identity para Scope_identity() devido a 
+--			problema no job de encomenda
+--		[ehoracio]	- 07/12/2016
+--			Ajuste, tratativa de Ambiguidade para coluna Enum_Setor_ID
+--		[ovieira]	- 13/04/2017
+--			verifica se na tabela peça produto o produto está marcado como Aplicavel a todas as pecas do produto.
+--		[wpinheiro]	- 27/09/2018
+--			Tratar status cancelado
+-- </history>
+-------------------------------------------------------------------------------
+--CREATE PROCEDURE [dbo].[p_Jobs_Gerar_Cadastro_Peca_De_Encomenda]
+--AS
+-------------------------------------------------------------------------------
+
+SET NOCOUNT ON
+
+DECLARE 
+		@Aplicavel_Todas_Pecas_Produto							BIT = 0,
+		@Contador												INT,
+		@Max													INT,
+		@Codigo_Gerado											INT,
+		@Novo_Codigo_Peca										VARCHAR(4),
+		@Fabricante_ID											INT,
+		@Produto_ID												INT,
+		@Peca_Gerada_ID											INT,
+		@Data_Atual												DATETIME,
+		@Usuario_Sistema_ID										INT,
+		@Codigo_Situacao_Tributaria_Peca						VARCHAR(3) = '060', -- É a mais usada na base
+		@Peca_Origem_Mercadoria_ID								INT = 1070, -- Nacional
+		@Enum_Class_Fiscal_Compra_ID							INT = 1433,
+		@Peca_Embalagem_Cadastrada_ID							INT,
+		@Enum_Status_Aprovacao_Peca_Servico_Pendente_ID			INT = 1308,
+		@Enum_Status_Aprovacao_Peca_Servico_Aprovado_ID			INT = 1309,
+		@Enum_Status_Venda_Encomenda_Pendente_Romaneio_ID		INT = 1610,
+		@Comissao_Peca_Zerada_ID								INT = 12,
+		@Produto_Possui_Servico									BIT,
+		@Produto_Possui_Especificacao_Tecnica					BIT,
+		@Produto_Possui_Foto_Web								BIT,
+		@Produto_Possui_Procedimentos_Troca						BIT,
+		@Enum_Tipo_Pendencia_Peca_Caracteristicas_ID			INT = 1685,
+		@Enum_Tipo_Pendencia_Peca_Codigo_Barras_ID				INT = 1686,
+		@Enum_Tipo_Pendencia_Peca_Codigo_Item_Fabricante_ID		INT = 1687,
+		@Enum_Tipo_Pendencia_Peca_Definicao_Estoque_ID			INT = 1688,
+		@Enum_Tipo_Pendencia_Peca_Descricao_WEB_ID				INT = 1689,
+		@Enum_Tipo_Pendencia_Peca_Descricao_Venda_ID			INT = 1690,
+		@Enum_Tipo_Pendencia_Peca_Especificacao_Tecnica_ID		INT = 1691,
+		@Enum_Tipo_Pendencia_Peca_Foto_WEB_ID					INT = 1692,
+		@Enum_Tipo_Pendencia_Peca_Lote_Reajuste_ID				INT = 1693,
+		@Enum_Tipo_Pendencia_Peca_Multiplo_Compra_ID			INT = 1694,
+		@Enum_Tipo_Pendencia_Peca_Peça_Pendente_Cadastro_ID		INT = 1695,
+		@Enum_Tipo_Pendencia_Peca_Embalagem_Pesos_Medidas_ID	INT = 1696,
+		@Enum_Tipo_Pendencia_Peca_Procedimento_Troca_ID			INT = 1697,
+		@Enum_Tipo_Pendencia_Peca_Revisao_Cadastro_ID			INT = 1698,
+		@Enum_Tipo_Pendencia_Peca_Servico_ID					INT = 1699,
+		@Enum_Tipo_Pendencia_Peca_Veiculo_ID					INT = 1700,
+		@Enum_Status_Pendencia_Peca_Pendente_ID					INT = 1701,
+		@Enum_Status_Pendencia_Peca_Ignorado_ID					INT = 1702,
+		@Enum_Status_Pendencia_Peca_Aprovado_ID					INT = 1703,
+		@Enum_Tipo_Origem_Pendencia_Encomenda_ID				INT = 1704,
+		@Enum_Tipo_Uso_Foto_Produto_ID							INT = 1519,
+		@CI_Notificacao_Revisao_Cadastro_Peca_Encomenda_ID		INT,
+		@CI_Notificacao_Grupo_ID								INT,
+		@Loja_Tucuruvi_ID										INT = 1
+
+CREATE TABLE #Temp_Encomenda
+(
+	Sequencial					INT IDENTITY(1,1)	NOT NULL,
+	Encomenda_CT_ID				INT					NOT NULL,
+	Encomenda_IT_ID				INT					NOT NULL,
+	Lojas_ID					INT					NOT NULL,
+	Fabricante_ID				INT					NOT NULL,
+	Fabricante_CD				VARCHAR(4)			NOT NULL,
+	Fabricante_NmFantasia		VARCHAR(60)			NULL,
+	Produto_ID					INT					NOT NULL,
+	Produto_CD					VARCHAR(4)			NOT NULL,
+	Produto_DS					VARCHAR(25)			NULL,
+	Peca_ID						INT					NULL,
+	Peca_CD						VARCHAR(4)			NULL,
+	Peca_DSTecnica				VARCHAR(45)			NOT NULL,
+	Peca_CDFabricante			VARCHAR(20)			NOT NULL,		
+	Enum_Setor_ID				INT					NOT NULL,
+	Peca_Linha_ID				INT					NOT NULL,
+	Enum_Tipo_Embalagem_ID		INT					NOT NULL,
+	Class_Fiscal_ID				INT					NOT NULL,
+	Valor_Custo_Compra			DECIMAL(18, 2)		NOT NULL,
+	Valor_Preco_Venda			DECIMAL(18, 2)		NOT NULL,
+	Usuario_Vendedor_ID			INT					NOT NULL,
+	Pessoa_Vendedor_ID			VARCHAR(40)			NOT NULL
+)
+
+CREATE TABLE #Temp_Usuarios_Destino_CI(
+	Usuario_ID	INT NOT NULL
+)
+
+DECLARE @Codigo_Peca_Disponivel TABLE(Codigo VARCHAR(4))
+
+CREATE INDEX 
+		[IX_Temp_Encomenda] ON [dbo].[#Temp_Encomenda]([Sequencial])
+
+BEGIN TRY
+
+	BEGIN TRAN
+
+	SET @Data_Atual = GETDATE()
+	SET @Usuario_Sistema_ID = 20
+
+	INSERT INTO #Temp_Encomenda(
+		Encomenda_CT_ID,
+		Encomenda_IT_ID,
+		Lojas_ID,
+		Fabricante_ID,
+		Fabricante_CD,
+		Fabricante_NmFantasia,
+		Produto_ID,
+		Produto_CD,
+		Produto_DS,
+		Peca_DSTecnica,
+		Peca_CDFabricante,
+		Enum_Setor_ID,
+		Peca_Linha_ID,
+		Enum_Tipo_Embalagem_ID,
+		Class_Fiscal_ID,
+		Valor_Custo_Compra,
+		Valor_Preco_Venda,
+		Usuario_Vendedor_ID,
+		Pessoa_Vendedor_ID
+	)
+	SELECT
+		Encomenda_Venda_IT.Encomenda_Venda_CT_ID,
+		Encomenda_Venda_IT_ID,
+		Encomenda_Venda_IT.Lojas_ID,
+		Encomenda_Venda_IT.Fabricante_ID,
+		Encomenda_Venda_IT_Fabricante_CD,
+		Fabricante_NmFantasia,
+		Encomenda_Venda_IT.Produto_ID,
+		Encomenda_Venda_IT_Produto_CD,
+		Produto_DS,
+		Encomenda_Venda_IT_Peca_DSTecnica,
+		Encomenda_Venda_IT_Peca_CDFabricante,
+		Encomenda_Venda_IT.Enum_Setor_ID,
+		Peca_Linha_ID,
+		Enum_Tipo_Embalagem_ID,
+		Encomenda_Venda_IT.Class_Fiscal_ID,
+		Encomenda_Venda_IT_Valor_Custo_Compra,
+		Encomenda_Venda_IT_Valor_Preco_Venda,
+		Usuario_Vendedor.Usuario_ID,
+		Usuario_Vendedor.Pessoa_ID
+	FROM
+		Encomenda_Venda_CT
+	JOIN Encomenda_Venda_IT ON
+		Encomenda_Venda_CT.Encomenda_Venda_CT_ID = Encomenda_Venda_IT.Encomenda_Venda_CT_ID
+		AND
+		Encomenda_Venda_CT.Lojas_ID = Encomenda_Venda_IT.Lojas_ID
+	JOIN Classificacao_Fiscal ON
+		Encomenda_Venda_IT.Class_Fiscal_ID = Classificacao_Fiscal.Class_Fiscal_ID
+	JOIN Usuario Usuario_Vendedor ON
+		Encomenda_Venda_CT.Usuario_Vendedor_ID = Usuario_Vendedor.Usuario_ID
+	LEFT JOIN Fabricante ON
+		Encomenda_Venda_IT.Fabricante_ID = Fabricante.Fabricante_ID
+	LEFT JOIN Produto ON
+		Encomenda_Venda_IT.Produto_ID = Produto.Produto_ID
+	WHERE
+		Encomenda_Venda_IT_Rotina_Cadastro_Central_Processada = 0
+	AND
+		ISNULL(Encomenda_Venda_IT.Peca_ID, 0) = 0
+	AND
+		Encomenda_Venda_CT.Enum_Status_Venda_ID NOT IN (1610, 1614)
+	AND
+		Encomenda_Venda_CT.Encomenda_Venda_CT_ID = 10000164
+	ORDER BY
+		Encomenda_Venda_IT.Fabricante_ID, Encomenda_Venda_IT.Produto_ID
+		
+	-----------------------CRIA O REGISTRO NA TABELA PECA------------------------------------------------------------
+	SET @Contador = 1
+	SET @Max = (SELECT COUNT(*) FROM #Temp_Encomenda)		
+
+	WHILE @Contador <= @Max
+	BEGIN
+		SELECT @Fabricante_ID = Fabricante_ID, @Produto_ID = Produto_ID FROM #Temp_Encomenda WHERE Sequencial = @Contador
+
+
+		------ VERIFICA SE PRODUTO ESTÁ MARCADO NA TABELA DE SERVICO PRODUTO COMO APLICAVEL_TODAS_PECAS_PRODUTO  --------------------
+
+		  IF EXISTS (SELECT 1 
+				FROM Servico_Produto 
+				WHERE Servico_Produto_Aplicavel_Todas_Pecas_Produto = 1
+				AND Produto_ID = @Produto_ID
+				AND Servico_Produto_IsAtivo = 1
+				 ) 
+				BEGIN 
+					SET  @Aplicavel_Todas_Pecas_Produto	 = 1
+				END  
+				ELSE 
+				BEGIN
+					SET  @Aplicavel_Todas_Pecas_Produto	 = 0
+				END 
+		
+		------ VERIFICA SE PRODUTO POSSUI SERVICO --------------------
+		IF ((SELECT 
+				COUNT(*) 
+			FROM 
+				Servico_Produto
+			JOIN Servico ON
+				Servico_Produto.Servico_ID = Servico.Servico_ID
+			WHERE 
+				Servico_Produto.Produto_ID = @Produto_ID
+			AND
+				Servico_IsAtivo = 1
+			AND   
+				Servico_Produto_IsAtivo = 1) > 0)
+		BEGIN
+			SET @Produto_Possui_Servico = 1
+		END
+		ELSE
+		BEGIN
+			SET @Produto_Possui_Servico = 0
+		END
+
+		INSERT INTO @Codigo_Peca_Disponivel (Codigo)
+		exec dbo.p_Cad_Retorna_Menor_Codigo_Peca_Livre @Fabricante_ID, @Produto_ID
+		SET @Novo_Codigo_Peca = (SELECT Codigo from @Codigo_Peca_Disponivel)
+				
+		--INSERT INTO Peca (
+		--	Fabricante_ID,
+		--	Produto_ID,
+		--	Class_Fiscal_ID,
+		--	Comissao_ID,
+		--	Enum_Setor_ID,
+		--	Enum_Tipo_Embalagem_ID,
+		--	Peca_CD,
+		--	Peca_CDFabricante,
+		--	Peca_DSTecnica,
+		--	Peca_Margem_Lucro, 
+		--	Peca_ICMS_Compra,
+		--	Peca_ICMS_Substituicao_Tributaria,
+		--	Peca_Perc_IPI,
+		--	Peca_TVA,
+		--	Peca_Substituicao_Tributaria, 
+		--	Peca_Codigo_Situacao_Tributaria, 
+		--	Peca_QtMinimaVenda, 
+		--	Peca_Qtde_Multipla, 
+		--	Peca_Emite_Cupom,
+		--	Peca_Linha,
+		--	Peca_Comprar,
+		--	Peca_Motivo_Nao_Comprar,
+		--	Peca_Data_Cadastro,
+		--	Peca_IsNovidade, 
+		--	Peca_IsVisualiza, 
+		--	Peca_IsUniversal, 
+		--	Peca_IsAtivo,
+		--	Peca_DSEtiqueta,
+		--	Usuario_Ultima_Alteracao_ID, 
+		--	Peca_Qtde_Multipla_Compra, 
+		--	Peca_Pendencia_Lote_Reajuste, 
+		--	Peca_Pendencia_Definicao_Estoque, 
+		--	Peca_Pendencia_Garantia, 
+		--	Peca_Pendencia_Fiscal, 
+		--	Peca_Pendencia_Caracteristicas, 
+		--	Peca_Pendencia_Veiculo, 
+		--	Peca_Data_Lote_Reajuste, 
+		--	Peca_Data_Definicao_Estoque, 
+		--	Peca_Data_Caracteristicas, 
+		--	Peca_Data_Veiculo, 
+		--	Peca_Sem_Caracteristica, 
+		--	Peca_Estoque_Totalmente_Lojas, 
+		--	Peca_Recomendacao_Tempo, 
+		--	Peca_Recomendacao_Kilometro, 
+		--	Peca_Validada, 
+		--	Peca_Pendencia_Servico, 
+		--	Peca_Data_Servico, 
+		--	Peca_Descricao_Web, 
+		--	Peca_Garantia_Tempo, 
+		--	Enum_Unidade_Tempo_Garantia_ID,
+		--	Peca_Origem_Mercadoria,
+		--	Usuario_Cadastro_ID, 
+		--	Peca_Pendencia_Validada_Ecommerce, 
+		--	Peca_Frete_Gratis, 
+		--	Peca_Destaque_Sessao, 
+		--	Peca_Lancamento, 
+		--	Peca_Pendencia_Codigo_Barras, 
+		--	Peca_Data_Codigo_Barras, 
+		--	Peca_Pendencia_Pesos_Medidas, 
+		--	Peca_Data_Pesos_Medidas, 
+		--	Peca_Pendencia_Especificacao_Tecnica, 
+		--	Peca_Data_Especificacao_Tecnica, 
+		--	Peca_Pendencia_Foto_Principal, 
+		--	Peca_Data_Foto_Principal, 
+		--	Peca_Pendencia_Procedimento_Troca, 
+		--	Peca_Data_Procedimento_Troca, 
+		--	Peca_Informacao_Cliente 
+		--)
+		SELECT
+			Fabricante_ID						AS Fabricante_ID,
+			Produto_ID							AS Produto_ID,
+			#Temp_Encomenda.Class_Fiscal_ID		AS Class_Fiscal_ID,
+			@Comissao_Peca_Zerada_ID			AS Comissao_ID,
+			Enum_Setor_ID						AS Enum_Setor_ID,
+			Enum_Tipo_Embalagem_ID				AS Enum_Tipo_Embalagem_ID,
+			dbo.fun_Replicate_Formata_Codigos(CAST(@Novo_Codigo_Peca AS VARCHAR(4)), '0', 4, 1)
+												AS Peca_CD,
+			Peca_CDFabricante					AS Peca_CDFabricante,
+			Peca_DSTecnica						AS Peca_DSTecnica,
+			0									AS Peca_Margem_Lucro, 
+			Class_Fiscal_ICMS					AS Peca_ICMS_Compra,
+			Class_Fiscal_ICMS_Substituicao		AS Peca_ICMS_Substituicao_Tributaria,
+			Class_Fiscal_IPI					AS Peca_Perc_IPI,
+			Class_Fiscal_TVA					AS Peca_TVA,
+			CASE
+				WHEN ISNULL(Class_Fiscal_ICMS, 0) = 0
+					THEN CAST(0 AS BIT)
+					ELSE CAST(1 AS BIT)
+			END									AS Peca_Substituicao_Tributaria,
+			@Codigo_Situacao_Tributaria_Peca	AS Peca_Codigo_Situacao_Tributaria,
+			1									AS Peca_QtMinimaVenda, 
+			1									AS Peca_Qtde_Multipla, 
+			CAST(0 AS BIT)						AS Peca_Emite_Cupom,
+			Peca_Linha_ID						AS Peca_Linha,
+			CAST(0 AS BIT)						AS Peca_Comprar,
+			'Peça cadastrada via encomenda'		AS Peca_Motivo_Nao_Comprar,
+			@Data_Atual							AS Peca_Data_Cadastro,
+			CAST(0 AS BIT)						AS Peca_IsNovidade,
+			CAST(0 AS BIT)						AS Peca_IsVisualiza,
+			CAST(0 AS BIT)						AS Peca_IsUniversal,
+			CAST(1 AS BIT)						AS Peca_IsAtivo,
+			CAST(ISNULL(Fabricante_NmFantasia + ' ', '') + ISNULL(Produto_DS + ' ', '') + Peca_DSTecnica AS VARCHAR(48))
+												AS Peca_DSEtiqueta,
+			@Usuario_Sistema_ID					AS Usuario_Ultima_Alteracao_ID, 
+			CAST(1 AS INT)						AS Peca_Qtde_Multipla_Compra,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Lote_Reajuste,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Definicao_Estoque,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Garantia,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Fiscal,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Caracteristicas,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Veiculo,
+			@Data_Atual							AS Peca_Data_Lote_Reajuste,
+			@Data_Atual							AS Peca_Data_Definicao_Estoque,
+			@Data_Atual							AS Peca_Data_Caracteristicas,
+			@Data_Atual							AS Peca_Data_Veiculo,
+			CAST(0 AS BIT)						AS Peca_Sem_Caracteristica,
+			CAST(1 AS BIT)						AS Peca_Estoque_Totalmente_Lojas,
+			CAST(0 AS INT)						AS Peca_Recomendacao_Tempo,
+			CAST(0 AS INT)						AS Peca_Recomendacao_Kilometro,
+			CAST(0 AS BIT)						AS Peca_Validada,
+			@Produto_Possui_Servico				AS Peca_Pendencia_Servico,
+			@Data_Atual							AS Peca_Data_Servico,
+			CAST(ISNULL(Fabricante_NmFantasia + ' ', '') + ISNULL(Produto_DS + ' ', '') + Peca_DSTecnica AS VARCHAR(200))	
+												AS Peca_Descricao_Web,
+			CAST(90 AS INT)						AS Peca_Garantia_Tempo,
+			CAST(1328 AS INT)					AS Enum_Unidade_Tempo_Garantia_ID,
+			@Peca_Origem_Mercadoria_ID			AS Peca_Origem_Mercadoria, 
+			@Usuario_Sistema_ID					AS Usuario_Cadastro_ID, 
+			CAST(0 AS BIT)						AS Peca_Pendencia_Validada_Ecommerce,
+			CAST(0 AS BIT)						AS Peca_Frete_Gratis,
+			CAST(0 AS BIT)						AS Peca_Destaque_Sessao,
+			CAST(0 AS BIT)						AS Peca_Lancamento,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Codigo_Barras,
+			@Data_Atual							AS Peca_Data_Codigo_Barras,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Pesos_Medidas,
+			@Data_Atual							AS Peca_Data_Pesos_Medidas,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Especificacao_Tecnica, 
+			@Data_Atual							AS Peca_Data_Especificacao_Tecnica,
+			CAST(1 AS BIT)						AS Peca_Pendencia_Foto_Principal,
+			@Data_Atual							AS Peca_Data_Foto_Principal,
+			CAST(0 AS BIT)						AS Peca_Pendencia_Procedimento_Troca,
+			@Data_Atual							AS Peca_Data_Procedimento_Troca,
+			''									AS Peca_Informacao_Cliente
+		FROM
+			#Temp_Encomenda
+		JOIN Classificacao_Fiscal ON
+			#Temp_Encomenda.Class_Fiscal_ID = Classificacao_Fiscal.Class_Fiscal_ID
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+		SET @Peca_Gerada_ID = 265440 -- SCOPE_IDENTITY()
+
+		UPDATE 
+			#Temp_Encomenda
+		SET 
+			Peca_ID = @Peca_Gerada_ID,
+			Peca_CD = dbo.fun_Replicate_Formata_Codigos(CAST(@Novo_Codigo_Peca AS VARCHAR(4)), '0', 4, 1)
+		WHERE 
+			#Temp_Encomenda.Sequencial = @Contador
+
+
+		------ INSERE REGISTROS NA PECA_CLASSIFICACAO_FISCAL ---------
+		--INSERT INTO Peca_Classificacao_Fiscal (	
+		--	Peca_ID,
+		--	Class_Fiscal_ID,
+		--	Forn_ID,
+		--	Enum_Tipo_Classificacao_Fiscal_ID,
+		--	Usuario_ID,
+		--	Peca_Codigo_Situacao_Tributaria,
+		--	Peca_Classificacao_Fiscal_Data
+		--)
+		SELECT
+			Peca_ID,
+			Class_Fiscal_ID,
+			0,
+			@Enum_Class_Fiscal_Compra_ID,
+			@Usuario_Sistema_ID,
+			@Codigo_Situacao_Tributaria_Peca,
+			@Data_Atual
+		FROM
+			#Temp_Encomenda
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+
+		------ INSERE REGISTROS NA PECA_EMBALAGEM ---------
+		--INSERT INTO Peca_Embalagem (	
+		--	Peca_ID,
+		--	Peca_Embalagem_Descricao,
+		--	Peca_Embalagem_Peso,
+		--	Peca_Embalagem_Altura,
+		--	Peca_Embalagem_Largura,
+		--	Peca_Embalagem_Profundidade,
+		--	Peca_Embalagem_Diametro,
+		--	Enum_Tipo_Embalagem,
+		--	Peca_Embalagem_Quantidade,
+		--	Peca_Embalagem_Ativo,
+		--	Peca_Embalagem_Compra,
+		--	Peca_Embalagem_Venda,
+		--	Usuario_Ultima_Alteracao_ID,
+		--	Peca_Embalagem_Empilhamento_Maximo
+		--	)
+		SELECT
+			Peca_ID,
+			'Unitário',
+			0,
+			0,
+			0,
+			0,
+			0,
+			Enum_Tipo_Embalagem_ID,
+			1,
+			CAST(1 AS BIT),
+			CAST(1 AS BIT),
+			CAST(1 AS BIT),
+			@Usuario_Sistema_ID,
+			0
+		FROM
+			#Temp_Encomenda
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+		SET @Peca_Embalagem_Cadastrada_ID = SCOPE_IDENTITY()
+
+		
+		------ INSERE REGISTROS NO PECA_CODBARRA ---------
+		--INSERT INTO Peca_CodBarra (	
+		--	Peca_ID,
+		--	Fabricante_ID,
+		--	Peca_Embalagem_ID,
+		--	Peca_CodBarra_CdBarras,
+		--	Peca_CodBarra_IsCdBarrasMcar,
+		--	Peca_CodBarra_CdFabricante,
+		--	Peca_CodBarra_IsPrincipal,
+		--	Peca_Cod_IsVentec,
+		--	Usuario_Cadastro_ID,
+		--	Usuario_Ultima_Alteracao_ID,
+		--	Peca_CodBarras_Data_Cadastro,
+		--	Peca_CodBarras_Data_Ultima_Alteracao,
+		--	Peca_CodBarra_IsAtivo
+		--)
+		SELECT
+			Peca_ID,
+			Fabricante_ID,
+			@Peca_Embalagem_Cadastrada_ID,
+			Fabricante_CD + Produto_CD + Peca_CD,
+			CAST(1 AS BIT),
+			'',
+			CAST(1 AS BIT),
+			CAST(0 AS BIT),
+			@Usuario_Sistema_ID,
+			@Usuario_Sistema_ID,
+			@Data_Atual,
+			'1-1-1900',
+			CAST(1 AS BIT)
+		FROM
+			#Temp_Encomenda
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+
+		-------- INSERE REGISTROS NO ESTOQUE ---------
+		--INSERT INTO Estoque (	
+		--	Loja_ID,
+		--	Peca_ID,
+		--	Estoque_Qtde
+		--)
+		SELECT
+			vw_Lojas.Lojas_ID,
+			Peca_ID,
+			0
+		FROM
+			#Temp_Encomenda
+		JOIN vw_Lojas ON
+			vw_Lojas.Lojas_Id = vw_Lojas.Lojas_Id	
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+		AND
+			Lojas_IsAtivo = 1
+		AND
+			Lojas_Parametros_Descricao = 'Movimenta Estoque'
+		AND
+			Lojas_Parametros_Valor_Descritivo = 'Sim'	
+
+
+		------ INSERE REGISTROS NO ESTOQUE_CALCULO ---------
+		--INSERT INTO Estoque_Calculo (
+		--	Loja_ID,
+		--	Peca_ID,
+		--	Estoque_Calculo_Data,
+		--	Estoque_Calculo_Seguranca_Qtde,
+		--	Estoque_Calculo_Seguranca_Qtde_Frequencia,
+		--	Estoque_Calculo_Seguranca_Qtde_Parametrizado,
+		--	Estoque_Calculo_Seguranca_Qtde_Frequencia_Parametrizado,
+		--	Estoque_Calculo_Maximo_Qtde,
+		--	Estoque_Calculo_Maximo_Qtde_Frequencia,
+		--	Estoque_Calculo_Venda_Media,
+		--	Estoque_Calculo_Frequencia_Media,
+		--	Estoque_Calculo_Seguranca_Dias,
+		--	Estoque_Calculo_Minimo_Qtde,
+		--	Estoque_Calculo_Maximo_Dias
+		--)
+		SELECT
+			vw_Lojas.Lojas_ID,
+			Peca_ID,
+			'1900-01-01', -- Mantive igual a rotina de inclusão de peças do sistema
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			20,
+			1,
+			30
+		FROM
+			#Temp_Encomenda
+		JOIN vw_Lojas ON
+			vw_Lojas.Lojas_Id = vw_Lojas.Lojas_Id	
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+		AND
+			Lojas_IsAtivo = 1
+		AND
+			Lojas_Parametros_Descricao = 'Tipo Loja'
+		AND
+			Lojas_Parametros_Valor = 'Loja'
+
+
+		------ INSERE REGISTROS NO ESTOQUE_CUSTO ---------
+		--INSERT INTO Estoque_Custo (
+		--	Peca_ID,
+		--	Estoque_Custo_Medio,
+		--	Estoque_Custo_Medio_Efetivo,
+		--	Estoque_Custo_Ultimo_Custo,
+		--	Estoque_Custo_Ultimo_Custo_Efetivo,
+		--	Estoque_Custo_Reposicao_Efetivo
+		--)
+		SELECT
+			Peca_ID,
+			0,
+			0,
+			0,
+			0,
+			0
+		FROM
+			#Temp_Encomenda
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+
+		------ INSERE REGISTROS NA PECA_PRECO ---------
+		--INSERT INTO Peca_Preco (
+		--	Peca_ID,
+		--	Loja_ID,
+		--	Peca_Preco_Valor,
+		--	Peca_Preco_Custo_Reposicao,
+		--	Peca_Preco_Valor_Original,
+		--	Peca_Preco_Em_Oferta,
+		--	Peca_Preco_Em_Oferta_Todas_Lojas
+		--)
+		SELECT
+			Peca_ID,
+			vw_Lojas.Lojas_Id,
+			Valor_Preco_Venda,
+			Valor_Custo_Compra,		
+			0,
+			0,
+			0
+		FROM
+			#Temp_Encomenda 		
+		JOIN vw_Lojas ON
+			vw_Lojas.Lojas_Id = vw_Lojas.Lojas_Id	
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+		AND
+			Lojas_IsAtivo = 1
+		AND
+			Lojas_Parametros_Descricao = 'Reajuste de Preço'
+		AND
+			Lojas_Parametros_Valor_Descritivo = 'Sim'
+		
+
+		------ INSERE REGISTROS NA PECA_PECA_LINHA ---------
+		--INSERT INTO Peca_Peca_Linha (
+		--	Peca_ID,
+		--	Peca_Linha_ID,
+		--	Usuario_Ultima_Alteracao_ID,
+		--	Peca_Peca_Linha_IsAtivo
+		--)
+		SELECT
+			Peca_ID,
+			isnull(Peca_Linha_ID,0),
+			@Usuario_Sistema_ID,
+			CAST(1 AS BIT)
+		FROM
+			#Temp_Encomenda 	
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+
+		------ INSERE REGISTROS NA PECA_LOJA ---------
+		--INSERT INTO Peca_Loja (
+		--	Peca_ID,
+		--	Lojas_ID,
+		--	Usuario_Ultima_Alteracao_ID,
+		--	Peca_Loja_IsAtivo
+		--)
+		SELECT
+			Peca_ID,
+			vw_Lojas.Lojas_ID,
+			@Usuario_Sistema_ID,
+			CAST(1 AS INT)
+		FROM
+			#Temp_Encomenda
+		JOIN Peca_Linha ON
+			#Temp_Encomenda.Peca_Linha_ID = Peca_Linha.Peca_Linha_ID
+		JOIN vw_Lojas ON
+			vw_Lojas.Lojas_Id = vw_Lojas.Lojas_Id	
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+		AND
+			Peca_Linha_IsAtivo = 1
+		AND
+			Lojas_Parametros_Descricao = 'Linha da Loja'
+		AND
+			Lojas_Parametros_Valor = Peca_Linha.Peca_Linha_Nome
+
+		IF (@Produto_Possui_Servico = 1)
+		BEGIN
+		------ INSERE REGISTROS NA SERVICO_PECA ---------
+			--INSERT INTO Servico_Peca (
+			--	Servico_ID,
+			--	Peca_ID,
+			--	Enum_Status_ID,
+			--	Servico_Peca_IsAtivo,
+			--	Usuario_Ultima_Alteracao_ID
+			--)
+			SELECT
+				Servico_Produto.Servico_ID,
+				#Temp_Encomenda.Peca_ID,
+				CASE 
+				WHEN @Aplicavel_Todas_Pecas_Produto = 1
+					THEN @Enum_Status_Aprovacao_Peca_Servico_Aprovado_ID
+					ELSE @Enum_Status_Aprovacao_Peca_Servico_Pendente_ID
+			    END , 
+				
+				CAST(1 AS BIT),
+				@Usuario_Sistema_ID
+			FROM
+				#Temp_Encomenda
+			JOIN Servico_Produto ON
+				#Temp_Encomenda.Produto_ID = Servico_Produto.Produto_ID
+			JOIN Servico ON
+				Servico_Produto.Servico_ID = Servico.Servico_ID
+			WHERE
+				#Temp_Encomenda.Sequencial = @Contador
+			AND
+				Servico_Produto_IsAtivo = 1
+			AND
+				Servico_IsAtivo = 1 --colocado para prevenir inconsistência da base, onde um serviço é desativado mas o produto_servico continua existindo (e não deveria)
+		END
+
+
+		------ VERIFICA SE PRODUTO POSSUI ESPECIFICACAO TECNICA --------------------
+		IF ((SELECT 
+				COUNT(*) 
+			FROM 
+				Produto_Especificacao
+			WHERE 
+				Produto_Especificacao.Produto_ID = @Produto_ID
+			AND
+				Produto_Especificacao_IsAtivo = 1) > 0)
+		BEGIN
+			SET @Produto_Possui_Especificacao_Tecnica = 1
+		END
+		ELSE
+		BEGIN
+			SET @Produto_Possui_Especificacao_Tecnica = 0
+		END
+
+
+		------ VERIFICA SE PRODUTO POSSUI FOTO WEB --------------------
+		IF ((SELECT 
+				COUNT(*) 
+			FROM 
+				Peca_Foto
+			WHERE 
+				Peca_Foto.Origem_ID = @Produto_ID
+			AND
+				Enum_Tipo_Uso_ID = @Enum_Tipo_Uso_Foto_Produto_ID
+			AND
+				Peca_Foto_Principal = 1
+			AND
+				Peca_Foto_IsAtivo = 1) > 0) --TODO GORDON - CONFIRMAR SE O CAMPO ISATIVO NULO É 1 OU ZERO
+		BEGIN
+			SET @Produto_Possui_Foto_Web = 1
+		END
+		ELSE
+		BEGIN
+			SET @Produto_Possui_Foto_Web = 0
+		END
+
+		
+		------ VERIFICA SE PRODUTO POSSUI PROCEDIMENTOS DE TROCA --------------------
+		IF ((SELECT 
+				COUNT(*) 
+			FROM 
+				Procedimentos_Troca
+			WHERE 
+				Procedimentos_Troca.Produto_ID = @Produto_ID
+			AND				
+				Procedimentos_Troca_IsAtivo = 1) > 0)
+		BEGIN
+			SET @Produto_Possui_Procedimentos_Troca = 1
+		END
+		ELSE
+		BEGIN
+			SET @Produto_Possui_Procedimentos_Troca = 0
+		END
+		
+
+		------ INSERE REGISTROS NA PECA_PENDENCIA ---------
+		--INSERT INTO Peca_Pendencia (
+		--	Lojas_Origem_ID,
+		--	Fabricante_ID,
+		--	Produto_ID,
+		--	Peca_ID,
+		--	Enum_Tipo_ID,
+		--	Enum_Status_ID,
+		--	Enum_Tipo_Origem_ID,
+		--	Objeto_Origem_ID,
+		--	Pessoa_Solicitante_ID,
+		--	Usuario_Solicitante_ID,
+		--	Usuario_Ultima_Alteracao_ID,
+		--	Peca_Pendencia_Data_Solicitacao,
+		--	Peca_Pendencia_Data_Ultima_Alteracao,
+		--	Peca_Pendencia_Permite_Usuario_Alterar_Status
+		--)
+		SELECT
+			Lojas_ID										AS Lojas_Origem_ID,
+			Fabricante_ID									AS Fabricante_ID,
+			Produto_ID										AS Produto_ID,
+			Peca_ID											AS Peca_ID,
+			Enum_Tipo.Enum_ID 								AS Enum_Tipo_ID,
+			CASE
+				WHEN Enum_Tipo.Enum_ID = @Enum_Tipo_Pendencia_Peca_Especificacao_Tecnica_ID AND @Produto_Possui_Especificacao_Tecnica = 1
+					THEN
+						@Enum_Status_Pendencia_Peca_Pendente_ID
+				WHEN Enum_Tipo.Enum_ID = @Enum_Tipo_Pendencia_Peca_Especificacao_Tecnica_ID AND @Produto_Possui_Especificacao_Tecnica = 0
+					THEN
+						@Enum_Status_Pendencia_Peca_Aprovado_ID
+				WHEN Enum_Tipo.Enum_ID = @Enum_Tipo_Pendencia_Peca_Foto_WEB_ID AND @Produto_Possui_Foto_Web = 1
+					THEN
+						@Enum_Status_Pendencia_Peca_Aprovado_ID
+				WHEN Enum_Tipo.Enum_ID = @Enum_Tipo_Pendencia_Peca_Foto_WEB_ID AND @Produto_Possui_Foto_Web = 0
+					THEN
+						@Enum_Status_Pendencia_Peca_Pendente_ID
+				WHEN Enum_Tipo.Enum_ID = @Enum_Tipo_Pendencia_Peca_Procedimento_Troca_ID AND @Produto_Possui_Procedimentos_Troca = 1
+					THEN
+						@Enum_Status_Pendencia_Peca_Aprovado_ID
+				WHEN Enum_Tipo.Enum_ID = @Enum_Tipo_Pendencia_Peca_Procedimento_Troca_ID AND @Produto_Possui_Procedimentos_Troca = 0
+					THEN
+						@Enum_Status_Pendencia_Peca_Pendente_ID
+				ELSE
+					@Enum_Status_Pendencia_Peca_Pendente_ID
+			END												AS Enum_Status_ID,
+			@Enum_Tipo_Origem_Pendencia_Encomenda_ID		AS Enum_Tipo_Origem_ID,
+			Encomenda_CT_ID									AS Objeto_Origem_ID,			
+			Pessoa_Vendedor_ID								AS Pessoa_Solicitante_ID,
+			Usuario_Vendedor_ID								AS Usuario_Solicitante_ID,
+			Usuario_Vendedor_ID								AS Usuario_Ultima_Alteracao_ID,
+			@Data_Atual										AS Peca_Pendencia_Data_Solicitacao,
+			@Data_Atual										AS Peca_Pendencia_Data_Ultima_Alteracao,
+			CASE
+				WHEN Enum_Tipo.Enum_id IN (
+					@Enum_Tipo_Pendencia_Peca_Caracteristicas_ID, 
+					@Enum_Tipo_Pendencia_Peca_Codigo_Barras_ID,
+					@Enum_Tipo_Pendencia_Peca_Descricao_WEB_ID,
+					@Enum_Tipo_Pendencia_Peca_Descricao_Venda_ID,
+					@Enum_Tipo_Pendencia_Peca_Especificacao_Tecnica_ID,
+					@Enum_Tipo_Pendencia_Peca_Multiplo_Compra_ID,
+					@Enum_Tipo_Pendencia_Peca_Peça_Pendente_Cadastro_ID,
+					@Enum_Tipo_Pendencia_Peca_Veiculo_ID,
+					@Enum_Tipo_Pendencia_Peca_Revisao_Cadastro_ID
+				)
+					THEN
+						CAST(1 AS BIT)
+					ELSE
+						CAST(0 AS BIT)
+			END												AS Peca_Pendencia_Permite_Usuario_Alterar_Status
+		FROM
+			#Temp_Encomenda
+		JOIN Enumerado Enum_Tipo ON
+			Enum_Tipo.Enum_id IN (
+				@Enum_Tipo_Pendencia_Peca_Caracteristicas_ID, 
+				@Enum_Tipo_Pendencia_Peca_Codigo_Barras_ID,
+				@Enum_Tipo_Pendencia_Peca_Definicao_Estoque_ID,
+				@Enum_Tipo_Pendencia_Peca_Descricao_WEB_ID,
+				@Enum_Tipo_Pendencia_Peca_Descricao_Venda_ID,
+				@Enum_Tipo_Pendencia_Peca_Especificacao_Tecnica_ID,
+				@Enum_Tipo_Pendencia_Peca_Foto_WEB_ID,
+				@Enum_Tipo_Pendencia_Peca_Lote_Reajuste_ID,
+				@Enum_Tipo_Pendencia_Peca_Multiplo_Compra_ID,
+				@Enum_Tipo_Pendencia_Peca_Embalagem_Pesos_Medidas_ID,
+				@Enum_Tipo_Pendencia_Peca_Procedimento_Troca_ID,
+				@Enum_Tipo_Pendencia_Peca_Revisao_Cadastro_ID,				
+				@Enum_Tipo_Pendencia_Peca_Veiculo_ID)
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+		UNION
+
+		SELECT
+			Lojas_ID										AS Lojas_Origem_ID,
+			Fabricante_ID									AS Fabricante_ID,
+			Produto_ID										AS Produto_ID,
+			Peca_ID											AS Peca_ID,
+			@Enum_Tipo_Pendencia_Peca_Servico_ID			AS Enum_Tipo_ID,
+			CASE 
+				WHEN @Aplicavel_Todas_Pecas_Produto = 1
+					THEN @Enum_Status_Pendencia_Peca_Aprovado_ID
+					ELSE 
+						CASE
+							 WHEN @Produto_Possui_Servico = 1
+							 	THEN @Enum_Status_Pendencia_Peca_Pendente_ID
+								ELSE @Enum_Status_Pendencia_Peca_Aprovado_ID
+						END
+			END												AS Enum_Status_ID,
+			@Enum_Tipo_Origem_Pendencia_Encomenda_ID		AS Enum_Tipo_Origem_ID,
+			Encomenda_CT_ID									AS Objeto_Origem_ID,			
+			Pessoa_Vendedor_ID								AS Pessoa_Solicitante_ID,
+			Usuario_Vendedor_ID								AS Usuario_Solicitante_ID,
+			Usuario_Vendedor_ID								AS Usuario_Ultima_Alteracao_ID,
+			@Data_Atual										AS Peca_Pendencia_Data_Solicitacao,
+			@Data_Atual										AS Peca_Pendencia_Data_Ultima_Alteracao,
+			CAST(0 AS BIT)									AS Peca_Pendencia_Permite_Usuario_Alterar_Status
+		FROM
+			#Temp_Encomenda
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+
+
+		------ OBTEM CONFIGURACOES PARA CRIAR A NOTIFICACAO DE CI DE PENDENCIA DE REVISAO DA PECA CADASTRADA VIA ENCOMENDA ---------		
+		SET @CI_Notificacao_Revisao_Cadastro_Peca_Encomenda_ID = (select CI_Notificacao_Parametros_ID from CI_Notificacao_Parametros WHERE CI_Notificacao_Parametros_Chave = 'REVISAO_CADASTRO_PECA_ENCOMENDA')
+				
+
+		------ INSERE A CAPA DA CI --------- 
+		--INSERT INTO CI_Notificacao_Grupo(
+		--	Lojas_ID, 
+		--	CI_Notificacao_Parametros_ID, 
+		--	Objeto_Origem_ID, 
+		--	Usuario_Criacao_ID, 
+		--	CI_Notificacao_Grupo_Origem, 
+		--	CI_Notificacao_Grupo_Mensagem, 
+		--	CI_Notificacao_Grupo_Info_Adicional, 
+		--	CI_Notificacao_Grupo_Data
+		--)
+		SELECT
+			@Loja_Tucuruvi_ID, 
+			@CI_Notificacao_Revisao_Cadastro_Peca_Encomenda_ID, 
+			Peca_ID,
+			Usuario_Vendedor_ID, 
+			'p_Jobs_Gerar_Cadastro_Peca_De_Encomenda', 
+			'Você possui uma pendência de revisão de cadastro de peças de encomenda', 			
+			('Peça: ' + Fabricante_CD + '.' + Produto_CD + '.' + Peca_CD + 
+				', Encomenda: ' + CONVERT(VARCHAR, Encomenda_CT_ID) + ', Loja: ' + Lojas_NM COLLATE SQL_Latin1_General_CP1_CI_AS),
+			@Data_Atual
+		FROM
+			#Temp_Encomenda
+		JOIN Lojas ON
+			#Temp_Encomenda.Lojas_ID = Lojas.Lojas_Id
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+		
+		SET @CI_Notificacao_Grupo_ID = SCOPE_IDENTITY()
+
+
+		------ OBTEM USUARIOS QUE RECEBERAO A NOTIFICACAO DE CI ---------
+		INSERT INTO #Temp_Usuarios_Destino_CI
+		SELECT
+			DISTINCT Usuario.Usuario_ID
+		FROM
+			CI_Notificacao_Usuarios_Destino
+		LEFT JOIN Perm_Grupo ON
+			CI_Notificacao_Usuarios_Destino.Perm_Grupo_Recebe_Notificacao_ID = Perm_Grupo.Perm_Grupo_ID
+		AND
+			Perm_Grupo_IsAtivo = 1
+		LEFT JOIN Perm_Usuario_REL_Grupo ON
+			Perm_Grupo.Perm_Grupo_ID = Perm_Usuario_REL_Grupo.Perm_Grupo_ID
+		JOIN Usuario ON
+			CI_Notificacao_Usuarios_Destino.Usuario_Recebe_Notificacao_ID = Usuario.Usuario_ID
+		OR
+			Perm_Usuario_REL_Grupo.Usuario_ID = Usuario.Usuario_ID
+		WHERE
+			CI_Notificacao_Parametros_ID = @CI_Notificacao_Revisao_Cadastro_Peca_Encomenda_ID		
+		AND
+			Usuario.Usuario_IsAtivo = 1
+		
+
+		-------- INSERE OS ITENS (AS NOTIFICACOES POR USUARIO) DA CI --------- 
+		--INSERT INTO CI_Notificacao(
+		--	Lojas_ID,
+		--	CI_Notificacao_Grupo_ID,
+		--	Usuario_Recebe_Notificacao_ID,
+		--	CI_Notificacao_Data,
+		--	CI_Notificacao_Lida
+		--)
+		SELECT
+			@Loja_Tucuruvi_ID,
+			@CI_Notificacao_Grupo_ID,
+			Usuario_ID,
+			@Data_Atual,
+			CAST(0 AS BIT)
+		FROM
+			#Temp_Usuarios_Destino_CI
+			
+
+
+		------ ATUALIZA OS ITENS DA ENCOMENDA QUE TIVERAM SUA PEÇA GERADA ---------
+		UPDATE 
+			Encomenda_Venda_IT
+		SET
+			Encomenda_Venda_IT_Rotina_Cadastro_Central_Processada = 1,
+			Peca_ID = #Temp_Encomenda.Peca_ID,
+			Encomenda_Venda_IT_Peca_CD = #Temp_Encomenda.Peca_CD,
+			Usuario_Ultima_Alteracao_ID = @Usuario_Sistema_ID
+		FROM
+			Encomenda_Venda_IT
+		JOIN #Temp_Encomenda ON
+			Encomenda_Venda_IT.Encomenda_Venda_IT_ID = #Temp_Encomenda.Encomenda_IT_ID
+		AND
+			Encomenda_Venda_IT.Lojas_ID = #Temp_Encomenda.Lojas_ID
+		WHERE
+			#Temp_Encomenda.Sequencial = @Contador
+			
+
+
+		DELETE FROM @Codigo_Peca_Disponivel
+
+		SET @Contador = @Contador + 1
+	END 
+	
+	------  APENAS PARA CONFERIR NO FINAL AS PEÇAS INSERIDAS ------
+	/*
+	SELECT PECA.* FROM PECA
+	JOIN #Temp_Encomenda ON
+		PECA.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from peca with(nolock) where peca_id = 90460 
+
+	select Peca_Classificacao_Fiscal.* from Peca_Classificacao_Fiscal with(nolock)
+	JOIN #Temp_Encomenda ON
+		Peca_Classificacao_Fiscal.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Peca_Classificacao_Fiscal with(nolock) where peca_id = 90460
+
+	select Peca_Embalagem.* from Peca_Embalagem with(nolock) 
+	JOIN #Temp_Encomenda ON
+		Peca_Embalagem.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Peca_Embalagem with(nolock) where peca_id = 90460
+
+	select Peca_CodBarra.* from Peca_CodBarra with(nolock) 
+	JOIN #Temp_Encomenda ON
+		Peca_CodBarra.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Peca_CodBarra with(nolock) where peca_id = 90460
+
+	select Estoque.* from Estoque with(nolock) 
+	JOIN #Temp_Encomenda ON
+		Estoque.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Estoque with(nolock) where peca_id = 90460
+
+	select Estoque_Calculo.* from Estoque_Calculo 
+	JOIN #Temp_Encomenda ON
+		Estoque_Calculo.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Estoque_Calculo with(nolock) where peca_id = 90460
+
+	select Estoque_Custo.* from Estoque_Custo 
+	JOIN #Temp_Encomenda ON
+		Estoque_Custo.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Estoque_Custo with(nolock) where peca_id = 90460
+
+	select Peca_Preco.* from Peca_Preco 
+	JOIN #Temp_Encomenda ON
+		Peca_Preco.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Peca_Preco with(nolock) where peca_id = 90460
+
+	select Peca_Peca_Linha.* from Peca_Peca_Linha 
+	JOIN #Temp_Encomenda ON
+		Peca_Peca_Linha.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Peca_Peca_Linha with(nolock) where peca_id = 90460
+
+	select Peca_Loja.* from Peca_Loja 
+	JOIN #Temp_Encomenda ON
+		Peca_Loja.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Peca_Loja with(nolock) where peca_id = 90460
+
+	select Servico_Peca.* from Servico_Peca 
+	JOIN #Temp_Encomenda ON
+		Servico_Peca.Peca_ID = #Temp_Encomenda.Peca_ID
+	select * from Servico_Peca with(nolock) where peca_id = 90460
+
+	SELECT Encomenda_Venda_IT.* FROM Encomenda_Venda_IT
+	JOIN #Temp_Encomenda ON
+		Encomenda_Venda_IT.Encomenda_Venda_IT_ID = #Temp_Encomenda.Encomenda_IT_ID
+	AND
+		Encomenda_Venda_IT.Lojas_ID = #Temp_Encomenda.Lojas_ID
+
+	select '0500' As Fab, '0020' as Pro, '0046' as Pec, * from peca where peca_id = 91649 --produto da peça sem serviço
+	select '0500' As Fab, '0900' as Pro, '0001' as Pec, * from peca where peca_id = 91644 --produto da peça com serviço
+
+	select '0500' As Fab, '0020' as Pro, '0046' as Pec, * from peca where peca_id = 91649 --produto da peça sem especificacao tecnica
+	91653 --peca cujo produto tem especificacao tecnica
+
+	91662 --peça cujo produto tem foto web
+	*/
+		
+	DROP TABLE #Temp_Encomenda
+	DROP TABLE #Temp_Usuarios_Destino_CI
+
+COMMIT
+
+END TRY
+BEGIN CATCH
+	EXEC dbo.p_Get_Error_SQL
+	EXEC dbo.p_Gravar_Log_Erro_SQL
+
+	IF @@TRANCOUNT > 0 ROLLBACK
+
+	DROP TABLE #Temp_Encomenda
+	DROP TABLE #Temp_Usuarios_Destino_CI
+	
+END CATCH	
+			
+SET NOCOUNT OFF
+

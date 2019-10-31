@@ -1,0 +1,1502 @@
+using System;
+using System.Data;
+using System.Windows.Forms;
+using System.Windows.Media.Imaging;
+using System.Collections;
+using System.Collections.Generic;
+using Mercadocar.Enumerados;
+using Mercadocar.InfraEstrutura;
+using Mercadocar.ObjetosNegocio.DataObject;
+using Mercadocar.RegrasNegocio;
+using Mercadocar.Herancas.Formularios;
+using Mercadocar.InfraEstrutura.BancoDados;
+
+namespace Mercadocar.Formularios
+{
+    public sealed partial class frmAnalise_Mercadologica_Estoque_New
+    {
+        #region "  Declarações      "
+
+        private DataSet dtsResumo = new DataSet();
+        private DataSet dtsCompras = new DataSet();
+        private DataSet dtsCD = new DataSet();
+        private DataSet dtsEC = new DataSet();
+        private DataSet dtsLoja = new DataSet();
+        private int intPecaID = 0;
+
+        private DataTable dttTotalizadores = new DataTable();
+
+        private enum enuPaginas
+        {
+            Geral,
+            Compras,
+            CD,
+            EC,
+            Loja
+        }
+
+
+        #endregion
+
+        #region "  Constructor      "
+
+        public frmAnalise_Mercadologica_Estoque_New()
+        {
+            // This call is required by the Windows Form Designer.
+            this.InitializeComponent();
+
+            // Add any initialization after the InitializeComponent() call.
+            try
+            {
+                this.Load += this.Form_Load;
+                this.Activated += this.Form_Activated;
+                this.KeyDown += this.Form_KeyDown;
+
+                this.btnProcessar.Click += this.Clicar_Botao_Processar;
+                this.btnHistoricoMovimentacoes.Click += this.Clicar_Botao_Historico_Movimentacoes;
+                this.btnHistoricoGuarda.Click += this.Clicar_Botao_Historico_Guarda;
+                this.objCodMercadocar.Limpar_Peca_ID += this.Remover_Peca_ID_Cod_Mercadocar;
+                this.objCodMercadocar.Carregar_Peca_ID += this.Carregar_Peca_ID_Cod_Mercadocar;
+                this.objCodMercadocar.Peca_ID_Modificado += this.Alterar_Peca_ID_Cod_Mercadocar;
+
+                this.uctAnalise_Mercadologica_Estoque_Resumo.On_Error += this.User_Control_Error;
+                this.uctAnalise_Mercadologica_Estoque_Resumo.Compras_Click += this.Clicar_User_Control_Compras;
+                this.uctAnalise_Mercadologica_Estoque_Resumo.CD_Click += this.Clicar_User_Control_CD;
+                this.uctAnalise_Mercadologica_Estoque_Resumo.EC_Click += this.Clicar_User_Control_EC;
+                this.uctAnalise_Mercadologica_Estoque_Resumo.Loja_Click += this.Clicar_User_Control_Loja;
+
+                this.tbpCompras.Enter += this.TabPage_Compras_Enter;
+                this.chkDuracaoEstoque.CheckedChanged += this.chkCompras_CheckedChanged;
+                this.chkMapaCotacao.CheckedChanged += this.chkCompras_CheckedChanged;
+                this.chkPedidoCompras.CheckedChanged += this.chkCompras_CheckedChanged;
+
+                this.tbpCD.Enter += this.TabPage_CD_Enter;
+                this.chkPreRecebimento.CheckedChanged += this.chkCD_CheckedChanged;
+                this.chkPreparacao.CheckedChanged += this.chkCD_CheckedChanged;
+                this.chkConferenciaFisica.CheckedChanged += this.chkCD_CheckedChanged;
+                this.chkGuarda.CheckedChanged += this.chkCD_CheckedChanged;
+                this.chkDivergenciaCD.CheckedChanged += this.chkCD_CheckedChanged;
+
+                this.tbpEC.Enter += this.TabPage_EC_Enter;
+                this.chkSeparacaoEC.CheckedChanged += this.chkEC_CheckedChanged;
+                this.chkPacoteEC.CheckedChanged += this.chkEC_CheckedChanged;
+                this.chkCargaEC.CheckedChanged += this.chkEC_CheckedChanged;
+                this.chkDivergenciaEC.CheckedChanged += this.chkEC_CheckedChanged;
+                this.btnRelatorioAbastecimento.Click += this.Clicar_Botao_Relatorio_Abastecimento;
+
+                this.tbpLoja.Enter += this.TabPage_Loja_Enter;
+                this.chkRecebimento.CheckedChanged += this.chkRecebimento_CheckedChanged;
+                this.chkTransferencias.CheckedChanged += this.chkTransferencias_CheckedChanged;
+                this.chkReservaVenda.CheckedChanged += this.chkReservaVenda_CheckedChanged;
+                this.chkApontamentoFaltas.CheckedChanged += this.chkApontamentoFaltas_CheckedChanged;
+                this.chkTrocaGarantia.CheckedChanged += this.chkTrocaGarantia_CheckedChanged;
+                this.chkDivergenciaPendenteContagem.CheckedChanged += this.chkDivergenciaPendenteContagem_CheckedChanged;
+
+                this.tmrWarningEC.Tick += this.tmrWarningEC_Tick;
+                this.tmrWarningLoja.Tick += this.tmrWarningLoja_Tick;
+                this.tmrConsultaTotalizadores.Tick += this.tmrConsultaTotalizadores_Tick;
+
+                this.Linkar_Tags_CheckBox_Grids();
+                this.Linkar_Tags_Grids_Labels();
+                this.Carregar_Combo_Lojas();
+
+                this.chkVisualizarGrupoAlternativo.CheckedChanged += this.Alterar_Visualizacao_Grupo_Fabricante_Alternativo;
+
+                this.btnFoto.Click += this.Clicar_Botao_Foto;
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public frmAnalise_Mercadologica_Estoque_New(string Fabricante_CD, string Produto_CD, string Peca_CD)
+            : this()
+        {
+
+            try
+            {
+                this.cboLojas.SelectedValue = ((LojasDO)Root.Loja_Ativa_NEW).ID;
+                this.objCodMercadocar.Carregar_Peca_Por_Codigo_Mercadocar(Fabricante_CD, Produto_CD, Peca_CD);
+
+                this.Clicar_Botao_Processar(null, null);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public frmAnalise_Mercadologica_Estoque_New(Int16 intLoja_ID, string strFabricante_CD, string strProduto_CD, string strPeca_CD)
+            : this()
+        {
+
+            try
+            {
+                this.cboLojas.SelectedValue = intLoja_ID;
+                this.objCodMercadocar.Carregar_Peca_Por_Codigo_Mercadocar(strFabricante_CD, strProduto_CD, strPeca_CD);
+
+                this.Clicar_Botao_Processar(null, null);
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public frmAnalise_Mercadologica_Estoque_New(int lojasId, int fabricanteAlternativoId, string fabricanteCd, string produtoCd, string pecaCd)
+            : this()
+        {
+            try
+            {
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+
+                this.cboLojas.SelectedValue = lojasId;
+
+                this.objCodMercadocar.Carregar_Peca_Por_Codigo_Mercadocar(fabricanteCd, produtoCd, pecaCd);
+
+                this.intPecaID = this.objCodMercadocar.Peca_ID;
+
+                this.Carregar_DataSet_Resumo(this.cboLojas.SelectedValue.ToInteger(), this.intPecaID);
+                this.Carregar_Dados_Controles(true);
+                this.tbcInformacoesPeca.SelectedTab = this.tbpPecasAlternativas;
+                this.chkVisualizarGrupoAlternativo.Visible = true;
+                this.chkVisualizarGrupoAlternativo.Checked = true;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+            }
+        }
+
+        #endregion
+
+        #region "  Inicialização    "
+
+        private void Form_Load(object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.lblDescricaoFabricante.DataBindings.Add("Text", this.objCodMercadocar, "Fabricante_NmFantasia");
+                this.lblDescricaoProduto.DataBindings.Add("Text", this.objCodMercadocar, "Produto_Ds");
+                this.lblDescricaoPeca.DataBindings.Add("Text", this.objCodMercadocar, "Peca_DsTecnica");
+                this.lblCodFabPecaAlternativa.DataBindings.Add("Text", this.objCodMercadocar, "Cod_Item_Fabricante");
+
+                if (this.intPecaID == 0)
+                {
+                    this.chkVisualizarGrupoAlternativo.Visible = false;
+                    this.tbcInformacoesPeca.TabPages.Remove(this.tbpPecasAlternativas);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Form_Activated(object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.objCodMercadocar.Focar_Codigo();
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        #endregion
+
+        #region "  Eventos          "
+
+        #region "  Geral                     "
+
+        private void Form_KeyDown(System.Object sender, System.Windows.Forms.KeyEventArgs e)
+        {
+            try
+            {
+                if (e.KeyCode == Keys.F12)
+                {
+                    this.tabHerdado.SelectedIndex = 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_Botao_Processar(object sender, System.EventArgs e)
+        {
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+
+                this.chkVisualizarGrupoAlternativo.Checked = false;
+                this.intPecaID = this.objCodMercadocar.Peca_ID;
+
+                this.Carregar_DataSet_Resumo(Convert.ToInt32(this.cboLojas.SelectedValue), this.objCodMercadocar.Peca_ID);
+
+                if (this.dtsResumo.Tables[0].Rows.Count > 0)
+                {
+                    this.Carregar_Dados_Controles(true);
+                }
+                else
+                {
+                    MessageBox.Show("Não há informações a serem exibidas.", "Análise Mercadológica de Estoque", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+                this.chkVisualizarGrupoAlternativo.Checked = (this.dtsResumo.Tables["Fabricante_Alternativo"].Rows.Count > 0);
+
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+            }
+        }
+
+        private void Clicar_Botao_Historico_Movimentacoes(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.chkVisualizarGrupoAlternativo.Checked)
+                {
+                    if (this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeEC == string.Empty)
+                    {
+                        this.btnProcessar.PerformClick();
+                    }
+
+                    frmAnalise_Mercadologica_Movimentacao_Diaria_New frmMovimentacaoDiaria = new frmAnalise_Mercadologica_Movimentacao_Diaria_New(
+                                                                                                    this.objCodMercadocar.Peca_ID,
+                                                                                                    this.cboLojas.SelectedValue.DefaultInteger(),
+                                                                                                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeEC.DefaultInteger(),
+                                                                                                    this.objCodMercadocar.Fabricante_CD.DefaultString(),
+                                                                                                    this.objCodMercadocar.Produto_CD.DefaultString(),
+                                                                                                    this.objCodMercadocar.Peca_CD.DefaultString(),
+                                                                                                    this.objCodMercadocar.Fabricante_NmFantasia.DefaultString(),
+                                                                                                    this.objCodMercadocar.Produto_Ds.DefaultString(),
+                                                                                                    this.objCodMercadocar.Peca_DsTecnica.DefaultString(),
+                                                                                                    this.chkVisualizarGrupoAlternativo.Checked);
+                    frmMovimentacaoDiaria.Show(this);
+
+                }
+                else
+                {
+                    if (this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeSeguranca == string.Empty)
+                    {
+                        this.btnProcessar.PerformClick();
+                    }
+
+                    frmAnalise_Mercadologica_Movimentacao_Diaria_New frmMovimentacaoDiaria = new frmAnalise_Mercadologica_Movimentacao_Diaria_New(
+                                                                                                    this.objCodMercadocar.Peca_ID,
+                                                                                                    Convert.ToInt32(this.cboLojas.SelectedValue),
+                                                                                                    Convert.ToInt32(this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeSeguranca),
+                                                                                                    Convert.ToString(this.objCodMercadocar.Fabricante_CD),
+                                                                                                    Convert.ToString(this.objCodMercadocar.Produto_CD),
+                                                                                                    Convert.ToString(this.objCodMercadocar.Peca_CD),
+                                                                                                    Convert.ToString(this.objCodMercadocar.Fabricante_NmFantasia),
+                                                                                                    Convert.ToString(this.objCodMercadocar.Produto_Ds),
+                                                                                                    Convert.ToString(this.objCodMercadocar.Peca_DsTecnica),
+                                                                                                    this.chkVisualizarGrupoAlternativo.Checked);
+                    frmMovimentacaoDiaria.Show(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_Botao_Historico_Guarda(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeSeguranca == string.Empty)
+                {
+                    this.btnProcessar.PerformClick();
+                }
+
+                frmHistorico_Guarda_Propriedades frmHistoricoGuarda = new frmHistorico_Guarda_Propriedades(
+                                                                                                this.objCodMercadocar.Peca_ID,
+                                                                                                Convert.ToInt32(this.cboLojas.SelectedValue),
+                                                                                                this.chkVisualizarGrupoAlternativo.Checked);
+                frmHistoricoGuarda.Show(this);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Remover_Peca_ID_Cod_Mercadocar(object sender, EventArgs e)
+        {
+            try
+            {
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+
+                this.Limpar_Dados_Controles();
+                this.btnProcessar.Enabled = false;
+                this.btnHistoricoMovimentacoes.Enabled = false;
+                this.btnHistoricoGuarda.Enabled = false;
+                this.btnRelatorioAbastecimento.Enabled = false;
+                this.btnFoto.Enabled = false;
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+            }
+        }
+
+        private void Carregar_Peca_ID_Cod_Mercadocar(object sender, EventArgs e)
+        {
+            try
+            {
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+
+                if (!this.btnProcessar.Enabled)
+                {
+                    this.btnProcessar.Enabled = true;
+                    this.btnHistoricoMovimentacoes.Enabled = true;
+                    this.btnHistoricoGuarda.Enabled = true;
+                    this.btnRelatorioAbastecimento.Enabled = Root.Permissao.Obter_Permissao_Do_Usuario(Root.Funcionalidades.Usuario_Ativo, ((LojasDO)Root.Loja_Ativa_NEW).ID,
+                                                                                                    typeof(frmAnalise_Mercadologica_Relatorio_Abastecimento_Rps).Name, Acao_Formulario.Abrir.ToString());
+                    this.btnProcessar.Focus();
+                }
+
+                this.btnFoto.Enabled = new Peca_FotoBUS().Validar_Existe_Foto_Peca(intPecaID, 
+                                                                                   Enumerados.Tipo_Uso_Foto.Peca.ToInteger(),
+                                                                                   TransactionManager.OpcoesDeDataSource.ServidoDaLojaAtual);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+            }
+        }
+
+        private void Alterar_Peca_ID_Cod_Mercadocar(object sender, EventArgs e)
+        {
+            try
+            {
+                if (this.objCodMercadocar.Peca_ID != 0)
+                {
+                    this.Preencher_Grid_Codigo_Pecas();
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_User_Control_Compras(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            try
+            {
+                this.tabHerdado.SelectedIndex = Convert.ToInt32(enuPaginas.Compras);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_User_Control_CD(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            try
+            {
+                this.tabHerdado.SelectedIndex = Convert.ToInt32(enuPaginas.CD);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_User_Control_EC(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            try
+            {
+                this.tabHerdado.SelectedIndex = Convert.ToInt32(enuPaginas.EC);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_User_Control_Loja(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            try
+            {
+                this.tabHerdado.SelectedIndex = Convert.ToInt32(enuPaginas.Loja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void tmrWarningEC_Tick(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.uctAnalise_Mercadologica_Estoque_Resumo.Warning_EC = !this.uctAnalise_Mercadologica_Estoque_Resumo.Warning_EC;
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void tmrWarningLoja_Tick(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.uctAnalise_Mercadologica_Estoque_Resumo.Warning_Loja = !this.uctAnalise_Mercadologica_Estoque_Resumo.Warning_Loja;
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void tmrConsultaTotalizadores_Tick(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.objCodMercadocar.Peca_ID != 0)
+                {
+                    this.Carregar_Dados_Timers_Totalizadores();
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Alterar_Indice_Grid_Fabricante_Alternativo(object sender, System.EventArgs e)
+        {
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+                this.objCodMercadocar.Limpar_Peca_ID -= this.Remover_Peca_ID_Cod_Mercadocar;
+
+                if (this.dgvFabricanteAlternativo.SelectedRows.Count == 0)
+                {
+                    return;
+                }
+
+                DataRowView objRow = (DataRowView)this.dgvFabricanteAlternativo.SelectedRows[0].DataBoundItem;
+
+                this.lblFabricantePecaAlternativa.Text = objRow["Fabricante_NmFantasia"].DefaultString();
+                this.lblCodFabPecaAlternativa.Text = objRow["Peca_CDFabricante"].DefaultString();
+
+                this.objCodMercadocar.Carregar_Peca_Por_Codigo_Mercadocar(objRow["Fabricante_CD"].DefaultString(), objRow["Produto_CD"].DefaultString(), objRow["Peca_CD"].DefaultString());
+
+                if (!this.chkVisualizarGrupoAlternativo.Checked)
+                {
+                    this.intPecaID = objRow["Peca_ID"].DefaultInteger();
+
+                    this.Carregar_DataSet_Resumo(this.cboLojas.SelectedValue.DefaultInteger(), this.intPecaID);
+
+                    if (this.dtsResumo.Tables[0].Rows.Count == 0)
+                    {
+                        MessageBox.Show("Não há informações a serem exibidas.", "Análise Mercadológica de Estoque", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    this.Carregar_Dados_Controles(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+                this.objCodMercadocar.Limpar_Peca_ID += this.Remover_Peca_ID_Cod_Mercadocar;
+            }
+        }
+
+        private void Alterar_Visualizacao_Grupo_Fabricante_Alternativo(object sender, System.EventArgs e)
+        {
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+
+                this.Carregar_DataSet_Resumo(this.cboLojas.SelectedValue.DefaultInteger(), this.intPecaID);
+
+                if (this.dtsResumo.Tables[0].Rows.Count > 0)
+                {
+                    this.Carregar_Dados_Controles(false);
+                    this.Atualizar_Tab_Pages();
+                }
+                else
+                {
+                    MessageBox.Show("Não há informações a serem exibidas.", "Análise Mercadológica de Estoque", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+                this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+            }
+        }
+
+        private void Clicar_Botao_Foto(object sender, EventArgs e)
+        {
+            try
+            {
+                this.btnProcessar.PerformClick();
+                List<BitmapImage> colImagem = new Peca_FotoBUS().Carregar_Imagem_Por_Peca(this.intPecaID);
+                frmFoto_Zoom frmFotoZoom = new frmFoto_Zoom(colImagem);
+                frmFotoZoom.ShowDialog(this);
+                this.btnFoto.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+        #endregion
+
+        #region "  Compras                   "
+
+        private void TabPage_Compras_Enter(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.dtsCompras.Tables.Count == 0)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+                    this.dtsCompras = busAnaliseMercadologica.Consultar_Aba_Compras_Analise_Mercadologica(Convert.ToInt32(this.cboLojas.SelectedValue), this.objCodMercadocar.Peca_ID);
+
+                    this.chkDuracaoEstoque.Checked = this.dtsCompras.Tables[0].Rows.Count > 0;
+                    this.chkMapaCotacao.Checked = this.dtsCompras.Tables[1].Rows.Count > 0;
+                    this.chkPedidoCompras.Checked = this.dtsCompras.Tables[2].Rows.Count > 0;
+
+                    this.dgvDuracaoEstoque.DataSource = this.dtsCompras.Tables[0];
+                    this.dgvMapaCotacao.DataSource = this.dtsCompras.Tables[1];
+                    this.dgvPedidoCompras.DataSource = this.dtsCompras.Tables[2];
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void chkCompras_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckBoxCompras, ref this.pnlContainerGridCompras);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        #endregion
+
+        #region "  Centro de Distribuição    "
+
+        private void TabPage_CD_Enter(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.dtsCD.Tables.Count == 0)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+                    this.dtsCD = busAnaliseMercadologica.Consultar_Aba_CD_Analise_Mercadologica(Convert.ToInt32(this.cboLojas.SelectedValue), this.objCodMercadocar.Peca_ID);
+
+                    this.chkPreRecebimento.Checked = this.dtsCD.Tables[0].Rows.Count > 0;
+                    this.chkPreparacao.Checked = this.dtsCD.Tables[1].Rows.Count > 0;
+                    this.chkConferenciaFisica.Checked = this.dtsCD.Tables[2].Rows.Count > 0;
+                    this.chkGuarda.Checked = this.dtsCD.Tables[3].Rows.Count > 0;
+                    this.chkDivergenciaCD.Checked = this.dtsCD.Tables[4].Rows.Count > 0;
+
+                    this.dgvPreRecebimento.DataSource = this.dtsCD.Tables[0];
+                    this.dgvPreparacao.DataSource = this.dtsCD.Tables[1];
+                    this.dgvConferenciaFisica.DataSource = this.dtsCD.Tables[2];
+                    this.dgvGuarda.DataSource = this.dtsCD.Tables[3];
+                    this.dgvDivergenciaCD.DataSource = this.dtsCD.Tables[4];
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void chkCD_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckBoxCD, ref this.pnlContainerGridCD);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        #endregion
+
+        #region "  Estoque Central           "
+
+        private void TabPage_EC_Enter(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.dtsEC.Tables.Count == 0)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+                    this.dtsEC = busAnaliseMercadologica.Consultar_Aba_EC_Analise_Mercadologica(Convert.ToInt32(this.cboLojas.SelectedValue), this.objCodMercadocar.Peca_ID);
+
+                    this.chkSeparacaoEC.Checked = this.dtsEC.Tables[0].Rows.Count > 0;
+                    this.chkPacoteEC.Checked = this.dtsEC.Tables[1].Rows.Count > 0;
+                    this.chkCargaEC.Checked = this.dtsEC.Tables[2].Rows.Count > 0;
+                    this.chkDivergenciaEC.Checked = this.dtsEC.Tables[3].Rows.Count > 0;
+
+                    this.dgvSeparacaoEC.DataSource = this.dtsEC.Tables[0];
+                    this.dgvPacoteEC.DataSource = this.dtsEC.Tables[1];
+                    this.dgvCargaEC.DataSource = this.dtsEC.Tables[2];
+                    this.dgvDivergenciaEC.DataSource = this.dtsEC.Tables[3];
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void chkEC_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckEC, ref this.pnlContainerGridEC);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void Clicar_Botao_Relatorio_Abastecimento(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                frmAnalise_Mercadologica_Relatorio_Abastecimento_Rps frmRelatorio = new frmAnalise_Mercadologica_Relatorio_Abastecimento_Rps(this.intPecaID, this.chkVisualizarGrupoAlternativo.Checked);
+                frmRelatorio.Size = new System.Drawing.Size(1024, 768);
+                frmRelatorio.StartPosition = FormStartPosition.CenterScreen;
+                frmRelatorio.Show(this);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        #endregion
+
+        #region "  Loja                      "
+
+        private void TabPage_Loja_Enter(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                if (this.dtsLoja.Tables.Count == 0)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+                    this.dtsLoja = busAnaliseMercadologica.Consultar_Aba_Loja_Analise_Mercadologica(Convert.ToInt32(this.cboLojas.SelectedValue), this.objCodMercadocar.Peca_ID);
+
+                    this.chkRecebimento.Checked = this.dtsLoja.Tables["Recebimento"].Rows.Count > 0;
+                    this.chkTransferencias.Checked = this.dtsLoja.Tables["Transferencia"].Rows.Count > 0;
+                    this.chkReservaVenda.Checked = this.dtsLoja.Tables["Reserva_Pre_Venda"].Rows.Count > 0;
+                    this.chkApontamentoFaltas.Checked = this.dtsLoja.Tables["Apontamento_Faltas"].Rows.Count > 0;
+                    this.chkTrocaGarantia.Checked = this.dtsLoja.Tables["Trocas"].Rows.Count > 0;
+                    this.chkDivergenciaPendenteContagem.Checked = this.dtsLoja.Tables["Divergencia_Pendente_Contagem"].Rows.Count > 0;
+
+                    this.dgvRecebimento.DataSource = this.dtsLoja.Tables["Recebimento"];
+                    this.dgvTransferencias.DataSource = this.dtsLoja.Tables["Transferencia"];
+                    this.dgvReservaVenda.DataSource = this.dtsLoja.Tables["Reserva_Pre_Venda"];
+                    this.dgvApontamentoFaltas.DataSource = this.dtsLoja.Tables["Apontamento_Faltas"];
+                    this.dgvTrocaGarantia.DataSource = this.dtsLoja.Tables["Trocas"];
+                    this.dgvDivergenciaPendenteContagem.DataSource = this.dtsLoja.Tables["Divergencia_Pendente_Contagem"];
+                }
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
+        private void chkRecebimento_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckLoja, ref this.pnlContainerGridLoja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void chkTransferencias_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckLoja, ref this.pnlContainerGridLoja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void chkReservaVenda_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckLoja, ref this.pnlContainerGridLoja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void chkApontamentoFaltas_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckLoja, ref this.pnlContainerGridLoja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void chkTrocaGarantia_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckLoja, ref this.pnlContainerGridLoja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        private void chkDivergenciaPendenteContagem_CheckedChanged(System.Object sender, System.EventArgs e)
+        {
+            try
+            {
+                this.Organizar_Grids_Ao_Clicar_CheckBox(ref this.pnlContainerCheckLoja, ref this.pnlContainerGridLoja);
+            }
+            catch (Exception ex)
+            {
+                Root.Tratamento_Erro.Tratar_Erro(ex, this);
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region "  Métodos          "
+
+        private void User_Control_Error(Exception objException)
+        {
+            try
+            {
+                Root.Tratamento_Erro.Tratar_Erro(objException, this);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Carregar_Combo_Lojas()
+        {
+            try
+            {
+                this.cboLojas.DisplayMember = "Lojas_NM";
+                this.cboLojas.ValueMember = "Lojas_ID";
+
+                this.cboLojas.DataSource = Root.Lojas_Parametros.Retornar_Lojas_Por_Parametro_Descritivo("Movimenta Estoque", "Sim");
+                this.cboLojas.SelectedValue = ((LojasDO)Root.Loja_Ativa_NEW).ID;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Carregar_DataSet_Resumo(int lojasId, int pecaId)
+        {
+            try
+            {
+                Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+
+                if (this.chkVisualizarGrupoAlternativo.Checked)
+                {
+                    this.dtsResumo = busAnaliseMercadologica.Consultar_Grupo_Fabricante_Alternativo_Analise_Mercadologica(this.cboLojas.SelectedValue.DefaultInteger(), this.objCodMercadocar.Peca_ID);
+                }
+                else
+                {
+                    this.dtsResumo = busAnaliseMercadologica.Consultar_Resumo_Analise_Mercadologica(lojasId, pecaId);
+                }
+                
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Linkar_Tags_CheckBox_Grids()
+        {
+            try
+            {
+                // Compras
+                this.chkDuracaoEstoque.Tag = this.dgvDuracaoEstoque;
+                this.chkMapaCotacao.Tag = this.dgvMapaCotacao;
+                this.chkPedidoCompras.Tag = this.dgvPedidoCompras;
+                // Centro de Distribuição
+                this.chkPreRecebimento.Tag = this.dgvPreRecebimento;
+                this.chkPreparacao.Tag = this.dgvPreparacao;
+                this.chkConferenciaFisica.Tag = this.dgvConferenciaFisica;
+                this.chkGuarda.Tag = this.dgvGuarda;
+                this.chkDivergenciaCD.Tag = this.dgvDivergenciaCD;
+                // Estoque Central
+                this.chkSeparacaoEC.Tag = this.dgvSeparacaoEC;
+                this.chkPacoteEC.Tag = this.dgvPacoteEC;
+                this.chkCargaEC.Tag = this.dgvCargaEC;
+                this.chkDivergenciaEC.Tag = this.dgvDivergenciaEC;
+                // Loja
+                this.chkRecebimento.Tag = this.dgvRecebimento;
+                this.chkTransferencias.Tag = this.dgvTransferencias;
+                this.chkReservaVenda.Tag = this.dgvReservaVenda;
+                this.chkApontamentoFaltas.Tag = this.dgvApontamentoFaltas;
+                this.chkTrocaGarantia.Tag = this.dgvTrocaGarantia;
+                this.chkDivergenciaPendenteContagem.Tag = this.dgvDivergenciaPendenteContagem;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Linkar_Tags_Grids_Labels()
+        {
+            try
+            {
+                // Compras
+                this.dgvDuracaoEstoque.Tag = this.lblDuracaoEstoque;
+                this.dgvMapaCotacao.Tag = this.lblMapaCotacao;
+                this.dgvPedidoCompras.Tag = this.lblPedidoCompras;
+                // Centro de Distribuição
+                this.dgvPreRecebimento.Tag = this.lblPreRecebimento;
+                this.dgvPreparacao.Tag = this.lblPreparacao;
+                this.dgvConferenciaFisica.Tag = this.lblConferenciaFisica;
+                this.dgvGuarda.Tag = this.lblGuarda;
+                this.dgvDivergenciaCD.Tag = this.lblDivergenciaCD;
+                // Estoque Central
+                this.dgvSeparacaoEC.Tag = this.lblSeparacaoEC;
+                this.dgvPacoteEC.Tag = this.lblPacoteEC;
+                this.dgvCargaEC.Tag = this.lblCargaEC;
+                this.dgvDivergenciaEC.Tag = this.lblDivergenciaEC;
+                // Loja
+                this.dgvRecebimento.Tag = this.lblRecebimento;
+                this.dgvTransferencias.Tag = this.lblTransferencias;
+                this.dgvReservaVenda.Tag = this.lblReservaVenda;
+                this.dgvApontamentoFaltas.Tag = this.lblApontamentoFaltas;
+                this.dgvTrocaGarantia.Tag = this.lblTrocaGarantia;
+                this.dgvDivergenciaPendenteContagem.Tag = this.lblDivergenciasLoja;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Organizar_Grids_Ao_Clicar_CheckBox(ref Panel pnlContainer, ref Panel pnlGrids)
+        {
+            try
+            {
+                int intQtdeChecados = this.Retornar_Qtde_CheckBox_Checados(ref pnlContainer);
+                int intIndex = 0;
+                foreach (Control objControl in pnlContainer.Controls)
+                {
+                    if (objControl is CheckBox && ((CheckBox)objControl).Tag != null)
+                    {
+                        ((DataGridView)((CheckBox)objControl).Tag).Visible = ((CheckBox)objControl).Checked;
+                        ((Label)((DataGridView)((CheckBox)objControl).Tag).Tag).Visible = ((CheckBox)objControl).Checked;
+                        if (((CheckBox)objControl).Checked)
+                        {
+                            // Grid
+                            ((DataGridView)((CheckBox)objControl).Tag).Height = Convert.ToInt32(Decimal.Round(Convert.ToDecimal((pnlGrids.Height - 2) / intQtdeChecados))) - 15;
+                            ((DataGridView)((CheckBox)objControl).Tag).Top = 15 + (15 * intIndex) + (intIndex * ((DataGridView)((CheckBox)objControl).Tag).Height);
+                            // Label acima do grid (título do grid)
+                            if (((DataGridView)((CheckBox)objControl).Tag).Tag != null)
+                            {
+                                ((Label)((DataGridView)((CheckBox)objControl).Tag).Tag).Top = (15 * intIndex) + (intIndex * ((DataGridView)((CheckBox)objControl).Tag).Height);
+                            }
+                            intIndex += 1;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Organizar_Grids_Ao_Clicar_ToolStripButton(ref ToolStrip tsContainer, ref Panel pnlGrids)
+        {
+            try
+            {
+                int intQtdeChecados = this.Retornar_Qtde_ToolStripButton_Checados(ref tsContainer);
+                int intIndex = 0;
+                foreach (ToolStripItem objControl in tsContainer.Items)
+                {
+                    if (objControl is ToolStripButton && ((ToolStripButton)objControl).Tag != null)
+                    {
+                        ((DataGridView)((ToolStripButton)objControl).Tag).Visible = ((ToolStripButton)objControl).Checked;
+                        ((Label)((DataGridView)((ToolStripButton)objControl).Tag).Tag).Visible = ((ToolStripButton)objControl).Checked;
+                        if (((ToolStripButton)objControl).Checked)
+                        {
+                            // Grid
+                            ((DataGridView)((ToolStripButton)objControl).Tag).Height = Convert.ToInt32(Decimal.Round(Convert.ToDecimal((pnlGrids.Height - 2) / intQtdeChecados))) - 15;
+                            ((DataGridView)((ToolStripButton)objControl).Tag).Top = 15 + (15 * intIndex) + (intIndex * ((DataGridView)((ToolStripButton)objControl).Tag).Height);
+                            // Label acima do grid (título do grid)
+                            if (((DataGridView)((ToolStripButton)objControl).Tag).Tag != null)
+                            {
+                                ((Label)((DataGridView)((ToolStripButton)objControl).Tag).Tag).Top = (15 * intIndex) + (intIndex * ((DataGridView)((ToolStripButton)objControl).Tag).Height);
+                            }
+                            intIndex += 1;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private int Retornar_Qtde_CheckBox_Checados(ref SplitterPanel pnlContainer)
+        {
+            try
+            {
+                int intQtdeChecados = 0;
+                foreach (Control objControl in pnlContainer.Controls)
+                {
+                    if (objControl is CheckBox && ((CheckBox)objControl).Checked)
+                    {
+                        intQtdeChecados += 1;
+                    }
+                }
+                return intQtdeChecados;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private int Retornar_Qtde_CheckBox_Checados(ref Panel pnlContainer)
+        {
+            try
+            {
+                int intQtdeChecados = 0;
+                foreach (Control objControl in pnlContainer.Controls)
+                {
+                    if (objControl is CheckBox && ((CheckBox)objControl).Checked)
+                    {
+                        intQtdeChecados += 1;
+                    }
+                }
+                return intQtdeChecados;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private int Retornar_Qtde_ToolStripButton_Checados(ref ToolStrip tsContainer)
+        {
+            try
+            {
+                int intQtdeChecados = 0;
+                foreach (ToolStripItem objControl in tsContainer.Items)
+                {
+                    if (objControl is ToolStripButton && ((ToolStripButton)objControl).Checked)
+                    {
+                        intQtdeChecados += 1;
+                    }
+                }
+                return intQtdeChecados;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Atualizar_Tab_Pages()
+        {
+            try
+            {
+                if (this.chkVisualizarGrupoAlternativo.Checked)
+                {
+                    if (this.tabHerdado.TabPages.Contains(this.tbpCompras))
+                    {
+                        this.tabHerdado.TabPages.Remove(this.tbpCompras);
+                    }
+
+                    if (this.tabHerdado.TabPages.Contains(this.tbpCD))
+                    {
+                        this.tabHerdado.TabPages.Remove(this.tbpCD);
+                    }
+
+                    if (this.tabHerdado.TabPages.Contains(this.tbpEC))
+                    {
+                        this.tabHerdado.TabPages.Remove(this.tbpEC);
+                    }
+
+                    if (this.tabHerdado.TabPages.Contains(this.tbpLoja))
+                    {
+                        this.tabHerdado.TabPages.Remove(this.tbpLoja);
+                    }
+                }
+                else
+                {
+                    if (this.tabHerdado.TabPages.Contains(this.tbpCompras) == false)
+                    {
+                        this.tabHerdado.TabPages.Add(this.tbpCompras);
+                    }
+
+                    if (this.tabHerdado.TabPages.Contains(this.tbpCD) == false)
+                    {
+                        this.tabHerdado.TabPages.Add(this.tbpCD);
+                    }
+
+                    if (this.tabHerdado.TabPages.Contains(this.tbpEC) == false)
+                    {
+                        this.tabHerdado.TabPages.Add(this.tbpEC);
+                    }
+
+                    if (this.tabHerdado.TabPages.Contains(this.tbpLoja) == false)
+                    {
+                        this.tabHerdado.TabPages.Add(this.tbpLoja);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
+
+        private void Limpar_Dados_Controles()
+        {
+            try
+            {
+                this.uctAnalise_Mercadologica_Estoque_Resumo.Limpar_Dados();
+                this.lblPecaNaoFicaCD.Visible = false;
+                this.lblForaDeLinha.Visible = false;
+
+                this.lblEnderecos.Text = string.Empty;
+                if (this.dtsResumo.Tables.Count > 0)
+                {
+                    this.dtsResumo.Tables[2].Rows.Clear();
+                    if (this.dtsResumo.Tables.Contains("Fabricante_Alternativo"))
+                    {
+                        this.dtsResumo.Tables["Fabricante_Alternativo"].Clear();
+                    }
+                }
+
+                this.dgvFabricanteAlternativo.DataSource = null;
+
+                this.dtsCompras.Tables.Clear();
+                this.dtsCD.Tables.Clear();
+                this.dtsEC.Tables.Clear();
+                this.dtsLoja.Tables.Clear();
+                this.uctAnalise_Mercadologica_Grafico_Venda_Media.Data = null;
+                this.uctAnalise_Mercadologica_Grafico_Curva.Data = null;
+
+                this.tmrConsultaTotalizadores.Enabled = false;
+                this.tmrWarningEC.Enabled = false;
+                this.tmrWarningLoja.Enabled = false;
+
+                this.chkVisualizarGrupoAlternativo.Checked = false;
+                this.chkVisualizarGrupoAlternativo.Visible = false;
+
+                if (this.tbcInformacoesPeca.TabPages.Contains(this.tbpPecasAlternativas))
+                {
+                    this.tbcInformacoesPeca.TabPages.Remove(this.tbpPecasAlternativas);
+                }
+
+                this.dgvCodigosPeca.Rows.Clear();
+                this.Atualizar_Tab_Pages();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Setar_Tab_Compras()
+        {
+
+            try
+            {
+                if (!object.ReferenceEquals(this.tabHerdado.SelectedTab, this.tbpCompras))
+                {
+                    this.tabHerdado.SelectedTab = this.tbpCompras;
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        private void Carregar_Dados_Controles(bool blnVisualizaGrupoAlternativo)
+        {
+            try
+            {
+
+                //this.chkVisualizarGrupoAlternativo.CheckedChanged -= this.Alterar_Visualizacao_Grupo_Fabricante_Alternativo;
+                this.dgvFabricanteAlternativo.SelectionChanged -= this.Alterar_Indice_Grid_Fabricante_Alternativo;
+
+
+                this.btnFoto.Enabled = new Peca_FotoBUS().Validar_Existe_Foto_Peca(intPecaID, 
+                                                                                   Enumerados.Tipo_Uso_Foto.Peca.ToInteger(),
+                                                                                   TransactionManager.OpcoesDeDataSource.ServidoDaLojaAtual);
+
+                DataRow dtrResumo = this.dtsResumo.Tables["Geral"].Rows[0];
+
+                this.uctAnalise_Mercadologica_Estoque_Resumo.DataUltimaEntrada = Convert.ToString(dtrResumo["Estoque_Data_Ultima_Entrada"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.DataUltimaVenda = Convert.ToString(dtrResumo["Estoque_Data_Ultima_Venda"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.DataUltimoAjusteEstoque = Convert.ToString(dtrResumo["Estoque_Data_Ultimo_Ajuste"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.DataUltimoInventario = Convert.ToString(dtrResumo["Estoque_Inventario_Coletor_Ultima_Data"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.EstoqueLoja = Convert.ToString(dtrResumo["Estoque_Qtde"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.EstoqueExposicao = Convert.ToString(dtrResumo["Estoque_Exposicao"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.EstoqueMercadocar = Convert.ToString(dtrResumo["Estoque_Qtde_Total"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.VendaMedia = Convert.ToString(dtrResumo["Estoque_Calculo_Venda_Media"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.Curva = Convert.ToString(dtrResumo["Curva_Produto"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.DiasSeguranca = Convert.ToString(dtrResumo["Estoque_Calculo_Seguranca_Dias"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.DiasMaximo = Convert.ToString(dtrResumo["Estoque_Calculo_Maximo_Dias"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeSeguranca = Convert.ToString(dtrResumo["Estoque_Calculo_Seguranca_Qtde"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeMaximo = Convert.ToString(dtrResumo["Estoque_Calculo_Maximo_Qtde"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeMinimo = Convert.ToString(dtrResumo["Estoque_Calculo_Minimo_Qtde"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeMultipla = Convert.ToString(dtrResumo["Peca_Qtde_Multipla"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeMinVenda = Convert.ToString(dtrResumo["Peca_QtMinimaVenda"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeVitrine = Convert.ToString(dtrResumo["Peca_Qtde_Vitrine"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.CurvaFrequencia = Convert.ToString(dtrResumo["Curva_Frequencia"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.CurvaRentabilidade = Convert.ToString(dtrResumo["Curva_Rentabilidade"]);
+                this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeDivergencia = Convert.ToString(dtrResumo["Peca_Qtde_Divergencia"]);
+
+                this.lblForaDeLinha.Visible = !Convert.ToBoolean(dtrResumo["Peca_Comprar"]);
+                this.lblPecaNaoFicaCD.Visible = Convert.ToBoolean(dtrResumo["Peca_Nao_Fica_CD"]);
+
+                DataTable dttResumo = this.dtsResumo.Tables[1];
+                this.lblEnderecos.Text = this.Retornar_Enderecos_Concatenados(ref dttResumo);
+                this.objToolTip.SetToolTip(this.lblEnderecos, this.lblEnderecos.Text);
+
+                this.Preencher_Grid_Codigo_Pecas();
+
+                this.dgvEstoques.DataSource = this.dtsResumo.Tables[2];
+
+                if (blnVisualizaGrupoAlternativo)
+                {
+                    
+                    //this.chkVisualizarGrupoAlternativo.Checked = false;
+                    this.chkVisualizarGrupoAlternativo.Visible = false;
+
+                    if (this.tbcInformacoesPeca.TabPages.Contains(this.tbpPecasAlternativas))
+                    {
+                        this.tbcInformacoesPeca.TabPages.Remove(this.tbpPecasAlternativas);
+                    }
+
+                    if (this.dtsResumo.Tables.Count > 0 && this.dtsResumo.Tables["Fabricante_Alternativo"].Rows.Count > 0)
+                    {
+                        
+                        //this.chkVisualizarGrupoAlternativo.Checked = true;
+                        this.chkVisualizarGrupoAlternativo.Visible = true;
+
+                        this.tbcInformacoesPeca.TabPages.Add(this.tbpPecasAlternativas);
+                        this.tbcInformacoesPeca.TabPages[this.tbpPecasAlternativas.Name].Enabled = true;
+
+                        this.dgvFabricanteAlternativo.DataSource = this.dtsResumo.Tables["Fabricante_Alternativo"];
+                    }
+
+                }
+                try
+                {
+                    // Totalizadores / Timers
+                    this.Carregar_Dados_Timers_Totalizadores();
+                    this.tmrConsultaTotalizadores.Enabled = false;
+
+                    // Gráfico WPF
+
+                    Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+                    DataSet dtsGrafico = new DataSet();
+
+                    if (this.chkVisualizarGrupoAlternativo.Checked)
+                    {
+                        dtsGrafico = busAnaliseMercadologica.Consultar_Grupo_Fabricante_Alternativo_Dados_Grafico_Analise_Mercadologica(this.cboLojas.SelectedValue.DefaultInteger(), this.objCodMercadocar.Peca_ID, 2);
+                    }
+                    else
+                    {
+                        dtsGrafico = busAnaliseMercadologica.Consultar_Dados_Grafico_Analise_Mercadologica(this.cboLojas.SelectedValue.DefaultInteger(), this.intPecaID, 2);
+                    }
+
+                    this.uctAnalise_Mercadologica_Grafico_Venda_Media.Data = dtsGrafico;
+                    this.uctAnalise_Mercadologica_Grafico_Curva.Data = dtsGrafico;
+                }
+                catch (Exception)
+                {
+                    // Caso servidor central esteja fora, nao retornar erro
+                }
+                finally
+                {
+                    //this.chkVisualizarGrupoAlternativo.CheckedChanged += this.Alterar_Visualizacao_Grupo_Fabricante_Alternativo;
+                    this.dgvFabricanteAlternativo.SelectionChanged += this.Alterar_Indice_Grid_Fabricante_Alternativo;
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Controles_Totalizadores()
+        {
+            try
+            {
+                if (this.dttTotalizadores.Rows.Count > 0)
+                {
+                    DataRow dtrTotalizadores = this.dttTotalizadores.Rows[0];
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeCompras = Convert.ToString(dtrTotalizadores["Qtde_Compras"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeComprasToCD = Convert.ToString(dtrTotalizadores["Qtde_Compras_CD"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeCD = Convert.ToString(dtrTotalizadores["Qtde_CD"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeCDToEC = Convert.ToString(dtrTotalizadores["Qtde_CD_EC"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeEC = Convert.ToString(dtrTotalizadores["Qtde_EC"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeECToLoja = Convert.ToString(dtrTotalizadores["Qtde_EC_Loja"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeLoja = Convert.ToString(dtrTotalizadores["Qtde_Loja"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeTransitoEnviado = Convert.ToString(dtrTotalizadores["Qtde_Transito_Saida"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeTransitoReceber = Convert.ToString(dtrTotalizadores["Qtde_Transito_Entrada"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeOutrasLojas = Convert.ToString(dtrTotalizadores["Qtde_Outras_Lojas"]);
+                    this.uctAnalise_Mercadologica_Estoque_Resumo.QtdeCDToLoja = Convert.ToString(dtrTotalizadores["Qtde_Separacao_Conferencia_Cross"]);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private string Retornar_Enderecos_Concatenados(ref DataTable dttEnderecos)
+        {
+            try
+            {
+                string strEnderecos = string.Empty;
+                foreach (DataRow dtrEndereco in dttEnderecos.Rows)
+                {
+                    if (strEnderecos != string.Empty)
+                        strEnderecos += ", ";
+                    strEnderecos += Convert.ToString(dtrEndereco["Peca_Endereco_Andar"]) + "." + Convert.ToString(dtrEndereco["Peca_Endereco_Rua"]) + "." + Convert.ToString(dtrEndereco["Peca_Endereco_Prateleira"]) + "." + Convert.ToString(dtrEndereco["Peca_Endereco_Locacao"]);
+                }
+                return strEnderecos;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Carregar_Dados_Timers_Totalizadores()
+        {
+            try
+            {
+                Analise_MercadologicaBUS busAnaliseMercadologica = new Analise_MercadologicaBUS();
+                if (this.chkVisualizarGrupoAlternativo.Checked)
+                {
+                    this.dttTotalizadores = busAnaliseMercadologica.Consultar_Grupo_Fabricante_Alternativo_Analise_Mercadologica_Totalizadores(Convert.ToInt32(this.cboLojas.SelectedValue), this.objCodMercadocar.Peca_ID);
+                }
+                else
+                {
+                    this.dttTotalizadores = busAnaliseMercadologica.Consultar_Resumo_Analise_Mercadologica_Totalizadores(Convert.ToInt32(this.cboLojas.SelectedValue), this.intPecaID);
+                }
+
+                if (this.dttTotalizadores.Rows.Count > 0)
+                {
+                    this.Preencher_Controles_Totalizadores();
+
+                    if (Convert.ToBoolean(this.dttTotalizadores.Rows[0]["Warning_EC_Separacao"]))
+                    {
+                        this.tmrWarningEC.Enabled = true;
+                    }
+                    else
+                    {
+                        this.tmrWarningEC.Enabled = false;
+                        this.uctAnalise_Mercadologica_Estoque_Resumo.Warning_EC = false;
+                    }
+
+                    if (Convert.ToBoolean(this.dttTotalizadores.Rows[0]["Warning_Loja_Pre_Venda"]))
+                    {
+                        this.tmrWarningLoja.Enabled = true;
+                    }
+                    else
+                    {
+                        this.tmrWarningLoja.Enabled = false;
+                        this.uctAnalise_Mercadologica_Estoque_Resumo.Warning_Loja = false;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public void Preencher_e_Carregar_Dados(Int16 intLojaID, string strFabricanteCD, string strProdutoCD, string strPecaCD)
+        {
+            try
+            {
+                this.cboLojas.SelectedValue = intLojaID;
+                this.objCodMercadocar.Carregar_Peca_Por_Codigo_Mercadocar(strFabricanteCD, strProdutoCD, strPecaCD);
+
+                this.Clicar_Botao_Processar(null, null);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        private void Preencher_Grid_Codigo_Pecas()
+        {
+            try
+            {
+                this.dgvCodigosPeca.Rows.Clear();
+                
+                if (this.chkVisualizarGrupoAlternativo.Checked && this.dtsResumo.Tables["Fabricante_Numero_Originais"].Rows.Count > 0)
+                {
+                    foreach (DataRow dtrCodigoFabricante in this.dtsResumo.Tables["Fabricante_Numero_Originais"].Rows)
+                    {
+                        DataGridViewRow dgrRow = this.dgvCodigosPeca.Rows[this.dgvCodigosPeca.Rows.Add()];
+                        dgrRow.Cells["PecaID"].Value = dtrCodigoFabricante["Peca_ID"];
+                        dgrRow.Cells["TipoCodigo"].Value = dtrCodigoFabricante["Tipo_Codigo"];
+                        dgrRow.Cells["Codigo"].Value = dtrCodigoFabricante["Codigo"];
+                        dgrRow.Cells["Fabricante"].Value = dtrCodigoFabricante["Fabricante_NmFantasia"];
+                    }
+                }
+                else
+                {
+                    if (this.objCodMercadocar.Cod_Item_Fabricante != string.Empty)
+                    {
+                        DataGridViewRow dgrRow = this.dgvCodigosPeca.Rows[this.dgvCodigosPeca.Rows.Add()];
+                        dgrRow.Cells["PecaID"].Value = this.objCodMercadocar.Peca_ID;
+                        dgrRow.Cells["TipoCodigo"].Value = "Fabricante";
+                        dgrRow.Cells["Codigo"].Value = this.objCodMercadocar.Cod_Item_Fabricante;
+                        dgrRow.Cells["Fabricante"].Value = this.objCodMercadocar.Fabricante_NmFantasia;
+                    }
+
+                    foreach (DataRow dtrNumeroOriginal in this.objCodMercadocar.Numeros_Originais.Rows)
+                    {
+                        DataGridViewRow dgrRow = this.dgvCodigosPeca.Rows[this.dgvCodigosPeca.Rows.Add()];
+                        dgrRow.Cells["PecaID"].Value = dtrNumeroOriginal["Peca_ID"].DefaultInteger();
+                        dgrRow.Cells["TipoCodigo"].Value = "Numero Original";
+                        dgrRow.Cells["Codigo"].Value = dtrNumeroOriginal["Peca_NrOriginal_NrOriginal"].DefaultString();
+                        dgrRow.Cells["Fabricante"].Value = dtrNumeroOriginal["Fabricante_NmFantasia"].DefaultString();
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        #endregion              
+    }
+}

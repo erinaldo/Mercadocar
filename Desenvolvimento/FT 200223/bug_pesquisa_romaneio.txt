@@ -1,0 +1,32 @@
+Informações avançadas:             
+     Tipo de exceção: Exception    
+
+Detalhes da exceção:               
+     ex.message:                   The conversion of the varchar value '9887665056' overflowed an int column.
+     ex.Source:                    .Net SqlClient Data Provider
+     ex.TargetSite:                OnError
+
+     ex.StackTrace:                   em System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   em System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   em System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   em System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   em System.Data.SqlClient.SqlDataReader.TryHasMoreRows(Boolean& moreRows)
+   em System.Data.SqlClient.SqlDataReader.TryReadInternal(Boolean setTimeout, Boolean& more)
+   em System.Data.SqlClient.SqlDataReader.Read()
+   em System.Data.Common.DataAdapter.FillLoadDataRow(SchemaMapping mapping)
+   em System.Data.Common.DataAdapter.FillFromReader(DataSet dataset, DataTable datatable, String srcTable, DataReaderContainer dataReader, Int32 startRecord, Int32 maxRecords, DataColumn parentChapterColumn, Object parentChapterValue)
+   em System.Data.Common.DataAdapter.Fill(DataSet dataSet, String srcTable, IDataReader dataReader, Int32 startRecord, Int32 maxRecords)
+   em System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   em System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   em System.Data.Common.DbDataAdapter.Fill(DataSet dataSet)
+   em Mercadocar.InfraEstrutura.BancoDados.SqlHelperPai.ExecuteDataSet(SqlConnection connection, CommandType commandType, String commandText, SqlParameter[] commandParameters) na D:\SC\Mercadocar v1\SIM\Front-SIM\MC_Infra_Estrutura_Net\BancoDados_SqlHelper.cs:linha 1141
+   em Mercadocar.InfraEstrutura.BancoDados.SqlHelper.ExecuteDataSet(Object ObjetoAcessoDados, CommandType commandType, String commandText, SqlParameter[] commandParameters) na D:\SC\Mercadocar v1\SIM\Front-SIM\MC_Infra_Estrutura_Net\BancoDados_SqlHelper.cs:linha 74
+   em Mercadocar.RegrasNegocio.Consultas.Venda_TecnicaBUS.Consultar_DataSet_Romaneio_Pesquisa(Int32 intLojasID, DateTime dtmDataInicialPesquisaCliente, DateTime dtmDataFinalPesquisaCliente, Int32 intEnumTipoDocumentoVenda, String strNumeroDocumento, String strClienteID, TransactionManager& objTransaction) na D:\SC\Mercadocar v1\SIM\Front-SIM\MC_Business\Venda_TecnicaBUS.cs:linha 1439
+   em Mercadocar.RegrasNegocio.RomaneioBUS.Consultar_DataSet_Romaneio_Pesquisa(Int32 intLojaID, DateTime dtmDataInicialPesquisaCliente, DateTime dtmDataFinalPesquisaCliente, Int32 intEnumTipoDocumentoVenda, String strNumeroDocumento, String strClienteID, TransactionManager& objTransaction) na D:\SC\Mercadocar v1\SIM\Front-SIM\MC_Business\Venda Tecnica\RomaneioBUS.cs:linha 751
+   em Mercadocar.RegrasNegocio.RomaneioBUS.Consultar_DataSet_Romaneio_Pesquisa(Int32 intLojaID, DateTime dtmDataInicialPesquisaCliente, DateTime dtmDataFinalPesquisaCliente, Int32 intEnumTipoDocumentoVenda, String strNumeroDocumento, String strClienteID) na D:\SC\Mercadocar v1\SIM\Front-SIM\MC_Business\Venda Tecnica\RomaneioBUS.cs:linha 727
+   em Mercadocar.Formularios.frmRomaneios_Pesquisa_Grid.Clicar_Botao_Filtrar(Object sender, EventArgs e)
+
+Informações sobre o sistema:       
+     Versão Sistema SIM:           3.404
+     Ultima atualização em:        29/10/2019 17:48:13
+     Módulo Ativo:                 Venda Técnica

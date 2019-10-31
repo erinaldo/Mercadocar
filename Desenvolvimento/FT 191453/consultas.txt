@@ -1,0 +1,45 @@
+DECLARE 
+     @Loja_ID                     INT, 
+     @Instalacao_CT_ID            INT, 
+     @Instalacao_IT_Instalador_ID INT, 
+     @Objeto_Origem_ID            INT, 
+     @Instalacao_IT_ID            UNIQUEIDENTIFIER;
+
+SET @Loja_ID = 1;
+SET @Instalacao_CT_ID = 181387;
+SET @Instalacao_IT_Instalador_ID = 101659;
+SET @Objeto_Origem_ID = 911068322;
+SET @Instalacao_IT_ID = 'ACA871FD-C3BF-4F39-8CDD-D8AC529B125C';
+
+SELECT *
+FROM Instalacao_CT
+WHERE Instalacao_CT_ID = @Instalacao_CT_ID
+      AND Lojas_ID = @Loja_ID;
+
+SELECT *
+FROM Instalacao_IT_Instalador
+WHERE Instalacao_IT_ID = @Instalacao_IT_ID;
+--Instalacao_IT_Instalador_ID = 101659  AND Lojas_ID = @Loja_ID
+
+
+--PERMISSÃO
+
+SELECT * FROM perm_acao 
+WHERE Perm_Acao_ID = 113
+
+-- Grupo de Permissão
+SELECT * FROM Perm_Grupo_REL_Grupo PGR
+INNER JOIN Perm_Grupo PG ON PG.Perm_Grupo_ID = PGR.Perm_Grupo_Pai_ID 
+WHERE 
+Perm_Grupo_Pai_ID = 2342
+AND
+Perm_Grupo_NM LIKE '%Permissão para estornar serviços finalizados%'
+
+-- Participantes
+SELECT * FROM Perm_Grupo_REL_Grupo PGR
+INNER JOIN Perm_Grupo PG ON PG.Perm_Grupo_ID = PGR.Perm_Grupo_Filho_ID 
+WHERE 
+Perm_Grupo_Pai_ID = 2342
+
+-- Grupo de Usuário
+SELECT * FROM Perm_Grupo WHERE Perm_Grupo_ID IN (904, 1347, 1348, 1392)

@@ -1,0 +1,641 @@
+-------------------------------------------------------------------------------------------------
+-- <summary>
+--		Retornar os dados usados na tela de Pedido de Compra
+--		Quando o fornecedor é do tipo fabricante é necessario remover impostos
+-- </summary>
+-- <history>
+-- 	[rnoliveira]	- 08/03/2013	Created
+-- </history>
+-- <history>
+-- 	[rnoliveira]	- 13/06/2013	Modified
+--			  O campo loja faturamento não tera o tratamento com isnull 
+--			  porque ele identifica se o pedido foi criado na tela nova ou velha. 	
+-- 	[rnoliveira]	- 03/09/2013	Modified
+--			  Ao consultar a quantidade recebida no pre recebimento para o item 
+--			  verificar se o pre esta com status Pendente_Preparacao e se 
+--			  o Usuario_Conferencia_NF_ID é <> 0
+-- 	[rnoliveira]	- 19/09/2013	Modified
+--			  O campo QTDE_Itens_No_Pre_Recebimento passou a olhar 
+--			  tambem se o item esta em algum pré recebimento
+-- 	[moshiro]		- 10/04/2015	Modified
+--			  Busca embalagens que não são de compra também.
+--	[flima]			- 16/04/2015	Modified
+--			  Colocado ISNULL no retorno do campo Usuario_Ultima_Alteracao_ID
+--	[bmune]			- 08/07/2015	Modified
+--			  Adicionado as colunas de Encomenda
+--	[bmune]			- 21/07/2015	Modified
+--			  Adicionado a coluna de Preco_Fabrica
+--	[bmune]			- 20/08/2015	Modified
+--			  Adicionado a coluna de Custo_Unitario_Original
+-- 	[gfpinheiro] 	- 30/11/2015	Modified
+--			  Colocar ISNULL no where de Pedido_Garantia_IT_Substituida
+--	[bmune]			- 19/07/2016	Modified
+--			Adicionado A garantia recall
+--	[bmune]			- 17/04/2017	Modified
+--			Adicionado a coluna Pedido_Compra_IT_Enviar_Totalmente_Lojas
+--	[gfpinheiro]	- 23/11/2017	Modified
+--		 Adicionado novo tratamento para a saber se tem ou não que solicitar a distribuição da peça quando o grupo de alternativo tem venda média
+--  [marcardoso] - 26/12/2017 - Modified
+--		Adicionado tratamento para filtrar na GRID de pré-distribuição apenas as lojas cadastradas para distribuição mais o CD
+-- </history>
+--------------------------------------------------------------------------------------------------
+CREATE PROCEDURE [dbo].[p_Compras_Consultar_Pedido_Compra_Propriedades]
+	@Pedido_Compra_CT_ID INT
+AS
+----------------------------------teste-------------------------------------
+--DECLARE @Pedido_Compra_CT_ID INT
+--SET     @Pedido_Compra_CT_ID = 365554
+----------------------------------teste-------------------------------------
+
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+SET NOCOUNT ON
+
+DECLARE 
+@Enum_Origem_Pre_Distribuicao_Pedido_Compra_ID			INT,
+@Enum_Status_Pedido_Garantia_Pendente_Retorno_ID		INT,
+@Enum_Status_Pedido_Garantia_Recebimento_Parcial_ID		INT,
+@Enum_Tipo_Analise_Duracao_Estoque_Pendencias_ID		INT,
+@Enum_Tipo_Pedido_Garantia								INT,
+@Enum_Tipo_Pedido_Garantia_Recall						INT,
+@FORNECEDOR_ID											INT,
+@Loja_Faturamento_ID									INT,
+@Enum_Status_Pre_Recebimento_Pendente_Preparacao_ID		INT	
+
+SET @Enum_Origem_Pre_Distribuicao_Pedido_Compra_ID			= 470
+SET @Enum_Status_Pedido_Garantia_Pendente_Retorno_ID		= 968
+SET @Enum_Status_Pedido_Garantia_Recebimento_Parcial_ID		= 969
+SET @Enum_Tipo_Analise_Duracao_Estoque_Pendencias_ID		= 1047
+SET	@Enum_Tipo_Pedido_Garantia								= 787
+SET	@Enum_Tipo_Pedido_Garantia_Recall						= 2099
+SET @Loja_Faturamento_ID									= (SELECT 
+																	ISNULL(Pedido_Compra_CT.Loja_Faturamento_ID,0) Loja_Faturamento_ID 
+															   FROM 
+																	Pedido_Compra_CT 
+															   WHERE 
+																	Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID)
+
+SET @FORNECEDOR_ID = (SELECT Fornecedor_ID FROM Pedido_Compra_CT WHERE Pedido_Compra_CT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID)
+SET @Enum_Status_Pre_Recebimento_Pendente_Preparacao_ID = 179
+
+
+-----------------------------------------CAPA PEDIDO-----------------------------------------
+SELECT 
+	Pedido_Compra_CT.Pedido_Compra_CT_ID											AS Pedido_Compra_CT_ID, 
+	Pedido_Compra_CT.Loja_Origem_ID													AS Loja_Origem_ID, 
+	Pedido_Compra_CT.Loja_Faturamento_ID											AS Loja_Faturamento_ID,
+	Pedido_Compra_CT.Loja_Destino_ID												AS Loja_Destino_ID, 
+	Pedido_Compra_CT.Fornecedor_ID													AS Fornecedor_ID, 
+	Pedido_Compra_CT.Enum_Status_ID													AS Enum_Status_ID, 
+	Pedido_Compra_CT.Condicao_Pagamento_CT_ID										AS Condicao_Pagamento_CT_ID,
+	Pedido_Compra_CT.Usuario_Geracao_ID												AS Usuario_Geracao_ID, 
+	Pedido_Compra_CT.Usuario_Comprador_ID											AS Usuario_Comprador_ID, 
+	Pedido_Compra_CT.Enum_Tipo_ID													AS Enum_Tipo_ID, 
+	Pedido_Compra_CT.Enum_Tipo_Origem_ID											AS Enum_Tipo_Origem_ID, 
+	ISNULL(Pedido_Compra_CT.Objeto_Origem_ID,0)										AS Objeto_Origem_ID, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Vendedor										AS Pedido_Compra_CT_Vendedor, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Data_Geracao									AS Pedido_Compra_CT_Data_Geracao, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Data_Prevista									AS Pedido_Compra_CT_Data_Prevista, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Desconto										AS Pedido_Compra_CT_Desconto, 
+	Pedido_Compra_CT.Pedido_Compra_CT_IPI											AS Pedido_Compra_CT_IPI, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Substituicao									AS Pedido_Compra_CT_Substituicao, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Obs											AS Pedido_Compra_CT_Obs, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Cobranca_Fornecedor							AS Pedido_Compra_CT_Cobranca_Fornecedor, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Considerar_IPI								AS Pedido_Compra_CT_Considerar_IPI, 
+	Pedido_Compra_CT.Pedido_Compra_CT_Envio_Email									AS Pedido_Compra_CT_Envio_Email,
+	Pedido_Compra_CT.Pedido_Compra_CT_Data_Entrega									AS Pedido_Compra_CT_Data_Entrega,
+	Pedido_Compra_CT.Pedido_Compra_CT_Saldo_Origem_ID								AS Pedido_Compra_CT_Saldo_Origem_ID,
+	Usuario.Usuario_Nome_Completo													AS Usuario_Geracao_Nm,
+	Enum_Status.Enum_Extenso														AS Enum_Status_Extenso,
+	Enum_Tipo_Origem.Enum_Extenso													AS Enum_Tipo_Origem_Extenso,
+	Fornecedor.Pessoa_ID															AS Pessoa_ID, 
+	Fornecedor.Forn_CD																AS Forn_CD, 
+	Fornecedor.Enum_Tipo_ID															AS Fornecedor_Enum_Tipo_ID, 
+	Fornecedor.Forn_IsAtivo															AS Forn_IsAtivo, 
+	Fornecedor.Forn_IsRevendedor													AS Forn_IsRevendedor, 
+	Fornecedor.Forn_IsOptanteSimples												AS Forn_IsOptanteSimples, 
+	Fornecedor.Condicao_Pagamento_CT_ID												AS Forn_Condicao_Pagamento_CT_ID, 
+	Fornecedor.Estado_UF_ID															AS Estado_UF_ID, 
+	Fornecedor.Fornecedor_Data_Inicio_Acordo										AS Fornecedor_Data_Inicio_Acordo, 
+	Fornecedor.Fornecedor_Data_Termino_Acordo										AS Fornecedor_Data_Termino_Acordo, 
+	Fornecedor.Fornecedor_Desconto_Percentual										AS Fornecedor_Desconto_Percentual, 
+	Fornecedor.Fornecedor_Preco_Minimo_Pedido										AS Fornecedor_Preco_Minimo_Pedido, 
+	Fornecedor.Fornecedor_Obs														AS Fornecedor_Obs, 
+	Fornecedor.Fornecedor_ST_Percentual_Acordo										AS Fornecedor_ST_Percentual_Acordo, 
+	Fornecedor.Fornecedor_IPI_Percentual_Acordo										AS Fornecedor_IPI_Percentual_Acordo, 
+	Fornecedor.Fornecedor_Prazo_Entrega_Acordo										AS Fornecedor_Prazo_Entrega_Acordo, 
+	Fornecedor.Fornecedor_Frete_Acordo												AS Fornecedor_Frete_Acordo, 
+	Fornecedor.Fornecedor_Marketing_Acordo											AS Fornecedor_Marketing_Acordo,
+	PessoaJuridica.PessoaJuridica_ID												AS PessoaJuridica_ID, 
+	PessoaJuridica.Loja_ID															AS Loja_ID, 
+	IsNull(PessoaJuridica.PessoaJuridica_NmFantasia,'')								AS PessoaJuridica_NmFantasia, 
+	IsNull(PessoaJuridica.PessoaJuridica_RazaoSocial,'')							AS PessoaJuridica_RazaoSocial, 
+	IsNull(PessoaJuridica.PessoaJuridica_CNPJ,'')									AS PessoaJuridica_CNPJ, 
+	IsNull(PessoaJuridica.PessoaJuridica_InscricaoEstadual,'')						AS PessoaJuridica_InscricaoEstadual, 
+	IsNull(PessoaJuridica.PessoaJuridica_OBS, '')									AS PessoaJuridica_OBS,
+	Loja_Origem.Lojas_ID															AS Loja_Origem_Lojas_ID,                    
+	Loja_Origem.Lojas_NM															AS Loja_Origem_Lojas_NM,                   
+	Loja_Origem.Lojas_Data_Abertura													AS Loja_Origem_Lojas_Data_Abertura,        
+	Loja_Origem.Lojas_Regiao_ID														AS Loja_Origem_Lojas_Regiao_ID,            
+	Loja_Origem.Lojas_IsAtivo														AS Loja_Origem_Lojas_IsAtivo,              
+	Loja_Origem.PessoaJuridica_ID													AS Loja_Origem_PessoaJuridica_ID,          
+	Loja_Origem.Lojas_Custo_ID														AS Loja_Origem_Lojas_Custo_ID,             
+	Loja_Origem.Empresa_ID															AS Loja_Origem_Empresa_ID,
+	Loja_Destino.Lojas_ID															AS Loja_Destino_Lojas_ID,                    
+	Loja_Destino.Lojas_NM															AS Loja_Destino_Lojas_NM,                   
+	Loja_Destino.Lojas_Data_Abertura												AS Loja_Destino_Lojas_Data_Abertura,        
+	Loja_Destino.Lojas_Regiao_ID													AS Loja_Destino_Lojas_Regiao_ID,            
+	Loja_Destino.Lojas_IsAtivo														AS Loja_Destino_Lojas_IsAtivo,              
+	Loja_Destino.PessoaJuridica_ID													AS Loja_Destino_PessoaJuridica_ID,          
+	Loja_Destino.Lojas_Custo_ID														AS Loja_Destino_Lojas_Custo_ID,             
+	Loja_Destino.Empresa_ID															AS Loja_Destino_Empresa_ID,
+	0																				AS Reajustar ,
+	ISNULL(Pedido_Compra_CT.Pedido_Compra_CT_Remover_Impostos,0)					AS Pedido_Compra_CT_Remover_Impostos,
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_CD									AS Condicao_Pagamento_CT_CD,
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_DS									AS Condicao_Pagamento_CT_DS,
+	(SELECT 
+		MAX(Analise_Cotacao_ID) 
+	 FROM 
+		Analise_Cotacao
+	 WHERE
+		Analise_Cotacao.Pedido_Origem_ID = Pedido_Compra_CT.Pedido_Compra_CT_ID
+	AND 
+		Analise_Cotacao.Enum_Tipo_ID = @Enum_Tipo_Analise_Duracao_Estoque_Pendencias_ID)
+																					AS Analise_Cotacao_ID,
+	ISNULL(	Pedido_Compra_CT.Usuario_Ultima_Alteracao_ID,
+			Pedido_Compra_CT.Usuario_Geracao_ID)									AS Usuario_Ultima_Alteracao_ID,
+	ISNULL(Pedido_Compra_CT.Encomenda_Venda_CT_ID, 0)								AS Encomenda_Venda_CT_ID,
+	ISNULL(Pedido_Compra_CT.Encomenda_Venda_CT_Lojas_ID, 0)							AS Encomenda_Venda_CT_Lojas_ID
+FROM 
+		Pedido_Compra_CT 
+	INNER JOIN Enumerado Enum_Status ON 
+		Enum_Status.Enum_ID = Pedido_Compra_CT.Enum_Status_ID
+	INNER JOIN Enumerado Enum_Tipo_Origem ON 
+		Enum_Tipo_Origem.Enum_ID = Pedido_Compra_CT.Enum_Tipo_Origem_ID
+	INNER JOIN Fornecedor ON 
+		Fornecedor.Forn_ID = Pedido_Compra_CT.Fornecedor_ID
+	INNER JOIN PessoaJuridica ON 
+		PessoaJuridica.PessoaJuridica_ID = Fornecedor.Pessoa_ID
+	INNER JOIN Lojas Loja_Origem ON 
+		Loja_Origem.Lojas_Id = Pedido_Compra_CT.Loja_Origem_ID
+	INNER JOIN Lojas Loja_Destino ON 
+		Loja_Destino.Lojas_Id = Pedido_Compra_CT.Loja_Destino_ID
+	LEFT JOIN Usuario ON 
+		Usuario.Usuario_ID = Pedido_Compra_CT.Usuario_Geracao_ID 
+	LEFT JOIN Condicao_Pagamento_CT ON 
+		Condicao_Pagamento_CT.Condicao_Pagamento_CT_ID = Pedido_Compra_CT.Condicao_Pagamento_CT_ID
+WHERE 
+	Pedido_Compra_CT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID  
+-----------------------------------------CAPA PEDIDO-----------------------------------------
+
+-----------------------------------------ITENS PEDIDO----------------------------------------
+SELECT
+	Pedido_Compra_IT.Pedido_Compra_IT_Sequencia							AS Pedido_Compra_IT_Sequencia, 
+	VW_FA_FC.Fabricante_CD+'.'+Produto.Produto_CD+'.'+Peca.Peca_CD		AS Cod_Mercadocar,	 
+	Pedido_Compra_IT.Pedido_Compra_IT_Quantidade						AS Pedido_Compra_IT_Quantidade, 
+	Peca_Embalagem.Peca_Embalagem_Descricao								AS Peca_Embalagem_Descricao,
+	Pedido_Compra_IT.Pedido_Compra_IT_Custo_Compra						AS Pedido_Compra_IT_Custo_Compra, 
+	Pedido_Compra_IT.Pedido_Compra_IT_Desconto							AS Pedido_Compra_IT_Desconto,
+	CONVERT(decimal(18,2),
+	CASE	
+		WHEN ISNULL(Pedido_Compra_IT.Pedido_Compra_IT_Desconto,0) = 0 THEN
+			0
+		ELSE
+			Pedido_Compra_IT.Pedido_Compra_IT_Custo_Compra * (Pedido_Compra_IT.Pedido_Compra_IT_Desconto / 100)
+	END)																AS Pedido_Compra_IT_Valor_Desconto,
+	Pedido_Compra_IT.Pedido_Compra_IT_ICMS								AS Pedido_Compra_IT_ICMS, 
+	Pedido_Compra_IT.Pedido_Compra_IT_Substituicao						AS Pedido_Compra_IT_Substituicao, 
+	Pedido_Compra_IT.Pedido_Compra_IT_Imposto							AS Pedido_Compra_IT_Imposto, 
+	''																	AS Parcialmente_Recebido,
+	0																	AS Reajustar_Peca,
+	Pedido_Compra_IT.Pedido_Compra_IT_ID								AS Pedido_Compra_IT_ID,
+	Pedido_Compra_IT.Pedido_Compra_CT_ID								AS Pedido_Compra_CT_ID, 
+	Pedido_Compra_IT.Peca_ID											AS Peca_ID, 
+	ISNULL(VW_FA_FC.Fabricante_CD, '')									AS Fabricante_CD,
+	Produto.Produto_CD													AS Produto_CD,
+	Peca.Peca_CD														AS Peca_CD, 
+	ISNULL(Peca.Peca_CdFabricante, '')									AS Peca_CdFabricante, 
+	Pedido_Compra_IT.Peca_Conv_ID										AS Peca_Conv_ID,
+	ISNULL(Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID,0)				AS Peca_Codigo_Fornecedor_ID,
+	Peca_Embalagem.Peca_Embalagem_Quantidade							AS Peca_Embalagem_Quantidade,
+	Pedido_Compra_IT.Peca_Embalagem_Compra_ID							AS Peca_Embalagem_Compra_ID,
+	Enum_Tipo_Embalagem.Enum_Extenso									AS Enum_Tipo_Embalagem,
+	Peca.Peca_QtMinimaVenda												AS Peca_QtMinimaVenda, 
+	Pedido_Compra_IT.Pedido_Compra_IT_Quantidade 
+		* 
+	Peca_Embalagem.Peca_Embalagem_Quantidade							AS Quantidade_Total,
+	Pedido_Compra_IT.Pedido_Compra_IT_Custo_Unitario					AS Pedido_Compra_IT_Custo_Unitario,
+	Pedido_Compra_IT.Pedido_Compra_IT_Custo_Unitario					AS Pedido_Compra_IT_Custo_Unitario_Original,
+	Pedido_Compra_IT.Pedido_Compra_IT_Custo_Efetivo						AS Pedido_Compra_IT_Custo_Efetivo, 
+	ISNULL(VW_FA_FC.Fabricante_NmFantasia,'')							AS Fabricante_NmFantasia,
+	Produto.Produto_DS													AS Produto_DS,
+	Peca.Peca_DsTecnica													AS Peca_DsTecnica, 
+	CASE 
+		WHEN @Loja_Faturamento_ID = 0 THEN 
+			(SELECT 
+				ISNULL(SUM(ISNULL(Pre_Recebimento_IT_Qtde_NF , 0)),0) Qtde_Recebida
+			 FROM 
+		 		Pre_Recebimento_IT
+			 INNER JOIN Pre_Recebimento_CT ON 
+				Pre_Recebimento_CT.Pre_Recebimento_CT_ID = Pre_Recebimento_IT.Pre_Recebimento_CT_ID	
+			 WHERE 
+		 		Objeto_Origem_ID = Pedido_Compra_IT.Peca_ID
+			 AND
+				Pedido_Origem_ID = @Pedido_Compra_CT_ID
+			 AND 
+				ISNULL(Pre_Recebimento_CT.Usuario_Conferencia_NF_ID,0) <> 0)
+		ELSE
+			 ISNULL(Pedido_Compra_IT.Pedido_Compra_IT_Qtde_Recebida,0)			
+	END																	AS Quantidade_Recebida,
+	Peca.Fabricante_ID													AS Fabricante_ID, 
+	Peca.Produto_ID														AS Produto_ID,
+	Pedido_Compra_IT.Usuario_Ultima_Alteracao_ID						AS Usuario_Ultima_Alteracao_ID,
+	Peca.Peca_Margem_Lucro												AS Peca_Margem_Lucro,
+	peca.Comissao_ID													AS Comissao_ID,
+	Peca.Peca_TVA														AS Peca_TVA,
+	Preco_Venda = (SELECT TOP 1 
+						ISNULL(Peca_Preco_Valor,0) 
+					FROM 
+						Peca_Preco pp
+					WHERE 
+						Peca_ID = Pedido_Compra_IT.Peca_ID
+					ORDER BY pp.Peca_Preco_Data_Reajuste DESC),
+	Custo_Reposicao = (
+					SELECT TOP 1 
+						ISNULL(Peca_Preco_Custo_Reposicao,0) 
+					FROM 
+						Peca_Preco pp
+					WHERE 
+						Peca_ID = Pedido_Compra_IT.Peca_ID
+					ORDER BY pp.Peca_Preco_Data_Reajuste DESC
+					),
+	Preco_Fabrica = (
+					SELECT TOP 1 
+						ISNULL(Peca_Preco_Valor_Fabrica,0) 
+					FROM 
+						Peca_Preco pp
+					WHERE 
+						Peca_ID = Pedido_Compra_IT.Peca_ID
+					ORDER BY pp.Peca_Preco_Data_Reajuste DESC
+					),
+	CASE 
+		WHEN (ISNULL(dbo.fun_Retorna_Maior_Valor(Peca_Resumo_VM_Total, Peca_Resumo_VM_Total_FA),0) = 0) 
+		THEN 
+			1
+		ELSE
+			0
+	END																	AS Solicitar_Distribuicao,
+	ISNULL(Estoque_Custo.Estoque_Custo_Ultimo_Custo, 0)					AS Ultimo_Custo,
+	Enum_Embalagem.Enum_Sigla											AS Enum_Sigla,
+	ISNULL(Pedido_Compra_IT.Pedido_Compra_IT_Remover_Impostos,0)		AS Pedido_Compra_IT_Remover_Impostos,
+	Pedido_Compra_IT_Considerar_IPI										AS Pedido_Compra_IT_Considerar_IPI,
+	(SELECT 
+		ISNULL(COUNT(1),0) 
+	 FROM 
+		Pre_Recebimento_IT 
+	 WHERE 
+		Pre_Recebimento_IT.Pedido_Origem_ID = Pedido_Compra_IT.Pedido_Compra_CT_ID
+	 AND 
+		Pre_Recebimento_IT.Objeto_Origem_ID = Pedido_Compra_IT.Peca_ID)	
+																		AS QTDE_Itens_No_Pre_Recebimento,
+	CASE 
+		WHEN (Peca.Peca_Qtde_Multipla_Compra * Pedido_Compra_IT.Pedido_Compra_IT_Quantidade) > 
+				(Peca_Embalagem.Peca_Embalagem_Quantidade * Pedido_Compra_IT.Pedido_Compra_IT_Quantidade) THEN 
+			1
+		ELSE
+			0
+	END																	AS Divergencia_Quantidade_Embalagem_Compra,
+	Peca.Peca_Qtde_Multipla_Compra										AS Peca_Qtde_Multipla_Compra,
+	ISNULL(Pedido_Compra_IT.Pedido_Compra_IT_Qtde_Recebida,0)			AS Pedido_Compra_IT_Qtde_Recebida, 
+	ISNULL(Peca.Peca_Venda_Media_Total,0)								AS Venda_Media_Total,
+	dbo.fun_Retorna_Qtde_Estoque_Total_Peca(Pedido_Compra_IT.Peca_ID)	AS Estoque_Total,
+	ISNULL(Pedido_Compra_IT.Peca_Codigo_Fornecedor_ID,0)				AS Peca_Codigo_Fornecedor_ID,
+	Pedido_Compra_IT.Pedido_Compra_IT_Quantidade
+		*
+	Peca_Embalagem.Peca_Embalagem_Quantidade
+		* 
+	Pedido_Compra_IT.Pedido_Compra_IT_Custo_Unitario					AS Valor_Total_Unitario,
+	
+	CONVERT(decimal(18,2),
+	CASE	
+		WHEN ISNULL(Pedido_Compra_IT.Pedido_Compra_IT_Desconto,0) = 0 THEN
+			(Pedido_Compra_IT.Pedido_Compra_IT_Quantidade 
+				*
+			Pedido_Compra_IT.Pedido_Compra_IT_Custo_Compra)
+		ELSE
+			(Pedido_Compra_IT.Pedido_Compra_IT_Quantidade 
+				*
+			Pedido_Compra_IT.Pedido_Compra_IT_Custo_Compra)
+				-
+			(Pedido_Compra_IT.Pedido_Compra_IT_Quantidade 
+				*
+			Pedido_Compra_IT.Pedido_Compra_IT_Custo_Compra) * (Pedido_Compra_IT.Pedido_Compra_IT_Desconto / 100)
+	END)																AS Valor_Total_Compra,
+	Pedido_Compra_IT.Pedido_Compra_IT_Enviar_Totalmente_Lojas			AS Pedido_Compra_IT_Enviar_Totalmente_Lojas
+FROM
+	Pedido_Compra_IT
+INNER JOIN Peca WITH(NOLOCK) ON 
+	Peca.Peca_ID = Pedido_Compra_IT.Peca_ID
+INNER JOIN vw_Fabricante_Fabricante_Comprador VW_FA_FC ON 
+	VW_FA_FC.Fabricante_ID = Peca.Fabricante_ID
+INNER JOIN Produto WITH (NOLOCK) ON 
+	Produto.Produto_ID = Peca.Produto_ID
+INNER JOIN Enumerado Enum_Tipo_Embalagem ON 
+	Enum_Tipo_Embalagem.Enum_ID = Peca.Enum_Tipo_Embalagem_ID
+AND 
+	Enum_Tipo_Embalagem.Enum_IsAtivo = 1	
+INNER JOIN Peca_Embalagem ON 
+	Peca_Embalagem.Peca_Embalagem_ID = Pedido_Compra_IT.Peca_Embalagem_Compra_ID
+AND 
+	Peca_Embalagem.Peca_Embalagem_Ativo = 1
+INNER JOIN Enumerado Enum_Embalagem ON 
+	Enum_Embalagem.Enum_ID = Peca_Embalagem.Enum_Tipo_Embalagem  
+LEFT JOIN Estoque_Custo ON 
+	Estoque_Custo.Peca_ID = Pedido_Compra_IT.Peca_ID
+INNER JOIN Pedido_Compra_CT ON
+	Pedido_Compra_CT.Pedido_Compra_CT_ID = Pedido_Compra_IT.Pedido_Compra_CT_ID
+LEFT JOIN Peca_Resumo ON
+	Peca_Resumo.Peca_ID = Pedido_Compra_IT.Peca_ID
+WHERE 
+	Pedido_Compra_IT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID
+AND
+	(	Peca_Embalagem.Peca_Embalagem_Compra =	CASE
+												WHEN Pedido_Compra_CT.Enum_Status_ID = 40 THEN Peca_Embalagem.Peca_Embalagem_Compra
+												ELSE 1
+											END
+	OR
+		Peca_Embalagem.Enum_Tipo_Embalagem = 22	)
+ORDER BY
+	Pedido_Compra_IT.Pedido_Compra_IT_Sequencia
+-----------------------------------------ITENS PEDIDO-----------------------------------------
+
+-----------------------------------------TIPOS DO FORNECEDOR----------------------------------
+SELECT 
+	Fornecedor_Tipo.Fornecedor_Tipo_ID									AS Fornecedor_Tipo_ID,
+	Fornecedor_Tipo.Fornecedor_Tipo_Descricao							AS Fornecedor_Tipo_Descricao
+FROM 
+	Pedido_Compra_CT 
+INNER JOIN Fornecedor ON 
+	Fornecedor.Forn_ID = Pedido_Compra_CT.Fornecedor_ID
+INNER JOIN Fornecedor_REL_Fornecedor_Tipo ON 
+	Fornecedor_REL_Fornecedor_Tipo.Forn_ID = Fornecedor.Forn_ID
+INNER JOIN Fornecedor_Tipo ON 
+	Fornecedor_Tipo.Fornecedor_Tipo_ID = Fornecedor_REL_Fornecedor_Tipo.Fornecedor_Tipo_ID
+WHERE 
+	Pedido_Compra_CT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID		
+-----------------------------------------TIPOS DO FORNECEDOR----------------------------------
+
+-----------------------------------------PEÇA EMBALAGEM---------------------------------------
+SELECT
+	Peca_Embalagem.Peca_Embalagem_ID									AS Peca_Embalagem_ID,			
+	Peca_Embalagem.Peca_ID												AS Peca_ID,
+	Peca_Embalagem.Peca_Embalagem_Descricao								AS Peca_Embalagem_Descricao,
+	ISNULL(Peca_Embalagem.Peca_Embalagem_Peso,0)						AS Peca_Embalagem_Peso,
+	Peca_Embalagem.Peca_Embalagem_Altura								AS Peca_Embalagem_Altura,
+	Peca_Embalagem.Peca_Embalagem_Largura								AS Peca_Embalagem_Largura,
+	Peca_Embalagem.Peca_Embalagem_Profundidade							AS Peca_Embalagem_Profundidade,
+	Peca_Embalagem.Peca_Embalagem_Diametro								AS Peca_Embalagem_Diametro,
+	Peca_Embalagem.Enum_Tipo_Embalagem									AS Enum_Tipo_Embalagem,
+	Peca_Embalagem.Peca_Embalagem_Quantidade							AS Peca_Embalagem_Quantidade,
+	Peca_Embalagem.Peca_Embalagem_Ativo									AS Peca_Embalagem_Ativo,
+	Peca_Embalagem.Peca_Embalagem_Compra								AS Peca_Embalagem_Compra,
+	Peca_Embalagem.Peca_Embalagem_Venda									AS Peca_Embalagem_Venda,
+	ISNULL(Peca_Embalagem.Peca_Embalagem_Empilhamento_Maximo, 0)		AS Peca_Embalagem_Empilhamento_Maximo,
+	Enumerado.Enum_Sigla												AS Enum_Sigla
+FROM 
+	Pedido_Compra_IT 
+INNER JOIN Peca_Embalagem ON 
+	Peca_Embalagem.Peca_ID = Pedido_Compra_IT.Peca_ID 
+AND 
+	Peca_Embalagem.Peca_Embalagem_Ativo = 1
+INNER JOIN  Enumerado ON 
+	Enumerado.Enum_ID = Peca_Embalagem.Enum_Tipo_Embalagem
+INNER JOIN Pedido_Compra_CT ON
+	Pedido_Compra_CT.Pedido_Compra_CT_ID = Pedido_Compra_IT.Pedido_Compra_CT_ID
+WHERE 
+	Pedido_Compra_IT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID
+AND
+	(	Peca_Embalagem.Peca_Embalagem_Compra =	CASE
+												WHEN Pedido_Compra_CT.Enum_Status_ID = 40 THEN Peca_Embalagem.Peca_Embalagem_Compra
+												ELSE 1
+											END
+	OR
+		Peca_Embalagem.Enum_Tipo_Embalagem = 22	)
+
+-----------------------------------------PEÇA EMBALAGEM---------------------------------------
+
+-----------------------------------------PRÉ DISTRIBUIÇÃO-------------------------------------
+
+SELECT 
+	DISTINCT
+	Lojas.Lojas_Id														AS Loja_ID,
+	Lojas.Lojas_NM														AS Lojas_NM,
+	ISNULL(Pre_Distribuicao.Pre_Distribuicao_Qtde,0)					AS Pre_Distribuicao_Qtde,
+	ISNULL(Pedido_Compra_IT.Peca_ID,0)									AS Peca_ID,
+	ISNULL(Pre_Distribuicao.Objeto_Origem_ID,0)							AS Objeto_Origem_ID,
+	ISNULL(Enum_Tipo_ID,@Enum_Origem_Pre_Distribuicao_Pedido_Compra_ID)	AS Enum_Tipo_ID,
+	ISNULL(Abastecimento_Reserva_ID,0)									AS Abastecimento_Reserva_ID,
+	ISNULL(Pre_Distribuicao_Considerar,0)								AS Pre_Distribuicao_Considerar,
+	ISNULL(Pre_Distribuicao_Qtde_Chegou,0)								AS Pre_Distribuicao_Qtde_Chegou,
+	ISNULL(Pre_Distribuicao_Qtde_Ja_Abastecida,0)						AS Pre_Distribuicao_Qtde_Ja_Abastecida,
+	ISNULL(Loja_Origem_ID,0)											AS Loja_Origem_ID,
+	Lojas.Lojas_Ordenacao												AS Lojas_Ordenacao 
+FROM 
+	Pedido_Compra_IT 
+FULL JOIN Lojas ON 
+	Lojas_Tipo in ('Loja','CD')
+LEFT JOIN Pre_Distribuicao ON 
+	Pre_Distribuicao.Peca_ID = Pedido_Compra_IT.Peca_ID 
+AND 
+	Pre_Distribuicao.Objeto_Origem_ID = Pedido_Compra_IT.Pedido_Compra_CT_ID 
+AND 
+	Pre_Distribuicao.Enum_Tipo_ID = @Enum_Origem_Pre_Distribuicao_Pedido_Compra_ID
+AND 
+	Pre_Distribuicao.Loja_ID = Lojas.Lojas_Id
+INNER JOIN Peca ON 
+	Peca.Peca_ID = Pedido_Compra_IT.Peca_ID
+LEFT JOIN Peca_Loja ON 
+    Peca_Loja.Peca_ID = Peca.Peca_ID
+AND 
+	Peca_Loja.Lojas_ID = Lojas.Lojas_Id
+WHERE  
+	Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID
+AND 
+	( Peca_Loja.Peca_Loja_IsAtivo = 1 or Lojas.Lojas_Tipo = 'CD' )
+
+-----------------------------------------PRÉ DISTRIBUIÇÃO-------------------------------------
+
+-----------------------------------------CONDIÇÃO PAGAMENTO-----------------------------------
+SELECT 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_ID						AS Condicao_Pagamento_CT_ID, 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_CD						AS Condicao_Pagamento_CT_CD, 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_DS						AS Condicao_Pagamento_CT_DS, 
+	Condicao_Pagamento_CT.Enum_Forma_Fat_ID								AS Enum_Forma_Fat_ID, 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_Obs						AS Condicao_Pagamento_CT_Obs, 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_Gerar_Contas_Pagar		AS Condicao_Pagamento_CT_Gerar_Contas_Pagar, 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_IsAtivo					AS Condicao_Pagamento_CT_IsAtivo 
+FROM 
+	Pedido_Compra_CT 
+INNER JOIN Condicao_Pagamento_CT ON 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_ID = Pedido_Compra_CT.Condicao_Pagamento_CT_ID
+WHERE 
+	Pedido_Compra_CT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID
+AND 
+	Condicao_Pagamento_CT.Condicao_Pagamento_CT_IsAtivo = 1
+-----------------------------------------CONDIÇÃO PAGAMENTO-----------------------------------
+
+-----------------------------------------GARANTIAS DO FORNECEDOR----------------------------------
+
+SELECT 
+	@FORNECEDOR_ID																	AS Forn_ID,
+/*	SUBSELECT QUANTIDADE RESTANTE*/
+(ISNULL(
+		(SELECT		
+			SUM(ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade, 0)
+				- ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Recebida, 0))
+		FROM		
+		Pedido_Garantia_IT
+		INNER JOIN Pedido_Garantia_IT_NF_Origem ON
+			Pedido_Garantia_IT.Pedido_Garantia_IT_ID = Pedido_Garantia_IT_NF_Origem.Pedido_Garantia_IT_ID
+		INNER JOIN Pedido_Garantia_CT ON 
+			Pedido_Garantia_CT.Pedido_Garantia_CT_ID = Pedido_Garantia_IT.Pedido_Garantia_CT_ID
+		AND
+			Pedido_Garantia_CT.Enum_Status_ID IN (@Enum_Status_Pedido_Garantia_Pendente_Retorno_ID, @Enum_Status_Pedido_Garantia_Recebimento_Parcial_ID)
+		AND
+			Pedido_Garantia_CT.Enum_Tipo_ID IN (@Enum_Tipo_Pedido_Garantia, @Enum_Tipo_Pedido_Garantia_Recall)
+		WHERE
+			Pedido_Garantia_IT.Pedido_Garantia_CT_ID IN (SELECT Pedido_Garantia_CT_ID FROM Pedido_Garantia_CT WHERE Forn_ID = @FORNECEDOR_ID)
+		AND
+			ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Substituida, 0) = 0
+		AND
+		 	(ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade, 0)
+			- ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Recebida, 0))	> 0)
+	, 0)
++ 
+/*	SUBSELECT QUANTIDADE RESTANTE SUBSTITUIDA */
+ISNULL(
+		(SELECT
+			SUM(ISNULL(Pedido_Garantia_Divergencia_Quantidade, 0) 
+				- ISNULL(Pedido_Garantia_Divergencia_Quantidade_Recebida, 0))
+ 		FROM		
+			Pedido_Garantia_Divergencia
+		INNER JOIN Pedido_Garantia_CT ON 
+			Pedido_Garantia_CT.Pedido_Garantia_CT_ID = Pedido_Garantia_Divergencia.Pedido_Garantia_CT_ID
+		AND
+			Pedido_Garantia_CT.Enum_Status_ID IN (@Enum_Status_Pedido_Garantia_Pendente_Retorno_ID, @Enum_Status_Pedido_Garantia_Recebimento_Parcial_ID)
+		AND
+			Pedido_Garantia_CT.Enum_Tipo_ID IN (@Enum_Tipo_Pedido_Garantia, @Enum_Tipo_Pedido_Garantia_Recall)		
+		WHERE
+			Pedido_Garantia_Divergencia.Pedido_Garantia_CT_ID IN (SELECT Pedido_Garantia_CT_ID FROM Pedido_Garantia_CT WHERE Forn_ID = @FORNECEDOR_ID)
+		AND
+		  	(ISNULL(Pedido_Garantia_Divergencia_Quantidade, 0) 
+			- ISNULL(Pedido_Garantia_Divergencia_Quantidade_Recebida, 0)) > 0)
+	, 0)
+)																					AS Qtde_Pecas_Pendente_Fornecedor					,
+
+
+/*	CustoFaltante = CUSTO RESTANTE DO PEDIDO + CUSTO RESTANTE SUBSTITUIDA */
+(
+/*	SUBSELECT CUSTO RESTANTE */
+ISNULL(
+		(SELECT		
+			ISNULL(SUM(Pedido_Garantia_IT_NF_Origem_Qtde 
+					* Pedido_Garantia_IT_NF_Origem_Custo_Unitario_Entrada),0)
+		FROM		
+			Pedido_Garantia_IT
+		INNER JOIN Pedido_Garantia_IT_NF_Origem ON
+			Pedido_Garantia_IT.Pedido_Garantia_IT_ID = Pedido_Garantia_IT_NF_Origem.Pedido_Garantia_IT_ID
+		INNER JOIN Pedido_Garantia_CT ON 
+			Pedido_Garantia_CT.Pedido_Garantia_CT_ID = Pedido_Garantia_IT.Pedido_Garantia_CT_ID
+		AND
+			Pedido_Garantia_CT.Enum_Status_ID IN (@Enum_Status_Pedido_Garantia_Pendente_Retorno_ID, @Enum_Status_Pedido_Garantia_Recebimento_Parcial_ID)
+		AND
+			Pedido_Garantia_CT.Enum_Tipo_ID IN (@Enum_Tipo_Pedido_Garantia, @Enum_Tipo_Pedido_Garantia_Recall)		
+		WHERE
+			Pedido_Garantia_IT.Pedido_Garantia_CT_ID IN (SELECT Pedido_Garantia_CT_ID FROM Pedido_Garantia_CT WHERE Forn_ID = @FORNECEDOR_ID)
+		AND	
+			ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Substituida, 0) = 0
+		AND
+			(ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade, 0) 
+			- ISNULL(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Recebida, 0)) > 0)
+	, 0)
++
+/*	SUBSELECT CUSTO RESTANTE SUBSTITUIDA */
+ISNULL(
+		(SELECT
+			SUM((ISNULL(Pedido_Garantia_Divergencia_Quantidade, 0)
+					- ISNULL(Pedido_Garantia_Divergencia_Quantidade_Recebida, 0))
+					* Estoque_Custo_Ultimo_Custo)
+		FROM		
+			Pedido_Garantia_Divergencia
+		INNER JOIN Pedido_Garantia_CT ON 
+			Pedido_Garantia_CT.Pedido_Garantia_CT_ID = Pedido_Garantia_Divergencia.Pedido_Garantia_CT_ID
+		AND
+			Pedido_Garantia_CT.Enum_Status_ID IN (@Enum_Status_Pedido_Garantia_Pendente_Retorno_ID, @Enum_Status_Pedido_Garantia_Recebimento_Parcial_ID)
+		AND
+			Pedido_Garantia_CT.Enum_Tipo_ID IN (@Enum_Tipo_Pedido_Garantia, @Enum_Tipo_Pedido_Garantia_Recall)		
+		INNER JOIN vw_Peca_Custo ON 
+			Pedido_Garantia_Divergencia.Peca_ID = vw_Peca_Custo.Peca_ID
+		WHERE
+			Pedido_Garantia_Divergencia.Pedido_Garantia_CT_ID IN (SELECT Pedido_Garantia_CT_ID FROM Pedido_Garantia_CT WHERE Forn_ID = @FORNECEDOR_ID)
+		AND
+			(ISNULL(Pedido_Garantia_Divergencia_Quantidade, 0) 
+			- ISNULL(Pedido_Garantia_Divergencia_Quantidade_Recebida, 0)) > 0)
+	, 0)
+)																					AS Valor_Total_Pendente_Fornecedor					,
+
+	(SELECT 
+		ISNULL(SUM(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Improcedente),0)
+	FROM 
+ 		Pedido_Garantia_CT
+	INNER JOIN Pedido_Garantia_IT ON 
+		Pedido_Garantia_IT.Pedido_Garantia_CT_ID = Pedido_Garantia_CT.Pedido_Garantia_CT_ID 	
+	INNER JOIN Pedido_Garantia_IT_NF_Origem ON
+		Pedido_Garantia_IT_NF_Origem.Pedido_Garantia_IT_ID = Pedido_Garantia_IT.Pedido_Garantia_IT_ID
+	AND 
+		Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Improcedente != 0
+	WHERE 
+		Pedido_Garantia_CT.Forn_ID = @FORNECEDOR_ID
+	AND 	
+		Pedido_Garantia_CT.Pedido_Garantia_CT_Data_Geracao > DATEADD(MONTH, -3, GETDATE())) AS Qtde_Pecas_Recusadas_Fornecedor,
+
+	(SELECT 
+		ISNULL(SUM(Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Improcedente * 
+		Pedido_Garantia_IT_NF_Origem.Pedido_Garantia_IT_NF_Origem_Custo_Unitario_Entrada),0)							
+	FROM 
+ 		Pedido_Garantia_CT
+	INNER JOIN Pedido_Garantia_IT ON 
+		Pedido_Garantia_IT.Pedido_Garantia_CT_ID = Pedido_Garantia_CT.Pedido_Garantia_CT_ID 	
+	INNER JOIN Pedido_Garantia_IT_NF_Origem ON
+		Pedido_Garantia_IT_NF_Origem.Pedido_Garantia_IT_ID = Pedido_Garantia_IT.Pedido_Garantia_IT_ID
+	AND 
+		Pedido_Garantia_IT.Pedido_Garantia_IT_Quantidade_Improcedente != 0
+	WHERE 
+		Pedido_Garantia_CT.Forn_ID = @FORNECEDOR_ID
+	AND 	
+		Pedido_Garantia_CT.Pedido_Garantia_CT_Data_Geracao > DATEADD(MONTH, -3, GETDATE())) AS Valor_Total_Recusadas_Fornecedor		
+
+-----------------------------------------GARANTIAS DO FORNECEDOR----------------------------------
+
+-----------------------------------------Peça Codigo Fornecedor----------------------------
+SELECT 
+	Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_ID				AS Peca_Codigo_Fornecedor_ID,
+	Peca_Codigo_Fornecedor.Peca_ID									AS Peca_ID,
+	Peca_Codigo_Fornecedor.Forn_ID									AS Forn_ID,
+	Peca_Codigo_Fornecedor.Usuario_ID								AS Usuario_ID,
+	Fornecedor_Nome +' - '+ Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_Codigo AS Peca_Codigo_Fornecedor_Codigo,
+	Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_Data				AS Peca_Codigo_Fornecedor_Data
+FROM
+	Pedido_Compra_IT
+INNER JOIN Peca_Codigo_Fornecedor ON 
+	Peca_Codigo_Fornecedor.Peca_ID = Pedido_Compra_IT.Peca_ID
+INNER JOIN Fornecedor ON 
+	Fornecedor.Forn_ID = Peca_Codigo_Fornecedor.Forn_ID
+WHERE 
+	Pedido_Compra_IT.Pedido_Compra_CT_ID = @Pedido_Compra_CT_ID
+AND 
+	Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_IsAtivo = 1
+ORDER BY 
+	Peca_Codigo_Fornecedor.Peca_Codigo_Fornecedor_Data DESC
+
+-----------------------------------------Peça Codigo Fornecedor----------------------------
+SET NOCOUNT OFF
