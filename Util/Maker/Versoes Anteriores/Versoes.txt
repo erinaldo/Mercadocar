@@ -1,0 +1,25 @@
+> Versao 15 (atual)
+Alterado o nome do servidor de desenvolvimento e deixado de forma que se não for possível conectar, ainda assim será aberto o programa
+
+> Versao 14
+Implementado geração de código de formulários Grid
+
+> Versão 13
+Corrigido BUG referente ao valor padrão para campos nulos do tipo string nos validadores.
+
+> Versão 12
+Colocado geração do código no novo padrão de nomenclatura
+Corrigido dimensionamento do design
+Colocado cada campo em uma linha no script de insert da DATA
+Implementado if nos validadores da DATA para campos nulos
+Correção do ISNULL para considerar o tipo de dado, pois antes colocava string vazia para campos decimais.
+
+> Versão 11
+Corrigido geração automática do parametro do método ValidaTamanhoMaximo
+
+> Versão 10
+Alterado geração do validador para utilizar os comandos automáticos para obter o nome da classe e do método.
+Efetuado correção no Preencher_Colecao_DataObject onde tinha de remover o underline do nome de uma variável.
+
+> Versão 9
+Corrigido geração dos validadores, que estavam com o parâmetro de "nome do campo" errado

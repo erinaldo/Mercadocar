@@ -22,7 +22,7 @@ Lojas.Lojas_NM,
 Enum_Natureza_Operacao1_ID,
 Condicao_Pagamento_CT_ID,
 Recebimento_CT_Numero_Nota_Fiscal,
---Recebimento_CT_Data_Ultima_Alteracao,
+Recebimento_CT_Data_Ultima_Alteracao,
 Recebimento_CT_Valor_Abatimento,
 Recebimento_CT_Valor_Total
 FROM Recebimento_CT 
@@ -47,7 +47,7 @@ Recebimento_CT_Observacao LIKE '%duplicata%'
 AND Enum_Status_ID IN (189, 1636, 1760)
 ORDER BY Recebimento_CT_ID DESC
 
-SELECT TOP(10) * FROM NFE_Entrada_XML ORDER BY NFe_Entrada_XML_ID DESC
+SELECT TOP(10) * FROM NFE_Entrada_XML ORDER BY NFe_Entrada_XML_ID DESC -- Consulta XML
 SELECT TOP(10) * FROM NFE_Entrada_XML WHERE NFe_Entrada_XML_ID = 411837
 SELECT TOP(10) * FROM NFE_Entrada_XML WHERE NFe_Entrada_XML_Natureza_Operacao LIKE '%duplicata%'
 SELECT * FROM NFE_Entrada_XML WHERE NFe_Entrada_XML_Numero = 91296
@@ -72,6 +72,8 @@ ALTER TABLE Recebimento_CT DROP COLUMN Recebimento_CT_Valor_Abatimento;
 
 DELETE FROM NFE_Entrada_XML WHERE NFe_Entrada_XML_Numero = 91296
 DELETE FROM Recebimento_CT WHERE Recebimento_CT_Numero_Nota_Fiscal = '91296'
+DELETE FROM NFE_Entrada_XML WHERE NFe_Entrada_XML_ID IN
+(119620)
 
 sp p_CD_Consultar_Nota_Fiscal_Propriedades_FT_202675
 

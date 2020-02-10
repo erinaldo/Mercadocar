@@ -1,0 +1,1065 @@
+//This file is where you will place registry entries that are to be removed during setup of your application.
+
+
+// Remove macro support.
+//[$RootKey$\Packages\{A659F1B3-AD34-11d1-ABAD-0080C7B89C95}]
+//[$RootKey$\Menus]
+//"{A659F1B3-AD34-11d1-ABAD-0080C7B89C95}"=""
+//[$RootKey$\Projects\{07CD18B1-3BA1-11d2-890A-0060083196C6}]
+//[$RootKey$\Projects\{23162FF1-3C3F-11d2-890A-0060083196C6}]
+//[$RootKey$\Services\{04BBF6A5-4697-11d2-890E-0060083196C6}]
+//[$RootKey$\Services\{55ED27C1-4CE7-11d2-890F-0060083196C6}]
+//[$RootKey$\Services\{A659F1B2-AD34-11d1-ABAD-0080C7B89C95}]
+//[$RootKey$\ToolWindows\{07CD18B4-3BA1-11D2-890A-0060083196C6}]
+
+// ********
+// Remove unused packages
+// ********
+
+// TFS SCC Configuration entries.  The TFS entries block Team Explorer from loading.
+// Microsoft.VisualStudio.TeamFoundation.VersionControl.HatPackage
+[$RootKey$\AutoLoadPackages\{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}]
+// Microsoft.VisualStudio.TeamFoundation.Lab
+[$RootKey$\Packages\{17c5d08a-602c-4dfb-82b5-8e0f7f50c9d7}] 
+// GitHub Package
+[$RootKey$\Packages\{c3d3dc68-c977-411f-b3e8-03b0dccf7dfc}] 
+// Team Foundation Server Provider Package
+[$RootKey$\Packages\{5BF14E63-E267-4787-B20B-B814FD043B38}]
+// Microsoft.VisualStudio.TeamFoundation.WorkItemTracking.WitPcwPackage
+[$RootKey$\Packages\{6238f138-0c0c-49ec-b24b-215ee59d84f0}]
+// Microsoft.VisualStudio.TeamFoundation.Build.BuildPackage
+[$RootKey$\Packages\{739f34b3-9ba6-4356-9178-ac3ea81bdf47}]
+// Microsoft.VisualStudio.TeamFoundation.WorkItemTracking
+[$RootKey$\Packages\{ca39e596-31ed-4b34-aa36-5f0240457a7e}]
+// Microsoft.VisualStudio.TeamFoundation
+[$RootKey$\Packages\{b80b010d-188c-4b19-b483-6c20d52071ae}]
+// Microsoft.TeamFoundation.Git.Provider.SccProviderPackage
+[$RootKey$\Packages\{7fe30a77-37f9-4cf2-83dd-96b207028e1b}]
+// Microsoft.VisualStudio.TeamFoundation.VersionControl.SccPcwPluginPackage
+[$RootKey$\Packages\{1b4f495a-280a-3ba4-8db0-9c9b735e98ce}] 
+// Microsoft.VisualStudio.TeamFoundation.VersionControl.HatPackage
+[$RootKey$\Packages\{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}]
+// Visual SourceSafe Provider Package
+[$RootKey$\Packages\{AA8EB8CD-7A51-11D0-92C3-00A0C9138C45}]
+// Visual SourceSafe Provider Stub Package
+[$RootKey$\Packages\{53544C4D-B03D-4209-A7D0-D9DD13A4019B}]
+// Microsoft.VisualStudio.TeamFoundation.Initialization.InitializationPackage
+[$RootKey$\Packages\{75DF55D4-EC28-47FC-88AC-BE56203C9012}]
+// Team Foundation Server Provider Stub Package
+[$RootKey$\Packages\{D79B7E0A-F994-4D4D-8FAE-CAE147279E21}]
+// Microsoft.VisualStudio.Services.SccDisplayInformationPackage
+[$RootKey$\Packages\{D7BB9305-5804-4F92-9CFE-119F4CB0563B}]
+// Microsoft.VisualStudio.TeamFoundation.Lab.LabPcwPluginPackage
+[$RootKey$\Packages\{e0910062-da1f-411c-b152-a3fc6392ee1f}]
+[$RootKey$\ToolsOptionsPages\Source Control]
+[$RootKey$\AutoLoadPackages\{11b8e6d7-c08b-4385-b321-321078cdd1f8}]
+// TFS SCC Configuration entries.
+
+//XAML Designer
+[$RootKey$\Packages\{512be089-83ec-4cc6-8483-cf16565ae209}]
+[$RootKey$\ToolWindows\{58C5C0B6-574A-4488-ACC3-B13832DBE16D}]
+[$RootKey$\ToolWindows\{4880D9FF-D112-41C5-80AD-F25938018F2F}]
+[$RootKey$\ToolsOptionsPages\XAML Designer]
+[$RootKey$\ToolsOptionsPages\TextTemplating]
+[$RootKey$\Languages\CodeExpansions\XAML]
+[$RootKey$\Languages\CodeExpansions\XML]
+
+// VS Debugger UI 
+[$RootKey$\Packages\{D549BC66-C17B-4409-8729-583E60DC0BC1}]
+[$RootKey$\ToolWindows\{605322a2-17ae-43f4-b60f-766556e46c87}]
+
+[$RootKey$\AppCommandLine\GitClone]
+[$RootKey$\AppCommandLine\NoSigninPrompt]
+[$RootKey$\AppCommandLine\TfsLink]
+[$RootKey$\AppCommandLine\UseEnv]
+[$RootKey$\AutoLoadPackages\{37e81364-16d3-fcaa-f260-786cd21a849f}]
+[$RootKey$\AutoLoadPackages\{3ac096d0-a1c2-e12c-1390-a8335801fdab}]
+[$RootKey$\AutoLoadPackages\{6FB82950-B2F8-4F94-9417-506703704DB2}]
+[$RootKey$\AutoLoadPackages\{781d1330-8de9-429d-bf73-c74f19e4fcb1}]
+[$RootKey$\AutoLoadPackages\{7cac4ae1-2e6b-4b02-a91c-71611e86f273}]
+[$RootKey$\AutoLoadPackages\{862a616d-e4be-a6b0-59b8-b3affd6f1fbc}]
+[$RootKey$\AutoLoadPackages\{bc8a1ffa-bee3-4634-8014-f334798102b3}]
+[$RootKey$\AutoLoadPackages\{de9f6b31-c1e5-b965-95f3-1885af956fc9}]
+[$RootKey$\AutoLoadPackages\{E16EC553-041C-403A-A275-958469FCDE74}]
+[$RootKey$\AutoLoadPackages\{e6eb3061-4138-4be3-a970-111c57125f71}]
+[$RootKey$\AutoLoadPackages\{FC199842-686C-47B7-B0E-1C1D8CADA59C}]
+
+// Microsoft.VisualStudio.Diagnostics.MemoryProfiler 
+[$RootKey$\Packages\{03FD0D18-56CC-46DC-BA9B-0873A6F658D9}] 
+// Start Page Package  
+[$RootKey$\Packages\{0E13FC54-9231-410b-8B74-95689CD32627}] 
+// Microsoft.VisualStudio.AppxPackage.StoreValidation.StoreValidationPackage
+[$RootKey$\Packages\{12ed8604-3c37-4407-8377-66e3bd16ed3f}] 
+// TestGeneration Package
+[$RootKey$\Packages\{13373ac4-7f04-4c7e-a9a7-2bd33349b323}] 
+// Visual C++ Language Manager Package
+[$RootKey$\Packages\{13c3bbb4-f18f-4111-9f54-a0fb010d9194}] 
+// Microsoft.VisualStudio.WindowsPhone.Project.Packaging.WindowsPhonePackage
+[$RootKey$\Packages\{19aa6823-3ac0-4210-92af-07e2f0b4e81f}]
+// Visual C++ Language Project System
+[$RootKey$\Packages\{1B027A40-8F43-11D0-8D11-00A0C91BC942}] 
+// HTML Pacakge
+[$RootKey$\Packages\{1B437D20-F8FE-11D2-A6AE-00104BCC7269}]
+// Microsoft.VisualStudio.AppxPackage.WindowsAppStore.WindowsStorePackage
+[$RootKey$\Packages\{20620670-54b9-4acb-a3d8-2f86e594132a}] 
+// XML Schema Designer
+[$RootKey$\Packages\{20aaf8fa-14c0-4897-8ca0-4d861e2b1212}] 
+// Class Outline Package
+[$RootKey$\Packages\{21af45b0-ffa5-11d0-b63f-00a0c922e851}] 
+// Visual Database Tools Package
+[$RootKey$\Packages\{220A4C17-7E7C-4663-BBCC-5E607C6543CD}] 
+// Microsoft.DiagnosticsHub.VisualStudio.DiagnosticsHubPackage
+[$RootKey$\Packages\{22512d50-40bc-4dea-89b1-21d70bb4218e}] 
+// Microsoft.VisualStudio.TestService.TestResultProvider.UI.TestServicePackage
+[$RootKey$\Packages\{24bf811d-5d4c-404f-a533-2b535b6efcfe}] 
+// Window Frame Telemetry Package
+[$RootKey$\Packages\{2581426e-bf4f-4a49-a42a-20ef9d51ef49}] 
+// LightSwitch Designer Hosting package
+[$RootKey$\Packages\{272EA915-68EE-4AFD-99A4-1286126565EC}] 
+// Microsoft.VisualStudio.ProjectSystem.VS.Implementation.SharedProjectFilesPackage.SharedProjectFilesPackage
+[$RootKey$\Packages\{29C54E43-6464-4762-A105-FA308DCCB107}] 
+// Microsoft.VisualStudio.WebClient.Diagnostics.Phone.DebugIEOnPhonePackage
+[$RootKey$\Packages\{2F72A496-429D-4C0A-B26A-0EF8B156B243}] 
+// Microsoft.VisualStudio.LanguageServices.TypeScript.TypeScriptPackage
+[$RootKey$\Packages\{2ffe45c4-5c73-493c-b187-f2e955ff875e}] 
+// Microsoft.VisualStudio.ProjectSystem.VS.Implementation.Package.ProjectPackage
+[$RootKey$\Packages\{3347BEE8-D7A1-4082-95E4-38A439553CC2}] 
+// VS Remote Control package
+[$RootKey$\Packages\{335B816A-475D-4227-AD15-C90F9427B01A}]
+// Remote settings package
+[$RootKey$\Packages\{0B9FF418-9DFC-4C6B-A4C6-7F64F3F66F27}] 
+// Settings store sync delayed init package
+[$RootKey$\Packages\{30d5b2e6-64bf-422f-a2bf-5d5b4d66548f}] 
+// Microsoft.VisualStudio.Web.Application.WAPackage
+[$RootKey$\Packages\{349C5850-65DF-11DA-9384-00065B846F21}] 
+// Visual Web Developer Project System Package
+[$RootKey$\Packages\{39c9c826-8ef8-4079-8c95-428f5b1c323f}] 
+// Visual C++ Property Manager Package
+[$RootKey$\Packages\{3A3E1789-3E35-47B0-8567-D2FB407CC63D}] 
+// LightSwitch Assembly Resolver Package
+[$RootKey$\Packages\{40945F46-894A-4EBE-9B69-8357F2ACD384}] 
+// Microsoft.VisualStudio.TraceLogPackage.TraceLogPackage
+[$RootKey$\Packages\{494b203e-3c94-40ab-b331-6cb32460b617}] 
+// Microsoft.VisualStudio.ContextManagement.ContextManagementPackagePackage
+[$RootKey$\Packages\{4a2f8f5f-1bcb-4c7a-b0d6-6f82fd6fdbc8}]
+// Microsoft.VisualStudio.AppxPackage.ManifestDesigner.ManifestDesignerPackage
+[$RootKey$\Packages\{4bb3488f-6dcb-4b4d-8e4b-2841bab2d553}]
+// Test Management(Microsoft.TeamFoundation.TestManagement.ClientPackage
+[$RootKey$\Packages\{4DAD8305-87C9-4431-99FF-FFE413A59F4B}]
+// MDD KofePackage
+[$RootKey$\Packages\{507f4375-d65c-4dca-a0e5-8b501453ffda}]
+// Microsoft.VisualStudio.Debugger.Parallel.Gpu.GpuPackage
+[$RootKey$\Packages\{52f5727d-fe3b-4812-80c4-6a8eebeab94f}]
+// Microsoft.VisualStudio.Diagnostics.Common.Package.DiagnosticsPackage
+[$RootKey$\Packages\{55838653-1598-42E2-B251-B8BF7F864826}]
+// Microsoft.VisualStudio.LanguageServices.VisualBasic.VisualBasicPackage
+[$RootKey$\Packages\{574fc912-f74f-4b4e-92c3-f695c208a2bb}]
+// Visual Studio Component Enumerator Package
+[$RootKey$\Packages\{588205e0-66e0-11d3-8600-00c04f6123b3}]
+// Microsoft.VisualStudio.TestService.LoadTestManager.LoadTestManagerPackage
+[$RootKey$\Packages\{5bd71170-4ee6-4800-89d9-d6cc4d6ec488}]
+// Microsoft.VisualStudio.Shell.Connected.UserInformation.UserInformationPackage
+[$RootKey$\Packages\{5e80a5a1-b722-4727-9015-148aab6310b0}]
+//  Microsoft.VisualStudio.Progression.ProviderPackage
+[$RootKey$\Packages\{5f2e5e42-4192-4d79-a0d8-1d881e808829}]
+// Emulator Package (Android)
+[$RootKey$\Packages\{603a5e21-7ab0-443e-9c77-400250f32cc7}]
+// Microsoft.VisualStudio.TailoredProjectServices
+[$RootKey$\Packages\{65D2E08F-C7DD-4512-9486-156881C91F6E}]
+// Visual Studio Settings and Project Designers Package
+[$RootKey$\Packages\{67909B06-91E9-4F3E-AB50-495046BE9A9A}]
+// Microsoft.VisualStudio.LanguageServices.Setup.RoslynPackage
+[$RootKey$\Packages\{6cf2e545-6109-4730-8883-cf43d7aec3e1}]
+// Microsoft.VisualStudio.Editors.ClickOncePackage
+[$RootKey$\Packages\{700514AE-5A76-4367-B0AE-445475F75D3F}]
+// Microsoft.LightSwitch.VSIntegration.Project.RootProject.RootProjectPackage
+[$RootKey$\Packages\{783E7E99-F1EC-4B21-91E2-D36F20B7C81D}]
+// VS SDK Project Flavor package
+[$RootKey$\Packages\{794ddf97-783a-475f-ac0c-851038b795ee}]
+// Microsoft.GDBPackage.GDBPackagePackage
+[$RootKey$\Packages\{7a28ceda-da3e-4172-b19a-bb9c810046a6}]
+// Microsoft.Data.Entity.Design.BootstrapPackage.BootstrapPackage
+[$RootKey$\Packages\{7A4E8D96-5D5B-4415-9FAB-D6DCC56F47FB}]
+// Feature Flags Package
+[$RootKey$\Packages\{7AC58323-1325-44DB-A4D5-2823A1426A13}]
+// Windows Forms Designer Resources Package
+[$RootKey$\Packages\{7b5d447b-0b12-41ea-a84e-c822034422d4}]
+// Visual Studio Window Frame Usage Telemetry Package
+[$RootKey$\Packages\{809392FD-F7A4-4095-B42F-374D1961811B}]
+// Microsoft.VisualStudio.Feedback.FeedbackPackage
+[$RootKey$\Packages\{B22490B8-AA51-43B1-97EE-509A33B681F3}]
+// Component Diagnostics
+[$RootKey$\Packages\{7D1A598C-4F97-4A83-A178-6B1BFCC7061E}]
+//  PerfWatson Event Provider Package
+[$RootKey$\Packages\{B466091B-94AD-416F-BB8A-42534D423A67}]
+// Microsoft.VisualStudio.Services.UserNotifications.UserNotificationsPackage
+[$RootKey$\Packages\{B89CD7D2-19DB-4B60-A958-E882AE71A66E}]
+// VS Remote Control package
+[$RootKey$\Packages\{C3C7E24F-26F7-49D8-A1D6-A9C4ADCD9BC2}]
+// Microsoft.VisualStudio.JSLS.JavaScriptLanguageServicePackage
+[$RootKey$\Packages\{D62C17C6-44B3-4E5D-B0AA-1C5536E979D9}]
+// Visual C++ Project System Package
+[$RootKey$\Packages\{F1C25864-3097-11D2-A5C5-00C04F7968B4}]
+// Visual C++ Language Manager Package
+[$RootKey$\Packages\{8C2EA640-ABC1-11D0-9D62-00C04FD9DFD9}]
+// Microsoft.VisualStudio.WebClient.Diagnostics.HtmlToolHost.Package.HtmlToolHostPackage
+[$RootKey$\Packages\{B66F381B-48DE-4C10-B71B-EF9A2A808D85}]
+// Visual C++ Package
+[$RootKey$\Packages\{1B027A40-8F43-11D0-8D11-00A0C91BC942}]
+// Visual C++ Property Manager Package
+[$RootKey$\Packages\{3A3E1789-3E35-47B0-8567-D2FB407CC63D}]
+[$RootKey$\Packages\{a7be58b7-4b90-4bf3-816c-88e750c3e4f8}]
+//  Microsoft.VisualStudio.CommonIDE.SolutionTelemetry 
+[$RootKey$\Packages\{05b0dcb8-5f74-4a94-ab2f-8b2354c977ef}]
+//  Microsoft.Data.Entity.Design.Package.MicrosoftDataEntityDesignPackage
+[$RootKey$\Packages\{8889E051-B7F9-4781-BB33-2A36A9BDB3A5}]
+[$RootKey$\Packages\{36CB8683-F4A4-4BA0-B0BC-C489A63018EC}]
+// Visual Studio Call Hierarchy Package
+[$RootKey$\Packages\{3F3D9528-BAC4-420e-8147-29896300C5C0}]
+// Microsoft.VisualStudio.JavaScript.Project.JavaScriptProjectPackage
+[$RootKey$\Packages\{7e89d1bd-0041-4382-9816-0e78fc502bed}]
+// WebDiagnosticsAttach 
+[$RootKey$\Packages\{8C0C630B-37F1-11E3-8259-6C3BE516EAD0}]
+
+// SVsTelemetryService
+[$RootKey$\Services\{959069c9-9e93-4fa1-bf16-3f8120d7db0c}]
+
+[$RootKey$\ToolsOptionsPages\Team Foundation Server Power Tools]
+[$RootKey$\ToolsOptionsPages\Cross Platform]
+[$RootKey$\ToolsOptionsPages\Debugging History]
+[$RootKey$\ToolsOptionsPages\Environment\Notifications]
+[$RootKey$\ToolsOptionsPages\Environment\RoamingSettings]
+[$RootKey$\ToolsOptionsPages\Environment\Web Browser]
+
+[$RootKey$\Menus]
+"{8889e051-b7f9-4781-bb33-2a36a9bdb3a5}"=""
+"{91dff702-e034-4ce2-9ee6-a5bf33341908}"=""
+"{B22490B8-AA51-43B1-97EE-509A33B681F3}"=""
+"{b89cd7d2-19db-4b60-a958-e882ae71a66e}"=""
+"{f47a268a-bba9-442d-ac61-eef97f906458}"=""
+
+// Remove Dark theme
+//[$RootKey$\Themes\{1ded0138-47ce-435e-84ef-9ec1f439b749}]
+//[$RootKey$\AD7Metrics\PortSupplier\{4103F338-2255-40C0-ACF5-7380E2BEA13D}]
+//[$RootKey$\External Tools\Error Loo&kup]
+//[$RootKey$\LightSwitch]
+[$RootKey$\Debugger\LaunchHooks110]
+//[$RootKey$\DiagnosticsHub]
+//[$RootKey$\FeatureFlags]
+//[$RootKey$\VB Editor]
+//[$RootKey$\Languages\CodeExpansions\C/C++]
+//[$RootKey$\Languages\CodeExpansions\JavaScript]
+//[$RootKey$\Text Editor\C/C++]
+//[$RootKey$\Text Editor\CSharp]
+//[$RootKey$\Text Editor\Disassembly]
+//[$RootKey$\Text Editor\ENC]
+//[$RootKey$\Text Editor\JavaScript]
+//[$RootKey$\Text Editor\Memory]
+//[$RootKey$\Text Editor\Register]
+//[$RootKey$\Text Editor\ResJSON]
+//[$RootKey$\Text Editor\TypeScript]
+//[$RootKey$\Text Editor\VBScript]
+
+//[$RootKey$\Languages\Language Services\C/C++]
+//[$RootKey$\Languages\Language Services\CSharp]
+//[$RootKey$\Languages\Language Services\JavaScript]
+//[$RootKey$\Languages\Language Services\ResJSON]
+//[$RootKey$\Languages\Language Services\TypeScript]
+//[$RootKey$\Languages\Language Services\VBScript]
+
+//[$RootKey$\Toolbox Item Types\{2ed5b6c0-e464-4454-972b-0a666a9f8c5d}]
+//[$RootKey$\Toolbox Item Types\{3f527a12-a490-4474-8d61-1e52a873c122}]
+//[$RootKey$\Toolbox Item Types\{7036b125-fa82-3aba-acb8-bdbc97782a06}]
+//[$RootKey$\Toolbox Item Types\{7c9becba-12b9-4480-9dbf-2345aa3c4f9a}]
+//[$RootKey$\Toolbox Item Types\{8a63bde2-aeb9-4af9-a00d-dbc9bd7d509c}]
+//[$RootKey$\Toolbox Item Types\{9f1ce24e-2f25-4924-9536-472f242a32a9}]
+
+//[$RootKey$\AutomationProperties\Environment\QuickLaunch]
+//[$RootKey$\AutomationProperties\Environment\WebBrowser]
+//[$RootKey$\AutomationProperties\Projects\VCDirectories]
+//[$RootKey$\AutomationProperties\Projects\VCGeneral]
+//[$RootKey$\AutomationProperties\TextEditor\C/C++]
+//[$RootKey$\AutomationProperties\TextEditor\C/C++ Specific]
+//[$RootKey$\AutomationProperties\TextEditor\CSharp]
+//[$RootKey$\AutomationProperties\TextEditor\CSharp-Specific]
+//[$RootKey$\AutomationProperties\TextEditor\JavaScript]
+//[$RootKey$\AutomationProperties\TextEditor\JavaScript Specific]
+//[$RootKey$\AutomationProperties\TextEditor\Memory]
+//[$RootKey$\AutomationProperties\TextEditor\ResJSON Resource]
+//[$RootKey$\AutomationProperties\TextEditor\TypeScript]
+//[$RootKey$\AutomationProperties\TextEditor\TypeScript Specific]
+//[$RootKey$\AutomationProperties\XAML Designer]
+//[$RootKey$\UserSettings\Environment_Group\Environment_QuickLaunch]
+//[$RootKey$\UserSettings\Git Version Control_GitSccProvider]
+//[$RootKey$\UserSettings\Source Control_TeamFoundation]
+//[$RootKey$\UserSettings\WebProjects]
+//[$RootKey$\UserSettings\WindowsFormsDesigner_General]
+//[$RootKey$\UserSettings\XAML_Artboard]
+//[$RootKey$\UserSettings\XAML_General]
+
+// Remove DacFx 11.0 binding path to avoid conflicts with 13.0 assemblies
+[$RootKey$\BindingPaths\{272EA915-68EE-4AFD-99A4-1286126565EC}]
+
+// Visual Basic Compiler Package
+[$RootKey$\Packages\{019971D6-4685-11D2-B48A-0000F87572EB}]
+[$RootKey$\Menus]
+"{019971D6-4685-11D2-B48A-0000F87572EB}"=""
+[$RootKey$\Services\{019971D6-4685-11D2-B48A-0000F87572EB}]
+[$RootKey$\Services\{E34ACDC0-BAAE-11D0-88BF-00A0C9110049}]
+[$RootKey$\Text Editor\External Markers\{51F71E09-E057-40b7-A7B6-AAB86B552197}]
+
+// Code Snippets
+// Visual Studio Code Snippets Package
+// [$RootKey$\Packages\{0B680757-2C29-4531-80FA-535A5178AA98}] 
+// Expansion Manager service
+// [$RootKey$\Services\{4970C2BC-AF33-4A73-A34F-18B0584C40E4}] 
+
+// VS Start Page
+[$RootKey$\Packages\{0E13FC54-9231-410b-8B74-95689CD32627}]
+[$RootKey$\ToolWindows\{29CE07D3-1898-47d3-88FA-15453B726B27}]
+[$RootKey$\ToolWindows\{387cb18d-6153-4156-9257-9ac3f9207bbe}]
+[$RootKey$\UIDataSourceProviders\{516B8AD2-1BE0-4a12-8147-BBDF5ED2B923}]
+[$RootKey$\UIProviders\{C3E71C67-4A1E-4ced-997B-E6F661AEA416}]
+
+// Visual Studio HTM Editor Package
+[$RootKey$\Packages\{1B437D20-F8FE-11D2-A6AE-00104BCC7269}]
+[$RootKey$\KeyBindingTables\{cb3fcfea-03df-11d1-81d2-00a0c91bbee3}]
+[$RootKey$\KeyBindingTables\{cb3fcfeb-03df-11d1-81d2-00a0c91bbee3}]
+[$RootKey$\Menus]
+"{1B437D20-F8FE-11D2-A6AE-00104BCC7269}"=""
+[$RootKey$\Services\{58E975A0-F8FE-11D2-A6AE-00104BCC7269}]
+[$RootKey$\ToolWindows\{1CBA9826-3184-4799-A184-784E41B56398}]
+[$RootKey$\ToolWindows\{38ED9834-0C97-445b-BD1D-F78F3E08AFAC}]
+[$RootKey$\ToolWindows\{402DC223-D700-4029-866F-ACEE803F3F0C}]
+[$RootKey$\ToolWindows\{56B32054-DE4D-4de3-8396-BCB6F98BD246}]
+[$RootKey$\ToolWindows\{58875C41-862B-4d6f-B046-03E8A333907E}]
+[$RootKey$\ToolWindows\{6FB4A4D9-0C08-4663-AF7B-2ECBDF7A20EC}]
+[$RootKey$\ToolWindows\{7B8C4981-13EC-4c56-9F24-ABE5FAAA9440}]
+[$RootKey$\ToolWindows\{A693A243-4743-4034-AED4-BEC4E79E0B3B}]
+[$RootKey$\ToolWindows\{A9B00010-7308-415c-95C6-EED62C1B9788}]
+[$RootKey$\ToolWindows\{F62AF5AD-1276-46dd-AE7B-D07AB54D1081}]
+[$RootKey$\UserSettings\HTML Tag Specific]
+
+// Class Outline Package
+[$RootKey$\Packages\{21af45b0-ffa5-11d0-b63f-00a0c922e851}]
+[$RootKey$\ToolWindows\{25f7e850-ffa1-11d0-b63f-00a0c922e851}]
+
+// Visual Database Tools Package
+[$RootKey$\Packages\{220A4C17-7E7C-4663-BBCC-5E607C6543CD}]
+[$RootKey$\Menus]
+"{220A4C17-7E7C-4663-BBCC-5E607C6543CD}"=""
+[$RootKey$\OutputWindow\{220A4C17-7E7C-4663-BBCC-5E607C6543CD}]
+[$RootKey$\Services\{0007B8F0-3435-46BB-BF59-1D3652E6B7A2}]
+[$RootKey$\Services\{1F2EEAC2-DCF7-4B90-9412-2CE752DE5FEB}]
+[$RootKey$\Services\{43AF1158-FED5-432e-8E8F-23B6FD592857}]
+[$RootKey$\Services\{5C164B27-EEC2-4b9f-B3D6-60C2EFF8C800}]
+[$RootKey$\Services\{70BEE20C-077A-4342-B456-2B67AA1CB411}]
+[$RootKey$\Services\{8EEF7DE4-FC78-421A-892E-52956C035F5C}]
+[$RootKey$\Services\{A47EE51D-0283-4AEA-9301-92F62C69028F}]
+[$RootKey$\Services\{ADF95D98-9094-4B7B-874A-D94844D05DCE}]
+[$RootKey$\Services\{F07520AD-1760-4286-9A3D-858D343D9FC1}]
+[$RootKey$\Services\{F1F2A506-C37B-475c-9712-415F656649E0}]
+[$RootKey$\Services\{F3F3273E-410F-4AAD-8ABD-728EAEB5A6C3}]
+[$RootKey$\Services\{FA6E5E79-C8EE-4D37-B79A-5067F8BD5630}]
+[$RootKey$\Text Editor\External Markers\{BF347299-B51B-428D-9E37-1F9C5FCF3C1C}]
+
+// Visual Studio Solution Build Package
+// Commenting this package and associated services so that they are NOT un-registered,
+// since SSMS needs this package for enabling source control on solutions using TFS MSSCCI provider
+// [$RootKey$\Packages\{282BD676-8B5B-11D0-8A34-00A0C91E2ACD}]
+// [$RootKey$\Services\{12B43F9F-8550-4FFA-850F-FE9D4D396C20}]
+// [$RootKey$\Services\{218D0424-9C53-4EA1-A679-A0AED59B0E4F}]
+// [$RootKey$\Services\{2B3B3A2D-4E79-11D3-9477-00C04F683646}]
+// [$RootKey$\Services\{93E969D6-1AA0-455F-B208-6ED3C82B5C58}]
+
+//~ // Toolbox controls installer
+//~ [$RootKey$\Packages\{2c298b35-07da-45f1-96a3-be55d91c8d7a}]
+
+// Microsoft.VisualStudio.Web
+[$RootKey$\Packages\{349C5850-65DF-11DA-9384-00065B846F21}]
+[$RootKey$\Menus]
+"{349C5850-65DF-11DA-9384-00065B846F21}"=""
+
+//~ // ToolBox Control Installer Package
+//~ [$RootKey$\Packages\{36839529-3AF3-47fa-8194-F4A3FA9F0ED7}]
+//~ [$RootKey$\Menus]
+//~ "{36839529-3AF3-47fa-8194-F4A3FA9F0ED7}"=""
+
+// Visual Studio Web Developer Project
+[$RootKey$\Packages\{39C9C826-8EF8-4079-8C95-428F5B1C323F}]
+[$RootKey$\Menus]
+"{39C9C826-8EF8-4079-8C95-428F5B1C323F}"=""
+[$RootKey$\Services\{49747E0D-9122-41f6-8572-70511C7E8A84}]
+[$RootKey$\Services\{6ED6E0CB-E914-4b3b-8679-5C67FCDDD304}]
+[$RootKey$\Services\{73A9FE72-E8AC-4738-B87F-D51569062A78}]
+[$RootKey$\Services\{A03F4801-37AA-4ec6-A727-8E11CEE71B64}]
+[$RootKey$\Services\{B9F6AD52-6A4F-4352-8A89-ACC570B61325}]
+[$RootKey$\Services\{CCCECEE2-D225-4294-858E-2B8C3F7D84EA}]
+[$RootKey$\SolutionPersistence\WebsiteProperties]
+
+//~ // Visual Studio Component Model Host
+//~ [$RootKey$\Packages\{49d12072-378b-4ffa-a09e-40e0b5d097cc}]
+//~ [$RootKey$\Services\{DEBF6A60-A2CB-4059-8677-0067F046C4BC}]
+//~ [$RootKey$\Services\{FD57C398-FDE3-42c2-A358-660F269CBE43}]
+
+//~ // Visual Studio Component Enumerator
+//~ [$RootKey$\Packages\{588205e0-66e0-11d3-8600-00c04f6123b3}]
+//~ [$RootKey$\AutoLoadPackages\{93694FA0-0397-11D1-9F4E-00A0C911004F}]
+//~ [$RootKey$\Component Categories]
+//~ [$RootKey$\ComponentPickerPages]
+//~ [$RootKey$\Services\{26EB4812-18FE-4A11-BC23-7DC1C9B453A3}]
+//~ [$RootKey$\Services\{33a24090-6565-11d3-85fc-00c04f6123b3}]
+//~ [$RootKey$\Services\{4A3116FC-942B-4692-B9F4-344E08285712}]
+//~ [$RootKey$\Services\{52F0DAB8-99A9-4aea-A037-42581B7009D2}]
+//~ [$RootKey$\Services\{8ED9966C-102F-45b0-8293-BB9F2463A6F2}]
+//~ [$RootKey$\Services\{97BAE668-2CF2-4ed8-A019-D279E3D74C80}]
+//~ [$RootKey$\Services\{BD71396F-39C6-4e3f-BBA2-79CE33A8B302}]
+//~ [$RootKey$\Services\{C269ADA8-95F9-4987-A247-151FB2DDFB34}]
+//~ [$RootKey$\Services\{C67A5F0C-31C0-4316-9EF9-B451B30C829E}]
+//~ [$RootKey$\Services\{D4D51B8E-6ECF-4C42-A3E2-E0925E5115D6}]
+
+// Visual Studio Binary Editor Package
+[$RootKey$\Packages\{5B98C2C0-CD7B-11D0-92DF-00A0C9138C45}]
+
+// Visual Studio Settings and Project Designers Package
+[$RootKey$\Packages\{67909B06-91E9-4F3E-AB50-495046BE9A9A}]
+[$RootKey$\AutoLoadPackages\{EF4F870B-7B85-4F29-9D15-CE1ABFBE733B}]
+[$RootKey$\KeyBindingTables\{515231ad-c9dc-4aa3-808f-e1b65e72081c}]
+[$RootKey$\KeyBindingTables\{FEA4DCC9-3645-44CD-92E7-84B55A16465C}]
+[$RootKey$\Menus]
+"{67909B06-91E9-4F3E-AB50-495046BE9A9A}"=""
+[$RootKey$\Services\{0407F754-C199-403e-B89B-1D8E1FF3DC79}]
+[$RootKey$\Services\{0db255bd-46ca-4f3b-a122-007617b84b1f}]
+[$RootKey$\Services\{32d47224-21a6-4d8f-9223-c91f0d69c501}]
+[$RootKey$\Services\{5D51EB70-C6BA-484b-B4E0-729B7734843C}]
+[$RootKey$\Services\{8213E5F9-8F49-435D-8AB3-CC4811AC0725}]
+[$RootKey$\Services\{94B71D3D-628F-4036-BF89-7FE1508E78AE}]
+[$RootKey$\Services\{9DDDA35B-A903-4eca-AAFF-5716AF592D74}]
+[$RootKey$\Services\{A0EBEE86-72AD-4a29-8C0E-D745F843BE1D}]
+[$RootKey$\Services\{B3017D1B-2FF7-4f22-828C-CD74B6A702DC}]
+[$RootKey$\Services\{DDD04E59-6B86-4a73-8BC7-3FF5D7B1111C}]
+[$RootKey$\Services\{f05018ee-67af-47da-bbb6-41abd82e7b1c}]
+
+// Windows Forms Designer Hosting Package
+// [$RootKey$\Packages\{68939055-38e0-4d17-92cb-8909710d8178}]
+// [$RootKey$\Menus]
+// "{68939055-38e0-4d17-92cb-8909710d8178}"=""
+// [$RootKey$\Services\{053a8de0-5a5e-362f-8f1a-0fbfd70f8b36}]
+// [$RootKey$\Services\{39fd482d-c76c-4dd4-9e06-fb7c52f69c8a}]
+// [$RootKey$\Services\{74946829-37a0-11d2-a273-00c04f8ef4ff}]
+// [$RootKey$\Services\{8394d9e8-d8fb-39b7-a160-4c0dbe16e6fc}]
+// [$RootKey$\Services\{961afe89-0cc9-3dba-983f-e1416e158b08}]
+// [$RootKey$\Services\{ef902d46-ace1-3668-adff-b323562e22f9}]
+// [$RootKey$\Services\{f520a550-5b18-4109-a679-278d959aa0b1}]
+// [$RootKey$\Services\{fc43bf19-86fe-4255-901e-15c8d236f3a4}]
+
+// Visual C++ Resource Editor Package
+[$RootKey$\Packages\{74AAD8B2-3294-49CB-BB5D-E9BAB132BFD5}]
+[$RootKey$\KeyBindingTables\{543E0C02-8C85-4E43-933A-5EF320E3431F}]
+[$RootKey$\KeyBindingTables\{58442DA9-10DA-4AA9-A2AF-96E4d481379b}]
+[$RootKey$\KeyBindingTables\{C0BA70ED-069E-412B-9C06-7442E28A11B9}]
+[$RootKey$\KeyBindingTables\{EB56D0B5-BEE7-4D0C-8BE6-88A8ED256695}]
+[$RootKey$\Menus]
+"{74AAD8B2-3294-49CB-BB5D-E9BAB132BFD5}"=""
+[$RootKey$\Services\{5E2DC842-D128-11D0-92DF-00A0C9138C45}]
+[$RootKey$\ToolWindows\{5B6781C0-E99D-11D0-9954-00A0C91BC8E5}]
+
+// Windows Forms Designer Resources Package
+
+// [$RootKey$\Packages\{7B5D447B-0B12-41EA-A84E-C822034422D4}]
+// [$RootKey$\KeyBindingTables\{ba09e2af-9df2-4068-b2f0-4c7e5cc19e2f}]
+// [$RootKey$\Menus]
+// "{7B5D447B-0B12-41EA-A84E-C822034422D4}"=""
+// [$RootKey$\Services\{87693f06-f943-450d-a099-efbb26373a58}]
+// [$RootKey$\Services\{94e38dff-614b-4cbd-b67c-f211bb35ce8b}]
+// [$RootKey$\UserSettings\WindowsFormsDesigner_General]
+
+// ElementHost Designer Package
+[$RootKey$\Packages\{7EAB3C71-59FF-4571-A5F3-643F255FC2E6}]
+[$RootKey$\Services\{fc2f4f8b-0566-4e16-bc81-2246b7b4a431}]
+
+//  Windows Forms Application Configuration Package
+// [$RootKey$\Packages\{80C7728B-70A6-4528-8669-73E02D1B9C41}]
+
+// Visual Studio Explorers and Designers Package
+[$RootKey$\Packages\{8D8529D3-625D-4496-8354-3DAD630ECC1B}]
+[$RootKey$\Designers]
+[$RootKey$\KeyBindingTables\{B334A759-F450-40A5-BE2A-65937BCD5415}]
+[$RootKey$\Menus]
+"{8D8529D3-625D-4496-8354-3DAD630ECC1B}"=""
+// IUIGenerationHelperService
+[$RootKey$\Services\{2C6350D2-9A3D-4F78-940A-763A8F66E660}]
+// IVsDataDesignService
+[$RootKey$\Services\{43EC4BFD-99F1-4215-8E96-9783309F14AF}]
+// IWebServiceDataSourcesService
+[$RootKey$\Services\{45F98286-52A4-4198-AC69-F1FF3B02D2E0}]
+// IWCFServiceDataSourcesService
+[$RootKey$\Services\{4D958576-253E-4624-87F5-D2B2DDD1F3A4}]
+// IWinFormsBindableControlManagerService
+[$RootKey$\Services\{5942B3FC-3827-4680-9488-922B1C371679}]
+// IDSRefToXmlService
+[$RootKey$\Services\{624E92A9-C81B-4f0a-A1BD-8C875DAF7CED}]
+// IVsServerExplorer
+[$RootKey$\Services\{7494682c-37a0-11d2-a273-00c04f8ef4ff}]
+// IApplicationSettingsService
+[$RootKey$\Services\{950220AF-CA7D-4c57-AA0F-A72A8FE79377}]
+// DataSourceProviderService
+[$RootKey$\Services\{ABE5C1F0-C96E-40c4-A22D-4A5CEC899BDC}]
+// VSDesignerBootStrap
+[$RootKey$\Services\{AD028B85-FA21-41b1-AB4A-08672F633506}]
+// IExceptionAssistantDebuggerMonitor
+[$RootKey$\Services\{AFF5D36A-CA5A-4ab5-90AF-AEF23C6E3FFB}]
+// IDiscoveryService
+[$RootKey$\Services\{B9A32C80-B14D-4ae3-A955-5CBC3E7FAB10}]
+// IGenericObjectDataSourcesService
+[$RootKey$\Services\{CA25A305-EEF9-4416-A901-E6EE6069B8E6}]
+// MSDataSetGeneratorIVsRefactorNotify
+[$RootKey$\Services\{E76D53CC-3D4F-40a2-BD4D-4F3419755476}]
+// IConnectionStringConverterService
+[$RootKey$\Services\{e7bc4cb9-8433-4b25-961c-a009a83513e2}]
+// VSDesignerFontAndColorProvider 
+[$RootKey$\Services\{F35159B3-6FB3-417a-99FB-14B598F1C46E}]
+// IGlobalConnectionService
+[$RootKey$\Services\{F3DA2C42-8A1A-4234-BBAE-E6E1FB0D67E9}]
+
+// hide server explorer
+[$RootKey$\ToolWindows\{74946827-37a0-11d2-a273-00c04f8ef4ff}]
+[$RootKey$\ServerExplorer]
+
+// hide data source window
+[$RootKey$\ToolWindows\{873151D0-CF2E-48cc-B4BF-AD0394F6A3C3}]
+
+// object browser
+[$RootKey$\ToolWindows\{269A02DC-6AF8-11D3-BDC4-00C04F688E50}]
+
+//~ // toolbox
+//~ [$RootKey$\ToolWindows\{B1E99781-AB81-11D0-B683-00AA00A3EE26}]
+
+// class view
+[$RootKey$\ToolWindows\{C9C0AE26-AA77-11D2-B3F0-0000F87570EE}]
+
+
+
+// Visual Web Developer Project Persistence Package
+[$RootKey$\Packages\{8FF02D1A-C177-4ac8-A62F-88FC6EA65F57}]
+[$RootKey$\Menus]
+"{8FF02D1A-C177-4ac8-A62F-88FC6EA65F57}"=""
+[$RootKey$\Services\{12F6309A-7AA4-45c9-9925-3C7979EC68FB}]
+[$RootKey$\Services\{945D4846-CB19-4797-86DF-21E70A103FED}]
+[$RootKey$\Services\{E4A1263A-11CF-4c5f-B3D5-E41AFA0ADE59}]
+
+// MRU Data Source
+//[$RootKey$\Packages\{8ff5c2a8-5eba-4717-8ee1-46b6427d8ff3}] 
+// MRU Data Source Factory
+//[$RootKey$\UIDataSourceProviders\{9099ad98-3136-4aca-a9ac-7eeeaee51dca}] 
+
+
+// Visual Studio CSS Editing Package
+[$RootKey$\Packages\{A764E895-518D-11d2-9A89-00C04F79EFC3}]
+[$RootKey$\KeyBindingTables\{A764E89A-518D-11d2-9A89-00C04F79EFC3}]
+[$RootKey$\Menus]
+"{A764E895-518D-11d2-9A89-00C04F79EFC3}"=""
+[$RootKey$\Services\{925C40C7-A4F7-11d2-9A96-00C04F79EFC3}]
+[$RootKey$\Services\{A764E898-518D-11d2-9A89-00C04F79EFC3}]
+[$RootKey$\Services\{DDEBABB1-E61F-11d2-AA2F-00C04F8EF472}]
+[$RootKey$\ToolWindows\{A764E899-518D-11d2-9A89-00C04F79EFC3}]
+
+// Visual Studio Data Designer Extensibility Package
+[$RootKey$\Packages\{A8F602E2-40CE-4daf-AE82-A457A91728B9}]
+[$RootKey$\Menus]
+"{A8F602E2-40CE-4daf-AE82-A457A91728B9}"=""
+[$RootKey$\Services\{32E0C769-C2C9-4587-B58C-013266137571}]
+[$RootKey$\Services\{42503C6C-3D54-4986-BC13-AE6855CE89B8}]
+[$RootKey$\Services\{42B51AD0-12B8-409f-BB67-1A381CCAD02E}]
+[$RootKey$\Services\{8B6159D9-A634-4549-9EAC-8642744F1042}]
+[$RootKey$\Services\{C42DEB5D-2382-4537-842C-B50E2A61BDE2}]
+[$RootKey$\Services\{C4FEE15B-72AC-45e3-9612-7A142D1AC0BF}]
+[$RootKey$\Services\{F8B01F14-9F78-4506-80A8-3534837AF0D4}]
+
+// Microsoft.VisualStudio.TextTemplating.VSHost.OrchestratorPackage
+[$RootKey$\Packages\{A9696DE6-E209-414D-BBEC-A0506FB0E924}]
+[$RootKey$\Menus]
+"{A9696DE6-E209-414D-BBEC-A0506FB0E924}"=""
+[$RootKey$\Services\{508349B6-6B84-4df5-91F0-309BEEBAD82D}]
+
+// Import Project Folder Wizard/New Project from Existing Package
+[$RootKey$\Packages\{afa50ba6-e144-43c7-8cc2-2244793ef4e9}]
+
+// WPF Designer
+[$RootKey$\Packages\{B3BAE735-386C-4030-8329-EF48EEDA4036}]
+[$RootKey$\Menus]
+"{B3BAE735-386C-4030-8329-EF48EEDA4036}"=""
+
+// Microsoft.VisualStudio.Data.Providers.SqlEverywhere.VsPackage
+[$RootKey$\Packages\{B65E9356-A4C7-4855-96BB-1D3EC8514E8F}]
+[$RootKey$\Menus]
+"{B65E9356-A4C7-4855-96BB-1D3EC8514E8F}"=""
+[$RootKey$\Services\{7ee8e859-bd36-4e00-8fc5-19c3f2d9169b}]
+
+// Visual Studio Build Manager Package
+[$RootKey$\Packages\{B718A162-0361-4b0e-920B-D88D70BE609B}]
+[$RootKey$\Services\{9A9569D2-2F7E-4af6-9E40-630F86D3F3F9}]
+
+// Microsoft.VisualStudio.Modeling.Integration.Shell.ModelBusPackage
+[$RootKey$\Packages\{B7C8A95B-B8E4-4adb-9560-0F487D1429FB}]
+[$RootKey$\Services\{8901DD4E-64BA-431f-8040-0BC75EE1ADAD}]
+
+// Visual Web Developer HTML Source Editor Package
+[$RootKey$\Packages\{BFCC0C3C-6F87-4285-A6C8-BB616061800D}]
+
+// Visual Web Developer Web Migration Package
+[$RootKey$\Packages\{C1DAB116-2D63-493a-B970-10D7DD0B476E}]
+
+// Microsoft.VisualStudio.DataDesign.SyncDesigner.DSL.SyncDesignerPackage
+[$RootKey$\Packages\{C8AFB2F4-BFF7-4055-926D-D44AFECD5832}]
+[$RootKey$\DslTools]
+[$RootKey$\Services\{8b40b130-7df6-4777-988d-0ac4a03c86dd}]
+[$RootKey$\Services\{b39caca8-924b-4e09-82d7-515fa7cac390}]
+[$RootKey$\Services\{e5070337-3835-4c7f-9df3-4c280ff810a5}]
+[$RootKey$\TextTemplating\DirectiveProcessors\SyncDesignerDirectiveProcessor]
+
+// Microsoft.VisualStudio.Modeling.Shell
+[$RootKey$\Packages\{D1091694-EA72-4BDD-8918-78324CC25448}]
+[$RootKey$\Menus]
+"{D1091694-EA72-4BDD-8918-78324CC25448}"=""
+
+// Visual Studio Data Designers
+[$RootKey$\Packages\{d6c919aa-1217-41e2-a13b-9b92e1866305}]
+[$RootKey$\KeyBindingTables\{4194fee5-6777-419f-a5fc-47a536df1bdb}]
+[$RootKey$\KeyBindingTables\{b2c40b32-3a37-4ca9-97b9-fa44248b69ff}]
+[$RootKey$\KeyBindingTables\{b968e165-98e0-41f0-8fbe-a8ed1d246a90}]
+[$RootKey$\KeyBindingTables\{cff78a9b-78a3-45a3-9142-0267afc261fa}]
+[$RootKey$\Menus]
+"{d6c919aa-1217-41e2-a13b-9b92e1866305}"=""
+
+// Visual Web Developer Web
+[$RootKey$\Packages\{DC7F691A-91FC-4F7b-923E-FE829C3A18DC}]
+[$RootKey$\Services\{97422BAE-2144-4207-AB16-B4C3B7A2D9A3}]
+
+// Visual Studio Data Package
+[$RootKey$\Packages\{E1AA7737-69BE-43d0-A425-E3097651E192}]
+[$RootKey$\Services\{06D0BE35-FA3A-4ef6-81B9-3EDBB68EF982}]
+[$RootKey$\Services\{4E406457-B0E6-4b94-BEB9-62069E6E4CD7}]
+[$RootKey$\Services\{58132988-8A5C-43c6-9ACF-6A688CDFF57A}]
+[$RootKey$\Services\{654C847E-E6ED-4217-9ABF-A6208631F73F}]
+[$RootKey$\Services\{65A105A2-16CA-4c6c-A84A-D882700A87EB}]
+[$RootKey$\Services\{69BD65B1-1C44-49c6-B83A-FB0353334545}]
+[$RootKey$\Services\{7D9EA559-68F0-4944-97E3-2795D4FF9730}]
+[$RootKey$\Services\{8CB5F787-2D74-459e-88D6-39E20A4D9454}]
+[$RootKey$\Services\{AB5F7D50-A307-46e6-A20C-ADDBF34C6771}]
+[$RootKey$\Services\{BCD55999-B818-4240-9528-3D96274477C9}]
+[$RootKey$\Services\{D2A95B42-57F9-4efd-B41F-0E198C6C1E45}]
+[$RootKey$\Services\{D77E81FC-873E-4283-A0F8-CF1CCE8CC42B}]
+[$RootKey$\Services\{D8D207DA-64EB-4b46-9740-282F5F458B22}]
+[$RootKey$\Services\{E663F492-4589-4f60-9CA5-022E59FA635B}]
+[$RootKey$\Services\{E7A0D4E0-D0E4-4afa-A8A1-DD4636073D98}]
+
+// Microsoft.SqlServer.Xaml
+[$RootKey$\Packages\{E58C2A8B-BCC4-4559-AD59-D62EB6D58A22}]
+[$RootKey$\Menus]
+"{E58C2A8B-BCC4-4559-AD59-D62EB6D58A22}"=""
+[$RootKey$\Services\{c9164055-039b-4669-832d-f257bd5554d4}]
+[$RootKey$\UserSettings\XAML_Formatting]
+
+// Visual Web Developers Web Package
+[$RootKey$\Packages\{E7F851C8-6267-4794-B0FE-7BCAB6DACBB4}]
+[$RootKey$\Menus]
+"{E7F851C8-6267-4794-B0FE-7BCAB6DACBB4}"=""
+
+// Visual Studio Database Tools Designers
+[$RootKey$\Packages\{EF828E39-70F5-4b8e-A3A0-4C0ECD28A69A}]
+[$RootKey$\Services\{41AB5AA8-2511-4e96-A682-C30B0292C2EF}]
+[$RootKey$\Services\{80B8E778-AE06-471d-B1D0-618F7F710ECB}]
+
+// Export Template Package
+[$RootKey$\Packages\{F1E4CFCA-4573-4345-8718-7BDE2B1F0BE8}]
+[$RootKey$\Menus]
+"{F1E4CFCA-4573-4345-8718-7BDE2B1F0BE8}"=""
+
+// Microsoft Report Designer Package
+[$RootKey$\Packages\{F3A96850-E2AE-4e00-9278-8FE23F225A0D}]
+[$RootKey$\KeyBindingTables\{CB3675B8-701E-4f56-9167-2714E167FF3F}]
+[$RootKey$\Menus]
+"{F3A96850-E2AE-4e00-9278-8FE23F225A0D}"=""
+[$RootKey$\Services\{855D5105-E206-40f1-86B3-D9EA0C5A0F1F}]
+[$RootKey$\ToolWindows\{3FD5E0CC-709A-4f8c-94C3-7F0F8DFF5BB2}]
+
+// ***********
+// Remove Unused Editors
+// ***********
+
+// SyncDialogEditorFactory
+[$RootKey$\Editors\{005f6840-6c50-4183-8946-44aa729b7f50}]
+// Project Designer
+[$RootKey$\Editors\{04b8ab82-a572-4fef-95ce-5222444b6b64}]
+// DataSet Editor
+[$RootKey$\Editors\{07AC752B-D2B0-4dcd-AD9C-237BF561A30A}]
+// Resource Editor
+[$RootKey$\Editors\{177559E0-D141-11D0-92DF-00A0C9138C45}]
+// Binary Editor
+[$RootKey$\Editors\{25834150-CD7E-11D0-92DF-00A0C9138C45}]
+// WebUserControl Editor with Encoding
+[$RootKey$\Editors\{25B02EE5-DB4E-48bd-A9BB-4FD280EB058B}]
+[$RootKey$\FileExtensionMapping\{25B02EE5-DB4E-48bd-A9BB-4FD280EB058B}]
+// SQL Data File Handler
+[$RootKey$\Editors\{29887BCD-E81F-4722-85CE-2CCF2D9AF30A}]
+// [HTML] Script Editor with Encoding
+[$RootKey$\Editors\{29947C11-E110-4596-85B8-42A21EF46F6B}]
+[$RootKey$\FileExtensionMapping\{29947C11-E110-4596-85B8-42A21EF46F6B}]
+// Visual Basic Editor
+[$RootKey$\Editors\{2C015C70-C72C-11D0-88C3-00A0C9110049}]
+[$RootKey$\FileExtensionMapping\{4EFF8F38-5CAD-44D4-BA53-E9F0FC152D1F}]
+// Web Application Editor with Encoding
+[$RootKey$\Editors\{39398A2C-C7EC-417c-850D-06C3CAEBF76A}]
+// Report Designer
+[$RootKey$\Editors\{46F6D2A1-5E86-4080-A799-01F3D0E23796}]
+// Designer Tab Editor Factory
+[$RootKey$\Editors\{4a7bec35-b6c5-4a4d-bbd1-446ddff86f84}]
+// Web Application Editor
+[$RootKey$\Editors\{4D30FDB3-AB3E-4810-B6F2-64627BCCA384}]
+// VC Dialog Editor
+[$RootKey$\Editors\{543E0C02-8C85-4E43-933A-5EF320E3431F}]
+// WebForm Editor
+[$RootKey$\Editors\{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}]
+[$RootKey$\FileExtensionMapping\{57312C73-6202-49E9-B1E1-40EA1A6DC1F6}]
+// VC String Editor
+[$RootKey$\Editors\{58442DA9-10DA-4AA9-A2AF-96E4d481379b}]
+// Web Handler Editor with Encoding
+[$RootKey$\Editors\{5FA86C67-6204-4eed-81DE-E9A98BD4E207}]
+[$RootKey$\FileExtensionMapping\{5FA86C67-6204-4eed-81DE-E9A98BD4E207}]
+// Visual Basic Editor with Encoding
+[$RootKey$\Editors\{6C33E1AA-1401-4536-AB67-0E21E6E569DA}]
+// Settings Designer Editor Factory
+[$RootKey$\Editors\{6D2695F9-5365-4A78-89ED-F205C045BFE6}]
+// Web Service Editor with Encoding
+[$RootKey$\Editors\{80323CE9-9455-4f20-8F50-DC4916F5BF9E}]
+[$RootKey$\FileExtensionMapping\{80323CE9-9455-4f20-8F50-DC4916F5BF9E}]
+// HTML Editor with Encoding
+[$RootKey$\Editors\{8281C572-2171-45AA-A642-7D8BC1662F1C}]
+// Master Page Editor with Encoding
+[$RootKey$\Editors\{9D5CE001-788A-4856-A350-4EB6AC570047}]
+// [HTML] Script Editor
+[$RootKey$\Editors\{A52A054C-5228-4819-B568-E5B8040801B5}]
+[$RootKey$\FileExtensionMapping\{A52A054C-5228-4819-B568-E5B8040801B5}]
+// CSS Source Editor
+[$RootKey$\Editors\{A764E89A-518D-11d2-9A89-00C04F79EFC3}]
+// Tabbed View Editor Factory with Encoding
+[$RootKey$\Editors\{AB74981D-EB87-4694-B260-42DC4594B42A}]
+// Project Designer Property Page Host
+[$RootKey$\Editors\{b270807c-d8c6-49eb-8ebe-8e8d566637a1}]
+// Access Data File Handler
+[$RootKey$\Editors\{B2879096-4670-4df0-B201-AD1D0ED5BE6B}]
+// Master Page Editor
+[$RootKey$\Editors\{B30AFBFF-D992-43b7-B62D-2642580A2883}]
+// VC Image Editor
+[$RootKey$\Editors\{C0BA70ED-069E-412B-9C06-7442E28A11B9}]
+// CSS Source Editor with Encoding
+[$RootKey$\Editors\{C2AAB90C-EEF4-4ba3-AC36-8AB8F3D89BA1}]
+// HTML Editor
+[$RootKey$\Editors\{C76D83F8-A489-11D0-8195-00A0C91BBEE3}]
+// Windows Scripting Host File Editor with Encoding
+[$RootKey$\Editors\{CBA754F9-4BE6-437b-9FFD-4336DDAB8621}]
+[$RootKey$\FileExtensionMapping\{CBA754F9-4BE6-437b-9FFD-4336DDAB8621}]
+// Object Browser
+[$RootKey$\Editors\{CFF630F8-2DB3-44BA-9FC9-6489665DE5B8}]
+// Windows Scripting Host File Editor
+[$RootKey$\Editors\{D411C4AC-FCFD-49bf-8D63-B94E075023F2}]
+[$RootKey$\FileExtensionMapping\{D411C4AC-FCFD-49bf-8D63-B94E075023F2}]
+// WebForm Editor with Encoding
+[$RootKey$\Editors\{D704C95A-F138-4c97-8B90-AE8287758DD1}]
+[$RootKey$\FileExtensionMapping\{D704C95A-F138-4c97-8B90-AE8287758DD1}]
+// Web Handler Editor
+[$RootKey$\Editors\{DAB1E6DB-4119-49a3-ACE3-0FE8F3E0669F}]
+[$RootKey$\FileExtensionMapping\{DAB1E6DB-4119-49a3-ACE3-0FE8F3E0669F}]
+//~ // Designer Editor Factory
+//~ [$RootKey$\Editors\{dee6cef9-3bca-449a-82a6-fc757d6956fb}]
+// SQLMobile File Handler
+[$RootKey$\Editors\{E1F86ED4-287D-48b1-A159-92FF1C86B40B}]
+// Tabbed View Editor Factory
+[$RootKey$\Editors\{e9b8485c-1217-4277-9ed6-c825a5ac1968}]
+// VC Accelerator Editor
+[$RootKey$\Editors\{EB56D0B5-BEE7-4D0C-8BE6-88A8ED256695}]
+// Xaml Tab Editor Factory
+[$RootKey$\Editors\{ec5c0e27-aa38-4c1f-acbc-f57cf608bd12}]
+// WebUserControl Editor
+[$RootKey$\Editors\{F390D63C-F7D8-4E74-AA04-57C1ECF53D4D}]
+[$RootKey$\FileExtensionMapping\{F390D63C-F7D8-4E74-AA04-57C1ECF53D4D}]
+// Web Service Editor
+[$RootKey$\Editors\{FB9167C9-D3B8-4EDA-8083-9AF6B6F6DA62}]
+[$RootKey$\FileExtensionMapping\{FB9167C9-D3B8-4EDA-8083-9AF6B6F6DA62}]
+//~ // Dump File Viewer
+//~ [$RootKey$\Editors\{FF0A863B-6F9C-46BF-9684-DBE4C0A3ED6D}]
+// Managed Resources Editor
+[$RootKey$\Editors\{ff4d6aca-9352-4a5f-821e-f4d6ebdcab11}]
+
+// ********
+// Remove unused fonts and colors 
+// ********
+
+[$RootKey$\FontAndColors\Data Source Designer]
+[$RootKey$\FontAndColors\Database Designer]
+[$RootKey$\FontAndColors\Folder Difference]
+//~ [$RootKey$\FontAndColors\DataTips]
+//~ [$RootKey$\FontAndColors\Disassembly]
+[$RootKey$\FontAndColors\Query/View Designer]
+//~ [$RootKey$\FontAndColors\Registers]
+
+// ********
+// Remove unused code generators
+// ********
+
+[$RootKey$\Generators]
+
+// ********
+// Remove Visual Web Developer SKU
+// ********
+[$RootKey$\InstalledProducts\Visual Web Developer]
+[$RootKey$\Setup\WEBPROJ]
+
+// ********
+// Remove unused code expansions
+// ********
+
+[$RootKey$\Languages\CodeExpansions\Basic]
+[$RootKey$\Languages\CodeExpansions\CSharp]
+[$RootKey$\Languages\CodeExpansions\HTML]
+[$RootKey$\Languages\CodeExpansions\JScript]
+
+// ********
+// Remove unused file extensions
+// ********
+
+[$RootKey$\Languages\File Extensions\.alx]
+[$RootKey$\Languages\File Extensions\.asa]
+[$RootKey$\Languages\File Extensions\.ascx]
+[$RootKey$\Languages\File Extensions\.asp]
+[$RootKey$\Languages\File Extensions\.aspx]
+[$RootKey$\Languages\File Extensions\.asx]
+[$RootKey$\Languages\File Extensions\.bas]
+[$RootKey$\Languages\File Extensions\.browser]
+[$RootKey$\Languages\File Extensions\.cls]
+[$RootKey$\Languages\File Extensions\.css]
+[$RootKey$\Languages\File Extensions\.ctl]
+[$RootKey$\Languages\File Extensions\.dob]
+[$RootKey$\Languages\File Extensions\.dsr]
+[$RootKey$\Languages\File Extensions\.frm]
+[$RootKey$\Languages\File Extensions\.hta]
+[$RootKey$\Languages\File Extensions\.htc]
+[$RootKey$\Languages\File Extensions\.htm]
+[$RootKey$\Languages\File Extensions\.html]
+[$RootKey$\Languages\File Extensions\.js]
+[$RootKey$\Languages\File Extensions\.master]
+[$RootKey$\Languages\File Extensions\.pag]
+[$RootKey$\Languages\File Extensions\.resx]
+[$RootKey$\Languages\File Extensions\.shtm]
+[$RootKey$\Languages\File Extensions\.shtml]
+[$RootKey$\Languages\File Extensions\.sitemap]
+[$RootKey$\Languages\File Extensions\.skin]
+[$RootKey$\Languages\File Extensions\.srf]
+[$RootKey$\Languages\File Extensions\.stm]
+[$RootKey$\Languages\File Extensions\.vb]
+[$RootKey$\Languages\File Extensions\.vbs]
+[$RootKey$\Languages\File Extensions\.wsdl]
+[$RootKey$\Languages\File Extensions\.wsf]
+[$RootKey$\Languages\File Extensions\.xaml]
+
+// ********
+// remove unused intellisense providers
+// ********
+
+[$RootKey$\Languages\IntellisenseProviders\CSharpCodeProvider]
+[$RootKey$\Languages\IntellisenseProviders\VBCodeProvider]
+
+// ********
+// remove unused language services
+// ********
+
+[$RootKey$\Languages\Language Services\Basic]
+[$RootKey$\Languages\Language Services\CSS]
+[$RootKey$\Languages\Language Services\HTML]
+[$RootKey$\Languages\Language Services\JScript]
+[$RootKey$\Languages\Language Services\PL/SQL]
+[$RootKey$\Languages\Language Services\RDL Expression]
+[$RootKey$\Languages\Language Services\SQL Script]
+[$RootKey$\Languages\Language Services\T-SQL]
+[$RootKey$\Languages\Language Services\T-SQL7]
+[$RootKey$\Languages\Language Services\T-SQL80]
+[$RootKey$\Languages\Language Services\T-SQL90]
+[$RootKey$\Languages\Language Services\XAML]
+
+// ********
+// msbuild
+// ********
+
+[$RootKey$\MSBuild]
+
+// ********
+// remove unused prog ids
+// ********
+
+[$RootKey$\ProgId\JavaScript Author]
+[$RootKey$\ProgId\JSAuthor]
+[$RootKey$\ProgId\Microsoft.JScript.Authoring.Intellisense.BuiltInTypeInfo]
+[$RootKey$\ProgId\Microsoft.JScript.Authoring.Intellisense.ParameterTipTypeInfo]
+[$RootKey$\ProgId\Microsoft.JScript.Authoring.Intellisense.TypeInfoWrapper]
+[$RootKey$\ProgId\Microsoft.VSDesigner.Data.VS.LaunchDataComponentWizard]
+[$RootKey$\ProgId\Microsoft.VsWizards.ImportProjectFolderWizard.Wizard]
+[$RootKey$\ProgId\Microsoft.VSWizards.WizardManager]
+[$RootKey$\ProgId\Microsoft.WebPublisher.FileModifiedTimesRow]
+[$RootKey$\ProgId\Microsoft.WebPublisher.NativeMethods]
+[$RootKey$\ProgId\Microsoft.WebPublisher.PublishFileInfoEnum]
+[$RootKey$\ProgId\Microsoft.WebPublisher.PublishManager]
+[$RootKey$\ProgId\Microsoft.WebPublisher.RemoteSiteRow]
+[$RootKey$\ProgId\Microsoft.WebPublisher.RemoteSiteStateDataSet]
+[$RootKey$\ProgId\Microsoft.WebPublisher.SelectionsItem]
+[$RootKey$\ProgId\Microsoft.WebPublisher.StateFileDataSet]
+[$RootKey$\ProgId\Microsoft.WebPublisher.Utils]
+[$RootKey$\ProgId\Microsoft.WebPublisher.WebPublisher]
+
+// ********
+// remove unused template directories
+// ********
+
+[$RootKey$\NewProjectTemplates\TemplateDirs\{39c9c826-8ef8-4079-8c95-428f5b1c323f}]
+
+// ********
+// remove unused object libraries
+// ********
+
+[$RootKey$\Object Libraries\{18E32C04-58BA-4a1e-80DE-1C291634166A}]
+[$RootKey$\Object Libraries\{1EC72FD7-C820-4273-9A21-777A5C522E03}]
+
+// ********
+// remove unused projects
+// ********
+
+// Project converter
+[$RootKey$\Projects\{059D6162-CD51-11D0-AE1F-00A0C90FFFC3}]
+// WPF C# templates
+[$RootKey$\Projects\{1d6d3185-e7ba-44a5-8dbe-00485ef28094}]
+// web application factory project
+[$RootKey$\Projects\{349C5851-65DF-11DA-9384-00065B846F21}]
+// C# web application project templates
+[$RootKey$\Projects\{349C5853-65Df-11DA-9384-00065B846F21}]
+// VB web application project templates
+[$RootKey$\Projects\{349C5854-65Df-11DA-9384-00065B846F21}]
+// Crash Dump
+[$RootKey$\Projects\{5600DBA8-E3D8-42CB-B290-4CFFE16ACD2D}]
+// WPF VB templates
+[$RootKey$\Projects\{58839851-977a-4c1b-a0d3-79157d5f2bbf}]
+// wpf project
+[$RootKey$\Projects\{60dc8134-eba5-43b8-bcc9-bb4bc16c2548}]
+// reporting services
+[$RootKey$\Projects\{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}]
+// exe projects
+[$RootKey$\Projects\{911E67C6-3D85-4fce-B560-20A9C3E3FF48}]
+// Hide web items.
+[$RootKey$\Projects\{A2FE74E1-B743-11d0-AE1A-00A0C90FFFC3}\AddItemTemplates\TemplateDirs\{F5E7E720-1401-11d1-883B-0000F87579D2}]
+// Hide script items.
+[$RootKey$\Projects\{A2FE74E1-B743-11d0-AE1A-00A0C90FFFC3}\AddItemTemplates\TemplateDirs\{39c9c826-8ef8-4079-8c95-428f5b1c323f}]
+// web projects
+[$RootKey$\Projects\{E24C65DC-7377-472b-9ABA-BC803B73C61A}]
+[$RootKey$\Projects\{E502E3C0-BAAE-11D0-88BF-00A0C9110049}]
+// reporting services reports
+[$RootKey$\Projects\{E6FDF86B-F3D1-11D4-8576-0002A516ECE8}]
+// reporting services web reports
+[$RootKey$\Projects\{F184B08F-C81C-45F6-A57F-5ABD9991F28F}]
+// reporting services web reports
+[$RootKey$\Projects\{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}]
+
+
+// ********
+// remove unused templates
+// ********
+
+// Hide other language node.
+[$RootKey$\NewProjectTemplates\PseudoFolders\{152CDB9D-B85A-4513-A171-245CE5C61FCC}]
+
+// Hide other project types node.
+[$RootKey$\NewProjectTemplates\PseudoFolders\{DCF2A94A-45B0-11D1-ADBF-00C04FB6BE4C}]
+
+[$RootKey$\NewProjectTemplates\TemplateDirs\{019971D6-4685-11D2-B48A-0000F87572EB}]
+
+[$RootKey$\NewProjectTemplates\TemplateDirs\{39c9c826-8ef8-4079-8c95-428f5b1c323f}]
+
+[$RootKey$\NewProjectTemplates\TemplateDirs\{BEB01DDF-9D2B-435B-A9E7-76557E2B6B52}]
+
+
+// ********
+// shell file extensions
+// ********
+
+[$RootKey$\ShellFileAssociations\.asax]
+[$RootKey$\ShellFileAssociations\.ascx]
+[$RootKey$\ShellFileAssociations\.ashx]
+[$RootKey$\ShellFileAssociations\.asmx]
+[$RootKey$\ShellFileAssociations\.aspx]
+[$RootKey$\ShellFileAssociations\.cur]
+[$RootKey$\ShellFileAssociations\.datasource]
+[$RootKey$\ShellFileAssociations\.rc]
+[$RootKey$\ShellFileAssociations\.rc2]
+[$RootKey$\ShellFileAssociations\.rct]
+[$RootKey$\ShellFileAssociations\.res]
+[$RootKey$\ShellFileAssociations\.resx]
+[$RootKey$\ShellFileAssociations\.sdl]
+[$RootKey$\ShellFileAssociations\.sitemap]
+[$RootKey$\ShellFileAssociations\.skin]
+[$RootKey$\ShellFileAssociations\.sln]
+[$RootKey$\ShellFileAssociations\.snk]
+[$RootKey$\ShellFileAssociations\.svc]
+[$RootKey$\ShellFileAssociations\.vstemplate]
+[$RootKey$\ShellFileAssociations\.wsdl]
+
+// ********
+// unused tool box pages
+// ********
+
+[$RootKey$\ToolboxPages\Microsoft.VisualStudio.Toolbox.VsToolboxPage]
+[$RootKey$\ToolboxPages\Silverlight Components]
+[$RootKey$\ToolboxPages\WPF Components]
+
+// ********
+// unused tools options pages
+// ********
+
+[$RootKey$\ToolsOptionsPages\Database Tools]
+[$RootKey$\ToolsOptionsPages\DSLTools]
+[$RootKey$\ToolsOptionsPages\HTML Designer]
+[$RootKey$\ToolsOptionsPages\WindowsFormsDesigner]
+
+[$RootKey$\ToolsOptionsPages\Environment\Add-in Security]
+[$RootKey$\ToolsOptionsPages\Environment\ExtensionManager]
+[$RootKey$\ToolsOptionsPages\Environment\Task List]
+
+[$RootKey$\ToolsOptionsPages\Projects]
+[$RootKey$\ToolsOptionsPages\Debugger]
+
+[$RootKey$\ToolsOptionsPages\DTSCustomTaskOptionPage]
+[$RootKey$\ToolsOptionsPages\DTSTransfrormsOptionPage]
+[$RootKey$\ToolsOptionsPages\DbMaintToolboxPage]
+
+//Visual Studio Call Hierarchy Package
+//Call Hierarchy should be removed but removing this package causes Internal error in the shell which does not surface up.
+//Either properly removing this package from SSMS or hide Call Hierarchy menu from SSMS.
+//[$RootKey$\Packages\{3F3D9528-BAC4-420e-8147-29896300C5C0}]
+
+//Toolbox Pages
+[$RootKey$\ToolBoxPages\ActiveXControls]
+
+[$RootKey$\AutomationProperties\TextEditor\Basic]
+[$RootKey$\AutomationProperties\TextEditor\Basic-Specific]
+[$RootKey$\AutomationProperties\TextEditor\CSS]
+[$RootKey$\AutomationProperties\TextEditor\CSS Specific]
+[$RootKey$\AutomationProperties\TextEditor\Disassembly]
+[$RootKey$\AutomationProperties\TextEditor\ENC]
+[$RootKey$\AutomationProperties\TextEditor\HTML]
+[$RootKey$\AutomationProperties\TextEditor\HTML Specific]
+[$RootKey$\AutomationProperties\TextEditor\JScript]
+[$RootKey$\AutomationProperties\TextEditor\JScript Specific]
+[$RootKey$\AutomationProperties\TextEditor\T-SQL90]
+[$RootKey$\AutomationProperties\TextEditor\PL/SQL]
+[$RootKey$\AutomationProperties\TextEditor\XAML]
+[$RootKey$\AutomationProperties\TextEditor\XAML Specific]
+[$RootKey$\AutomationProperties\TextEditor\XML]
+[$RootKey$\AutomationProperties\Environment\Startup]
+[$RootKey$\UserSettings\Environment_Group\Environment_StartPage]
